@@ -1,0 +1,146 @@
+{
+  "page": {
+    "about": {
+      "id": "about",
+      "title": "About us",
+      "contents": "Some new contents",
+      "_draft": true
+    },
+    "contact": {
+      "id": "contact",
+      "title": "Contact",
+      "contents": "![](logo1.png)"
+    },
+    "home": {
+      "id": "home",
+      "title": "Home",
+      "contents": "```ExampleHome\ntagline: Applied technologies in a changing climate to reduce risk and loss and to increase profits.\nbannerImage: a.jpg\nsolutionsTitle: What we do\nprovidersTitle: Working with the lead data providers\nmarketsTitle: We work with organisations across the globe affected by our changing climate\n```"
+    },
+    "561c979372c22e4fe3caedc72d38c598": {
+      "contents": "Hello, world!",
+      "title": "This is a title",
+      "id": "561c979372c22e4fe3caedc72d38c598"
+    },
+    "test page": {
+      "contents": "Hello, world!",
+      "title": "This is a title",
+      "id": "test page"
+    }
+  },
+  "project": {
+    "oxfam-crop-suitability": {
+      "id": "oxfam-crop-suitability",
+      "rank": 20,
+      "title": "Analysing and assessing crop suitability for Oxfam",
+      "shortTitle": "Crop suitability",
+      "client": "Oxfam",
+      "solutionsUsed": "Climate change / data platforms",
+      "contents": "We have developed a crop suitability tool for Oxfam. At this stage, the tool produces maps showing the number of feasible crop cycles for maize, sorghum and pearl millet in the Sahel, Sub-Saharan Africa and Dry Corridor for the selected clime periods and emission scenarios.\n\n```ExampleHome\n- a: 3\n- b: 5\n```\n\nClimate change is expected to disproportionately affect smallholder farmers, who already face numerous risks to agricultural production. Crops will respond to specific changes in temperature and precipitation at the locations where they are currently grown.",
+      "sidebarContents": "*TBW*.",
+      "bannerImage": "b.jpg",
+      "isFeatured": true,
+      "startDate": "2019-01-09T00:00:00.000Z",
+      "url": "http://www.apple.com/and/a/very/long/path",
+      "storyType": "Commercial lead",
+      "status": "Initiated",
+      "keywords": "Climate, Air Quality, Models, Aerosols",
+      "color": "rgba(74, 191, 212, 0.73)",
+      "_draft": false
+    },
+    "pwc-extreme-event-analysis": {
+      "id": "pwc-extreme-event-analysis",
+      "rank": 30,
+      "title": "*TBW*",
+      "shortTitle": "Extreme event analysis",
+      "client": "PwC",
+      "solutionsUsed": "Climate change / data platforms",
+      "contents": "*TBW*",
+      "sidebarContents": "*TBW*",
+      "bannerImage": "c.jpg",
+      "isFeatured": true,
+      "startDate": "2019-01-22T00:00:00.000Z",
+      "_draft": true,
+      "url": "https://example.com",
+      "storyType": "Other",
+      "status": "Pending",
+      "keywords": "Air Quality"
+    },
+    "example-2": {
+      "id": "example-2",
+      "rank": 40,
+      "title": "Pariatur fugiat tempor anim qui culpa est deserunt excepteur officia incididunt deserunt. ",
+      "contents": "Pariatur fugiat tempor anim qui culpa est deserunt excepteur officia incididunt deserunt. ",
+      "storyType": "Other",
+      "status": "Initiated",
+      "keywords": "Air Quality",
+      "url": "https://www.apple.com"
+    }
+  },
+  "market": {
+    "private": {
+      "id": "private",
+      "name": "Private sector",
+      "summary": "*TBW*",
+      "image": "b.jpg",
+      "rank": 20,
+      "isFeatured": true
+    },
+    "institutions": {
+      "id": "institutions",
+      "name": "Governments / institutions",
+      "summary": "*TBW*",
+      "image": "a.jpg",
+      "rank": 10,
+      "isFeatured": true
+    }
+  },
+  "company": {
+    "oxfam": {
+      "id": "oxfam",
+      "name": "Oxfam",
+      "acronym": "Oxfam",
+      "isClient": true,
+      "isFeatured": true,
+      "logoImage": "logo1.png",
+      "rank": 10
+    },
+    "pwc": {
+      "id": "pwc",
+      "name": "pwc",
+      "acronym": "PWC",
+      "isClient": true,
+      "isFeatured": true,
+      "logoImage": "logo2.png",
+      "rank": 25
+    },
+    "isardsat": {
+      "id": "isardsat",
+      "isDataProvider": true,
+      "name": "isardSAT",
+      "acronym": "isardSAT",
+      "isFeatured": true,
+      "logoImage": "logo1.png",
+      "rank": 17.5
+    }
+  },
+  "teamMember": {},
+  "settings": {
+    "default": {
+      "id": "default",
+      "theme": "dark",
+      "titlePrefix": "Editorial | "
+    }
+  },
+  "test": {
+    "test item": {
+      "contents": "Hello, world!",
+      "title": "This is a &lt;title&gt;",
+      "id": "test item",
+      "number": 12,
+      "boolean": false,
+      "color": "rgb(42, 23, 133)",
+      "select": "two"
+    }
+  },
+  "undefined": {}
+}

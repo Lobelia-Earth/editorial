@@ -1,0 +1,146 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`splitMarkdownForTranslations on a single-line text should chop it correctly (and report whitespace) 1`] = `
+Array [
+  "context-base_So this is your birthday!",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a single-line text should chop it correctly 1`] = `
+Array [
+  "context-base_So this is your birthday!",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a text with custom blocks should chop it correctly (and report whitespace) 1`] = `
+Array [
+  "
+",
+  "context-base_We have developed a crop suitability tool for Oxfam. At this stage, the tool produces maps showing the number of feasible crop cycles for maize, sorghum and pearl millet in the Sahel, Sub-Saharan Africa and Dry Corridor for the selected clime periods and emission scenarios.",
+  "
+
+",
+  "context-base_\`\`\`ExampleHome
+- a: 3
+- b: 5
+\`\`\`",
+  "
+
+",
+  "context-base_Climate change is expected to disproportionately affect smallholder farmers, who already face numerous risks to agricultural production. Crops will respond to specific changes in temperature and precipitation at the locations where they are currently grown.",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a text with custom blocks should chop it correctly 1`] = `
+Array [
+  "context-base_We have developed a crop suitability tool for Oxfam. At this stage, the tool produces maps showing the number of feasible crop cycles for maize, sorghum and pearl millet in the Sahel, Sub-Saharan Africa and Dry Corridor for the selected clime periods and emission scenarios.",
+  "context-base_\`\`\`ExampleHome
+- a: 3
+- b: 5
+\`\`\`",
+  "context-base_Climate change is expected to disproportionately affect smallholder farmers, who already face numerous risks to agricultural production. Crops will respond to specific changes in temperature and precipitation at the locations where they are currently grown.",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a text with indented lines should chop it correctly (and report whitespace) 1`] = `
+Array [
+  "context-base_This is a list:",
+  "
+
+",
+  "context-base_- Item 1",
+  "
+",
+  "  ",
+  "context-base_- Item 1.1",
+  "
+",
+  "  ",
+  "context-base_- Item 1.2",
+  "
+",
+  "context-base_- Item 2",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a text with indented lines should chop it correctly 1`] = `
+Array [
+  "context-base_This is a list:",
+  "context-base_- Item 1",
+  "context-base_- Item 1.1",
+  "context-base_- Item 1.2",
+  "context-base_- Item 2",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a text with multiple blocks should chop it correctly (and report whitespace) 1`] = `
+Array [
+  "
+",
+  "context-base_\`\`\`Contents
+sidebar: true
+\`\`\`",
+  "
+
+",
+  "",
+  "context-base_\`\`\`TeamMembers
+title: Our team
+advisoryGroup: false
+\`\`\`",
+  "
+
+",
+  "",
+  "context-base_\`\`\`TeamMembers
+title: Advisors
+advisoryGroup: true
+\`\`\`",
+  "
+
+",
+  "",
+  "context-base_\`\`\`Contact
+question: Would you like to work with us?
+button: get in touch
+\`\`\`",
+  "
+",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a text with multiple blocks should chop it correctly 1`] = `
+Array [
+  "context-base_\`\`\`Contents
+sidebar: true
+\`\`\`",
+  "context-base_\`\`\`TeamMembers
+title: Our team
+advisoryGroup: false
+\`\`\`",
+  "context-base_\`\`\`TeamMembers
+title: Advisors
+advisoryGroup: true
+\`\`\`",
+  "context-base_\`\`\`Contact
+question: Would you like to work with us?
+button: get in touch
+\`\`\`",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a two-line text should chop it correctly (and report whitespace) 1`] = `
+Array [
+  "context-base_So this is your birthday!",
+  "
+",
+  "context-base_It's my birthday too, yeah!",
+]
+`;
+
+exports[`splitMarkdownForTranslations on a two-line text should chop it correctly 1`] = `
+Array [
+  "context-base_So this is your birthday!",
+  "context-base_It's my birthday too, yeah!",
+]
+`;

@@ -1,0 +1,259 @@
+settings:
+  displayName: Settings
+  singleton: true
+  fields:
+    theme:
+      type: string
+      displayName: Theme
+      isRequired: true
+      showInSummary: true
+    titlePrefix:
+      type: string
+      displayName: Title prefix
+      showInSummary: true
+
+page:
+  displayName: Pages
+  fields:
+    title:
+      type: markdown
+      displayName: Page title
+      placeholder: 'Meet our **team**'
+      showInSummary: true
+      isRequired: true
+    contents:
+      type: markdown
+      displayName: Contents
+      height: 300
+      allowCustomBlocks: true
+test:
+  displayName: Test item
+  fields:
+    title:
+      type: string
+      displayName: Page title
+      placeholder: 'Meet our **team**'
+      showInSummary: true
+      isRequired: true
+    contents:
+      type: markdown
+      displayName: Contents
+      height: 300
+      allowCustomBlocks: true
+    number:
+      type: number
+      displayName: Number
+    color:
+      type: color
+      displayName: Color
+    select:
+      type: select
+      displayName: Select
+      choicesFixed:
+        - one
+        - two
+        - three
+    boolean:
+      type: boolean
+      displayName: Boolean
+project:
+  displayName: Stories (our work)
+  allowManualSorting: true
+  linesPerRow: 1
+  fields:
+    isFeatured:
+      type: boolean
+      displayName: Featured (in Home and Project pages)
+      dontTranslate: true
+      showInSummary: true
+      labelLevel: 2
+    isHidden:
+      type: boolean
+      displayName: Hidden
+      dontTranslate: true
+      showInSummary: true
+    color:
+      type: color
+      displayName: Highlight color
+    startDate:
+      type: date
+      displayName: Start date
+      showInSummary: true
+    url:
+      type: string
+      isExternalUrl: true
+      displayName: URL
+      isRequired: true
+      showInSummary: true
+    title:
+      type: markdown
+      displayName: Project title
+      placeholder: Analysing and assessing crop suitability for Oxfam
+      isRequired: true
+      showInSummary: true
+    storyType:
+      type: select
+      inlineSelect: true
+      displayName: Story type
+      isRequired: true
+      choicesFixed:
+        - Commercial lead
+        - Project
+        - Other
+    status:
+      type: select
+      displayName: Current status
+      isRequired: true
+      isMultiple: true
+      choicesFixed:
+        - Pending
+        - Initiated
+        - Finalised
+    keywords:
+      type: string
+      displayName: Keywords
+      choicesFixed:
+        - Climate
+        - Air Quality
+      choicesPreviousValues: true
+      isMultiple: true
+      isRequired: true
+    shortTitle:
+      type: markdown
+      displayName: Short title (for home page)
+      placeholder: Crop suitability
+    client:
+      type: string
+      displayName: (Main) client (for home page)
+      placeholder: Oxfam
+      dontTranslate: true
+    contents:
+      type: markdown
+      displayName: Contents
+      height: 300
+      allowCustomBlocks: true
+    sidebarContents:
+      type: markdown
+      displayName: Sidebar contents (e.g. with highlighted images and videos)
+      height: 300
+    bannerImage:
+      type: string
+      displayName: Banner image filename
+      placeholder: 'project-glorious-oxfam.jpg'
+      isUploadedFile: true
+      dontTranslate: true
+
+market:
+  displayName: Markets
+  description: |
+    These are shown in the home page. Make sure the contents
+    for all items in the **Summary** field are roughly the same
+    length, so that the layout looks better.
+  allowManualSorting: true
+  fields:
+    isFeatured:
+      type: boolean
+      displayName: Featured (in Home page)
+      dontTranslate: true
+      showInSummary: true
+      labelLevel: 2
+    isHidden:
+      type: boolean
+      displayName: Hidden
+      dontTranslate: true
+      showInSummary: true
+    name:
+      type: markdown
+      displayName: Market name
+      placeholder: Private sector
+      showInSummary: true
+    summary:
+      type: markdown
+      displayName: Summary
+      height: 300
+    image:
+      type: string
+      displayName: Image filename
+      placeholder: 'market-private-sector.jpg'
+      dontTranslate: true
+
+company:
+  displayName: Companies
+  allowManualSorting: true
+  fields:
+    isFeatured:
+      type: boolean
+      displayName: Featured (in Home page)
+      dontTranslate: true
+      showInSummary: true
+      labelLevel: 2
+    isHidden:
+      type: boolean
+      displayName: Hidden
+      dontTranslate: true
+      showInSummary: true
+    name:
+      type: string
+      displayName: Full name
+      placeholder: Finnish Meteorological Institute
+      showInSummary: true
+    acronym:
+      type: string
+      displayName: Acronym
+      placeholder: FMI
+      dontTranslate: true
+    isClient:
+      type: boolean
+      displayName: Client
+      dontTranslate: true
+    isDataProvider:
+      type: boolean
+      displayName: Data provider
+      dontTranslate: true
+    isPlatformProvider:
+      type: boolean
+      displayName: Platform provider
+      dontTranslate: true
+    logoImage:
+      type: string
+      displayName: Logo image filename
+      placeholder: 'fmi.png'
+      dontTranslate: true
+      isUploadedFile: true
+
+teamMember:
+  displayName: Team members
+  allowManualSorting: true
+  fields:
+    isHidden:
+      type: boolean
+      displayName: Hidden
+      dontTranslate: true
+      showInSummary: true
+    name:
+      type: string
+      displayName: Full name
+      placeholder: Laia Romero
+      dontTranslate: true
+      showInSummary: true
+    profilePicture:
+      type: string
+      displayName: Profile picture
+      placeholder: 'laia_romero.jpg'
+      dontTranslate: true
+    linkedInLink:
+      type: string
+      displayName: CV link
+      placeholder: https://www.linkedin.com/in/yourname/
+      dontTranslate: true
+      isExternalUrl: true
+    githubLink:
+      type: string
+      displayName: CV link
+      placeholder: https://http://github.com/yourname
+      dontTranslate: true
+      isExternalUrl: true
+    bio:
+      type: markdown
+      displayName: Bio
+      placeholder: 'Be creative!'

@@ -1,0 +1,14 @@
+[ignore]
+.*/mady/.*
+.*/iterall/.*
+.*/protobufjs/.*
+.*/webpack-cli/.*
+
+[include]
+
+[libs]
+flow-typed
+
+[lints]
+
+[options]

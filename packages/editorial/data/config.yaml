@@ -1,0 +1,8 @@
+name: Example
+publicUrl: 'https://www.apple.com' # ;)
+previewUrl: 'http://localhost:4001'
+# noHub: true
+# noTranslation: true
+# alwaysShowFileThumbnails: true
+componentHelp:
+  ExampleHome: ./components/ExampleHome.js

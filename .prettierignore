@@ -1,0 +1,7 @@
+*.html
+*.json
+*.md
+packages/*/lib
+.next
+out
+locales
