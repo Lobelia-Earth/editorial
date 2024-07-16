@@ -4,8 +4,8 @@
 
 Some example sites built with Editorial:
 
-* [Lobelia](www.lobelia.earth)
-* [isardSAT](www.isardsat.cat)
+* [Lobelia](https://www.lobelia.earth)
+* [isardSAT](https://www.isardsat.cat)
 
 ## Cintributing
 
