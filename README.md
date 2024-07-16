@@ -7,9 +7,9 @@ Some example sites built with Editorial:
 * [Lobelia](https://www.lobelia.earth)
 * [isardSAT](https://www.isardsat.cat)
 
-## Cintributing
+## Contributing
 
-Currently we don't accept PR's from external collaborators.
+Currently we don't accept PRs from external collaborators.
 
 ## Developing a website/application with Editorial
 
