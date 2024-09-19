@@ -6,13 +6,13 @@
   "license": "MIT",
   "description": "Simple CMS for static websites",
   "keywords": [],
-  "homepage": "https://github.com/isardsat/editorial",
+  "homepage": "https://github.com/Lobelia-Earth/editorial",
   "bugs": {
-    "url": "https://github.com/isardsat/editorial/issues"
+    "url": "https://github.com/Lobelia-Earth/editorial/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/isardsat/editorial.git"
+    "url": "https://github.com/Lobelia-Earth/editorial.git"
   },
   "workspaces": {
     "packages": [
