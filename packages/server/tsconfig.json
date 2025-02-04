@@ -5,6 +5,8 @@
     "strict": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
+    "declaration": true,
+    "outDir": "./dist",
     "types": [
       "node"
     ],

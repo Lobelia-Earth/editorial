@@ -1,0 +1,13 @@
+{
+  "name": "basic",
+  "version": "0.0.0",
+  "scripts": {
+    "editorial": "editorial"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  },
+  "devDependencies": {
+    "@isardsat/editorial-cli": "workspace:^"
+  }
+}
