@@ -21,14 +21,18 @@ export const startCommand = new Command()
     'comma-separated relative paths to other Mady locale folders (e.g. libs)',
     []
   )
-  .action(({ port }) => {
-    const editorialServer = createEditorialServer();
+  .action(async ({ port }) => {
+    const editorialServer = await createEditorialServer({});
 
     serve({
-      fetch: editorialServer.fetch,
+      fetch: editorialServer.app.fetch,
       port,
     });
 
-    console.log(`Editorial API running on http://localhost:${port}`);
-    console.log(`Admin panel available at http://localhost:${port}/admin`);
+    console.log(
+      `Editorial API running on ${editorialServer.config.publicUrl}:${port}`
+    );
+    console.log(
+      `Admin panel available at ${editorialServer.config.publicUrl}:${port}/admin`
+    );
   });

@@ -14,15 +14,6 @@
     "type": "git",
     "url": "https://github.com/Lobelia-Earth/editorial.git"
   },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ],
-    "nohoist": [
-      "**/storyboard",
-      "**/storyboard/**"
-    ]
-  },
   "scripts": {
     "compileWatch": "oao run-script compileWatch --parallel",
     "build": "yarn lint && yarn flow && yarn build:tool && oao prepublish",

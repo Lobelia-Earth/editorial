@@ -7,10 +7,10 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "./dist",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-  }
+    "jsxImportSource": "hono/jsx"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/admin"]
 }
