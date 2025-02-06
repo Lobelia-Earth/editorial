@@ -71,11 +71,10 @@
     "classnames": "^2.2.6",
     "css-loader": "^1.0.1",
     "file-loader": "^2.0.0",
-    "firebase": "^5.5.8",
+    "firebase": "^11.2.0",
     "giu": "^0.20.1",
     "jest": "^24.8.0",
     "mady-client-components": "^4.1.0",
-    "node-sass": "^4.12.0",
     "nodemon": "^2.0.15",
     "prettier": "^2.0.5",
     "react": "^16.9.0",
@@ -105,7 +104,6 @@
     "url": "https://github.com/isardsat/editorial.git"
   },
   "volta": {
-    "node": "10.24.1",
-    "yarn": "1.22.17"
+    "extends": "../../package.json"
   }
 }

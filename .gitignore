@@ -13,5 +13,4 @@ node_modules
 /.nyc_tmp
 *.sublime-project
 *.sublime-workspace
-lib
 .DS_Store

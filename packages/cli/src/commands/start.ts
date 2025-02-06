@@ -21,11 +21,14 @@ export const startCommand = new Command()
     'comma-separated relative paths to other Mady locale folders (e.g. libs)',
     []
   )
-  .action(() => {
+  .action(({ port }) => {
     const editorialServer = createEditorialServer();
 
     serve({
       fetch: editorialServer.fetch,
-      port: 3002,
+      port,
     });
+
+    console.log(`Editorial API running on http://localhost:${port}`);
+    console.log(`Admin panel available at http://localhost:${port}/admin`);
   });

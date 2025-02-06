@@ -5,7 +5,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "build:watch": "tsc --watch"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",

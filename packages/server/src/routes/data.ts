@@ -1,37 +1,29 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import type { Storage } from '../lib/storage.js';
 
-const app = new OpenAPIHono();
+const EditorialDataSchema = z.record(z.string(), z.object({}));
 
-const DataSchema = z
-  .object({
-    id: z.string().openapi({
-      example: '123',
-    }),
-  })
-  .openapi('User');
+export function createDataRoutes(storage: Storage) {
+  const app = new OpenAPIHono();
 
-const route = createRoute({
-  method: 'get',
-  path: '/_data',
-  responses: {
-    200: {
-      content: {
-        'application/json': {
-          schema: DataSchema,
+  const route = createRoute({
+    method: 'get',
+    path: '/data',
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: EditorialDataSchema,
+          },
         },
+        description: 'Get all editorial data',
       },
-      description: 'Get all editorial data',
     },
-  },
-});
+  });
 
-app.openapi(route, (c) => {
-  return c.json(
-    {
-      id: '123123',
-    },
-    200
-  );
-});
+  app.openapi(route, (c) => {
+    return c.json(storage.getContent());
+  });
 
-export default app;
+  return app;
+}

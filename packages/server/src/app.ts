@@ -1,13 +1,21 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
+import { OpenAPIHono, z } from '@hono/zod-openapi';
 import { logger } from 'hono/logger';
-import data from './routes/data.js';
+import { createStorage } from './lib/storage.js';
+import { createDataRoutes } from './routes/data.js';
 
-export function createEditorialServer() {
+export interface EditorialServerConfig {
+  editorialDirectory?: string;
+}
+
+export function createEditorialServer({
+  editorialDirectory = './editorial',
+}: EditorialServerConfig): OpenAPIHono {
   const app = new OpenAPIHono();
+  const storage = createStorage(editorialDirectory);
 
   app.use(logger());
 
-  app.route('/api/v1', data);
+  app.route('/api/v1', createDataRoutes(storage));
 
   app.doc('/doc', {
     openapi: '3.0.0',
