@@ -4,8 +4,6 @@ import { createStorage, type Storage } from './lib/storage.js';
 import { createDataRoutes } from './routes/data.js';
 import { createConfig } from './lib/config.js';
 import type { EditorialConfig } from './lib/schemas.js';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 export const BASE_EDITORIAL_PATH = './editorial';
 
