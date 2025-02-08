@@ -1,9 +1,35 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import type { Storage } from '../lib/storage.js';
-import { EditorialDataSchema } from '../lib/schemas.js';
+import {
+  EditorialDataObjectSchema,
+  EditorialDataSchema,
+  EditorialSchemaSchema,
+} from '../lib/schemas.js';
 
 export function createDataRoutes(storage: Storage) {
   const app = new OpenAPIHono();
+
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/schema',
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: EditorialSchemaSchema,
+            },
+          },
+          description: 'Get Editorial schema',
+        },
+      },
+    }),
+    async (c) => {
+      const schema = await storage.getSchema();
+
+      return c.json(schema);
+    }
+  );
 
   app.openapi(
     createRoute({
@@ -16,7 +42,7 @@ export function createDataRoutes(storage: Storage) {
               schema: EditorialDataSchema,
             },
           },
-          description: 'Get all editorial data',
+          description: 'Get all Editorial data',
         },
       },
     }),
@@ -46,7 +72,7 @@ export function createDataRoutes(storage: Storage) {
               schema: EditorialDataSchema,
             },
           },
-          description: 'Get all editorial data',
+          description: 'Get objects by type',
         },
       },
     }),
@@ -81,7 +107,7 @@ export function createDataRoutes(storage: Storage) {
               schema: EditorialDataSchema,
             },
           },
-          description: 'Get all editorial data',
+          description: 'Get object data',
         },
       },
     }),
@@ -90,6 +116,85 @@ export function createDataRoutes(storage: Storage) {
       const content = await storage.getContent();
 
       return c.json(content[itemType][id]);
+    }
+  );
+
+  app.openapi(
+    createRoute({
+      method: 'patch',
+      path: '/data/{itemType}/{id}',
+      request: {
+        params: z.object({
+          itemType: z.string().openapi({
+            param: { name: 'itemType', in: 'path' },
+            example: 'newsItem',
+          }),
+          id: z.string().openapi({
+            param: { name: 'id', in: 'path' },
+            example: 'about-us',
+          }),
+        }),
+        body: {
+          content: {
+            'application/json': {
+              schema: EditorialDataObjectSchema,
+            },
+          },
+          required: true,
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: EditorialDataSchema,
+            },
+          },
+          description: 'Update object',
+        },
+      },
+    }),
+    async (c) => {
+      const { itemType, id } = c.req.valid('param');
+      const itemAtts = c.req.json();
+      const content = await storage.updateItem(itemAtts);
+
+      return c.json(content[itemType][id]);
+    }
+  );
+
+  app.openapi(
+    createRoute({
+      method: 'delete',
+      path: '/data/{itemType}/{id}',
+      request: {
+        params: z.object({
+          itemType: z.string().openapi({
+            param: { name: 'itemType', in: 'path' },
+            example: 'newsItem',
+          }),
+          id: z.string().openapi({
+            param: { name: 'id', in: 'path' },
+            example: 'about-us',
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: z.boolean(),
+            },
+          },
+          description: 'Delete object',
+        },
+      },
+    }),
+    async (c) => {
+      const { itemType, id } = c.req.valid('param');
+      await storage.deleteItem({ type: itemType, id });
+
+      return c.json(true, 200);
     }
   );
 
