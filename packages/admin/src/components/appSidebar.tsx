@@ -1,4 +1,15 @@
-import { Grid, Image, Square, Upload } from 'lucide-react';
+'use client';
+
+import {
+  ArrowDown,
+  ChevronDown,
+  ChevronRight,
+  Files,
+  Grid,
+  Image,
+  Square,
+  Upload,
+} from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -8,30 +19,20 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from './ui/sidebar';
 import { Button } from './ui/button';
 
-import SidebarLink from './sidebarLink';
-
-const items = [
-  {
-    title: 'Singles',
-    url: '/singles',
-    icon: 'square',
-  },
-  {
-    title: 'Collections',
-    url: '/collections',
-    icon: 'grid',
-  },
-  {
-    title: 'Files',
-    url: '/files',
-    icon: 'image',
-  },
-] as const;
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from './ui/collapsible';
+import Link from 'next/link';
+import SidebarSchemaItems from './sidebarSchemaItems';
+import { usePathname } from 'next/navigation';
 
 const actions = [
   {
@@ -42,28 +43,66 @@ const actions = [
 ] as const;
 
 export default function AppSidebar() {
+  const pathname = usePathname();
+
   return (
-    <Sidebar>
-      <SidebarHeader>
+    <Sidebar className="z-50">
+      <SidebarHeader className="h-14 justify-center">
         <SidebarGroup>
-          <div>
-            <h2 className="text-3xl font-semibold tracking-tight transition-colors">
-              WEkEO
-            </h2>
-            {/* <p className="text-xs leading-none tracking-wide text-muted-foreground">
-              Editorial v6.0.0
-            </p> */}
-          </div>
+          <h2 className="text-3xl font-semibold tracking-tight transition-colors">
+            WEkEO
+          </h2>
         </SidebarGroup>
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Content</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarLink key={item.title} {...item} />
-              ))}
+              <Collapsible className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className="group">
+                      <Square />
+                      <span>Singles</span>
+                      <ChevronDown className="transition-transform ml-auto -mr-[2px] group-data-[state=open]:rotate-180" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+
+                  <CollapsibleContent>
+                    <SidebarSchemaItems href="/singles" singleton />
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+
+              <Collapsible className="group/collapsible">
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/collections">
+                      <Grid />
+                      <span>Collections</span>
+                    </Link>
+                  </SidebarMenuButton>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuAction className="data-[state=open]:rotate-180">
+                      <ChevronDown />
+                    </SidebarMenuAction>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarSchemaItems href="/collections" />
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/files">
+                    <Files />
+                    <span>Files</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

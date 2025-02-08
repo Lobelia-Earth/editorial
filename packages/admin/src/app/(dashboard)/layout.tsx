@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { inter } from '@/lib/fonts';
-import {
-  Sidebar,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/appSidebar';
+import StoreProvider from '@/components/providers/StoreProvider';
+import { Separator } from '@/components/ui/separator';
+import Breadcrumbs from '@/components/breadcrumbs';
 
 export const metadata: Metadata = {
   title: {
@@ -21,18 +20,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="min-h-screen">
       <body
-        className={`${inter.variable} min-h-screen bg-background font-sans antialiased`}
+        className={`${inter.variable} h-full min-h-screen bg-background font-sans antialiased`}
       >
-        <SidebarProvider>
-          <AppSidebar />
+        <StoreProvider>
+          <SidebarProvider className="flex h-full">
+            <AppSidebar />
 
-          <main>
-            <SidebarTrigger />
-            {children}
-          </main>
-        </SidebarProvider>
+            <main className="flex flex-col flex-1 h-full w-0">
+              <header className="flex sticky bg-white z-40 top-0 h-14 shrink-0 items-center gap-2 border-b">
+                <div className="flex items-center gap-2 px-3">
+                  <SidebarTrigger />
+                  <Separator orientation="vertical" className="h-4" />
+                  <Breadcrumbs />
+                </div>
+              </header>
+
+              {children}
+            </main>
+          </SidebarProvider>
+        </StoreProvider>
       </body>
     </html>
   );
