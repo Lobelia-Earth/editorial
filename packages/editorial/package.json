@@ -12,8 +12,6 @@
   "scripts": {
     "start": "node lib/server/startup",
     "dev": "nodemon lib/server/startup",
-    "build": "yarn test && yarn compile && yarn buildClient",
-    "compile": "yarn compile:clean && yarn compile:main",
     "compileWatch": "yarn compile:clean && yarn compile:mainWatch",
     "compile:clean": "rm -rf ./lib && mkdir lib",
     "compile:main": "babel src --out-dir lib --ignore \"**/__mocks__/**\",\"**/__tests__/**\",\"src/public/**\"",

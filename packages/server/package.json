@@ -4,18 +4,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "build:admin": "tsx ./build-admin.ts"
+    "compile": "tsc",
+    "compile:watch": "tsc --watch"
   },
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@hono/node-server": "^1.13.8",
     "@hono/zod-openapi": "^0.18.4",
     "hono": "^4.6.20",
+    "yaml": "^2.7.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

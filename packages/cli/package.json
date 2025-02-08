@@ -8,8 +8,8 @@
     "editorial": "bin/index.js"
   },
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch"
+    "compile": "tsc",
+    "compile:watch": "tsc --watch"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",

@@ -15,25 +15,17 @@
     "url": "https://github.com/Lobelia-Earth/editorial.git"
   },
   "scripts": {
+    "compile": "pnpm --recursive compile",
+    "compile:watch": "pnpm --recursive compile:watch",
     "compileWatch": "oao run-script compileWatch --parallel",
-    "build": "yarn lint && yarn flow && yarn build:tool && oao prepublish",
     "build:tool": "cd packages/editorial && yarn build",
     "lint": "eslint packages || exit 0",
     "flow": "flow check || exit 0",
     "prettier": "prettier --single-quote --trailing-comma es5 --write \"packages/**/*.js\""
   },
   "devDependencies": {
-    "babel-eslint": "^10.1.0",
-    "eslint": "^7.15.0",
-    "eslint-config-airbnb": "^18.2.1",
-    "eslint-config-prettier": "^7.0.0",
-    "eslint-plugin-flowtype": "^5.2.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-react": "^7.21.5",
-    "flow-bin": "^0.105.2",
     "oao": "^2.0.1",
-    "prettier": "^2.0.5"
+    "prettier": "^3.4.2"
   },
   "volta": {
     "node": "22.13.1",
