@@ -2,9 +2,21 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { writeFileSafe } from './utils/fs.js';
 import type { EditorialObject } from './types.js';
+import { parse } from 'yaml';
+import { EditorialSchemaSchema } from './schemas.js';
 
 export function createStorage(dataDirectory: string) {
+  const schemaPath = join(dataDirectory, 'schema.yaml');
   const dataPath = join(dataDirectory, 'data.json');
+
+  async function getSchema() {
+    const schemaFile = await readFile(schemaPath, 'utf-8').then((value) =>
+      parse(value)
+    );
+    const schema = EditorialSchemaSchema.parse(schemaFile);
+
+    return schema;
+  }
 
   /**
    * TODO: This should ideally cache the result of reading the file until an update occurs.
@@ -35,7 +47,7 @@ export function createStorage(dataDirectory: string) {
     return newItem;
   }
 
-  async function deleteItem(item: EditorialObject) {
+  async function deleteItem(item: Pick<EditorialObject, 'id' | 'type'>) {
     const content = await getContent();
     delete content[item.type][item.id];
     // TODO: Use superjson to safely encode different types.
@@ -44,6 +56,6 @@ export function createStorage(dataDirectory: string) {
     return content;
   }
 
-  return { getContent, createItem, updateItem, deleteItem };
+  return { getSchema, getContent, createItem, updateItem, deleteItem };
 }
 export type Storage = ReturnType<typeof createStorage>;
