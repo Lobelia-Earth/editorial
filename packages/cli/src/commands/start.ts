@@ -3,7 +3,7 @@ import { serve } from '@hono/node-server';
 import { createEditorialServer } from '@isardsat/editorial-server';
 
 const SRC = 'editorial';
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 3001;
 const DEFAULT_UPLOAD_FOLDER = '/static/files';
 const DEFAULT_LARGE_FILES = 'editorial/largeFiles';
 const DEFAULT_CMS_HELPERS = 'editorial/cmsHelpers';
