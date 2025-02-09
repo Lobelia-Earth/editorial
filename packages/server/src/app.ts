@@ -1,9 +1,11 @@
-import { OpenAPIHono, z } from '@hono/zod-openapi';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import type { EditorialConfig } from '@isardsat/editorial-common';
 import { logger } from 'hono/logger';
+import { createConfig } from './lib/config.js';
 import { createStorage, type Storage } from './lib/storage.js';
 import { createDataRoutes } from './routes/data.js';
-import { createConfig } from './lib/config.js';
-import type { EditorialConfig } from '@isardsat/editorial-common';
+import { createFilesRoutes } from './routes/files.js';
 
 export const BASE_EDITORIAL_PATH = './editorial';
 
@@ -30,6 +32,14 @@ export async function createEditorialServer({
   app.use(logger());
 
   app.route('/api/v1', createDataRoutes(storage));
+  app.route('/api/v1', createFilesRoutes());
+
+  app.use(
+    '/public/*',
+    serveStatic({
+      root: './',
+    })
+  );
 
   app.doc('/doc', {
     openapi: '3.0.0',
