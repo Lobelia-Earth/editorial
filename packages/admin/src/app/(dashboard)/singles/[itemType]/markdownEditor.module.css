@@ -1,0 +1,43 @@
+:global(.mdxeditor) {
+  overflow: hidden;
+}
+
+:global(.mdxeditor-root-contenteditable) {
+  @apply prose;
+
+  max-width: 100%;
+  overflow: auto;
+}
+
+:global(.mdxeditor-root-contenteditable) a {
+  @apply text-blue-600 underline;
+}
+
+:global(.mdxeditor-root-contenteditable) [data-editor-block-type='image'] {
+  @apply border rounded-sm;
+
+  height: 10rem;
+  width: 10rem;
+}
+
+:global(.mdxeditor-toolbar) {
+  @apply gap-2 p-2;
+
+  align-items: center;
+  background-color: white;
+  border-radius: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  width: inherit;
+  z-index: 2;
+}
+
+:global(.mdxeditor-popup-container) {
+  height: 0;
+  min-height: 0;
+}

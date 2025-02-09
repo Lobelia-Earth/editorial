@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useUpdateObjectMutation } from '@/lib/store/editorialApi';
 import type {
   EditorialDataObject,
@@ -21,6 +20,7 @@ import type {
 import { Save } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import MarkdownEditor from './markdownEditor';
 
 export interface SinglesPageProps {
   itemType: string;
@@ -128,10 +128,11 @@ export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
                     </FormLabel>
                     <FormControl>
                       {value.type === 'markdown' ? (
-                        <Textarea
+                        <MarkdownEditor
                           className="h-52"
+                          markdown={field.value}
+                          onChange={field.onChange}
                           placeholder={value.placeholder}
-                          {...field}
                         />
                       ) : (
                         <Input placeholder={value.placeholder} {...field} />
