@@ -2,6 +2,9 @@
   "editor.quickSuggestions": {
     "strings": "on"
   },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "explicit",
