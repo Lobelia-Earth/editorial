@@ -67,9 +67,6 @@ export default function MarkdownEditor({
           ),
         }),
       ]}
-      onError={(error) => {
-        console.log(error);
-      }}
     />
   );
 }
