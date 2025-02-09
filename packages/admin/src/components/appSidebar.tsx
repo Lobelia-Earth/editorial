@@ -1,15 +1,14 @@
 'use client';
 
+import { ChevronDown, Files, Grid, Square, Upload } from 'lucide-react';
+import Link from 'next/link';
+import SidebarSchemaItems from './sidebarSchemaItems';
+import { Button } from './ui/button';
 import {
-  ArrowDown,
-  ChevronDown,
-  ChevronRight,
-  Files,
-  Grid,
-  Image,
-  Square,
-  Upload,
-} from 'lucide-react';
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from './ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
@@ -19,32 +18,11 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from './ui/sidebar';
-import { Button } from './ui/button';
-
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from './ui/collapsible';
-import Link from 'next/link';
-import SidebarSchemaItems from './sidebarSchemaItems';
-import { usePathname } from 'next/navigation';
-
-const actions = [
-  {
-    title: 'Publish',
-    url: '#',
-    icon: Upload,
-  },
-] as const;
 
 export default function AppSidebar() {
-  const pathname = usePathname();
-
   return (
     <Sidebar className="z-50">
       <SidebarHeader className="h-14 justify-center">
@@ -64,6 +42,21 @@ export default function AppSidebar() {
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">
+                      <Grid />
+                      <span>Collections</span>
+                      <ChevronDown className="transition-transform ml-auto -mr-[2px] group-data-[state=open]:rotate-180" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarSchemaItems href="/collections" />
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+
+              <Collapsible className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className="group">
                       <Square />
                       <span>Singles</span>
                       <ChevronDown className="transition-transform ml-auto -mr-[2px] group-data-[state=open]:rotate-180" />
@@ -72,25 +65,6 @@ export default function AppSidebar() {
 
                   <CollapsibleContent>
                     <SidebarSchemaItems href="/singles" singleton />
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-
-              <Collapsible className="group/collapsible">
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link href="/collections">
-                      <Grid />
-                      <span>Collections</span>
-                    </Link>
-                  </SidebarMenuButton>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className="data-[state=open]:rotate-180">
-                      <ChevronDown />
-                    </SidebarMenuAction>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarSchemaItems href="/collections" />
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
@@ -106,6 +80,7 @@ export default function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -121,6 +96,7 @@ export default function AppSidebar() {
         </SidebarGroup>
         <SidebarGroup></SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter>
         <Button variant="ghost" className="text-sidebar-foreground">
           Log out

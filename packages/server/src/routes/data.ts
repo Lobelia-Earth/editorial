@@ -1,10 +1,10 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import type { Storage } from '../lib/storage.js';
 import {
-  EditorialDataObjectSchema,
+  EditorialDataObjectNoTypeSchema,
   EditorialDataSchema,
   EditorialSchemaSchema,
 } from '@isardsat/editorial-common';
+import type { Storage } from '../lib/storage.js';
 
 export function createDataRoutes(storage: Storage) {
   const app = new OpenAPIHono();
@@ -137,7 +137,7 @@ export function createDataRoutes(storage: Storage) {
         body: {
           content: {
             'application/json': {
-              schema: EditorialDataObjectSchema,
+              schema: EditorialDataObjectNoTypeSchema,
             },
           },
           required: true,
@@ -155,11 +155,10 @@ export function createDataRoutes(storage: Storage) {
       },
     }),
     async (c) => {
-      const { itemType, id } = c.req.valid('param');
       const itemAtts = await c.req.json();
-      const content = await storage.updateItem(itemAtts);
+      const newItem = await storage.updateItem(itemAtts);
 
-      return c.json(content[itemType][id]);
+      return c.json(newItem);
     }
   );
 

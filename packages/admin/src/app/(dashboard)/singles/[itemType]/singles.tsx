@@ -31,7 +31,11 @@ export default function Singleton({ itemType }: SinglesPageProps) {
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
         <h1 className="text-2xl">{itemSchema?.displayName}</h1>
 
-        <ItemForm fields={itemFields} data={data[itemType]['default']} />
+        <ItemForm
+          itemType={itemType}
+          fields={itemFields}
+          data={data[itemType]['default']}
+        />
       </div>
     </div>
   );

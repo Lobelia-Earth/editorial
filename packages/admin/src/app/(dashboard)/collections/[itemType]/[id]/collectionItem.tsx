@@ -32,7 +32,11 @@ export default function CollectionItem({ itemType, id }: CollectionItemProps) {
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
         <h1 className="text-2xl">{itemSchema?.displayName}</h1>
 
-        <ItemForm fields={itemFields} data={data[itemType][id]} />
+        <ItemForm
+          itemType={itemType}
+          fields={itemFields}
+          data={data[itemType][id]}
+        />
       </div>
     </div>
   );

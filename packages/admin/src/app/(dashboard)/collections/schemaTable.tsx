@@ -14,15 +14,15 @@ import {
   useGetDataQuery,
   useGetSchemaQuery,
 } from '@/lib/store/editorialApi';
-import { EditorialDataObject } from '@/lib/store/types';
 import { cn } from '@/lib/utils';
+import type { EditorialDataObject } from '@isardsat/editorial-common';
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { Circle, CircleCheck, Ellipsis, Trash } from 'lucide-react';
+import { Circle, CircleCheck, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 

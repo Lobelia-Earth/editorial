@@ -1,6 +1,7 @@
 import { Command } from '@commander-js/extra-typings';
 import { serve } from '@hono/node-server';
 import { createEditorialServer } from '@isardsat/editorial-server';
+import { version } from '../version.js';
 
 const SRC = 'editorial';
 const DEFAULT_PORT = 3001;
@@ -24,15 +25,16 @@ export const startCommand = new Command()
   .action(async ({ port }) => {
     const editorialServer = await createEditorialServer({});
 
+    console.log(`  Editorial ${version}`);
+    console.log(`  - Local:      ${editorialServer.config.publicUrl}:${port}`);
+    console.log(
+      `  - OpenAPI:    ${editorialServer.config.publicUrl}:${port}/doc\n`
+    );
+
+    console.log('Starting api...');
     serve({
       fetch: editorialServer.app.fetch,
       port,
     });
-
-    console.log(
-      `Editorial API running on ${editorialServer.config.publicUrl}:${port}`
-    );
-    console.log(
-      `Admin panel available at ${editorialServer.config.publicUrl}:${port}/admin`
-    );
+    console.log('Ready');
   });

@@ -7,6 +7,12 @@ export const EditorialConfigSchema = z.object({
   silent: z.boolean().optional(),
 });
 
+export const EditorialDataObjectNoTypeSchema = z
+  .object({
+    id: z.string(),
+  })
+  .passthrough();
+
 export const EditorialDataObjectSchema = z.object({
   id: z.string(),
   type: z.string(),

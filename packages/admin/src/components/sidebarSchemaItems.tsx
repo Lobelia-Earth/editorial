@@ -1,32 +1,8 @@
 'use client';
 
-import { Grid, Image, Square, Upload } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from './ui/sidebar';
-import { Button } from './ui/button';
-
-import SidebarLink from './sidebarLink';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from './ui/collapsible';
-import Link from 'next/link';
 import { useGetSchemaQuery } from '@/lib/store/editorialApi';
-import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { SidebarMenuSub, SidebarMenuSubButton } from './ui/sidebar';
 
 export interface SidebarSchemaItemsProps {
   href: string;

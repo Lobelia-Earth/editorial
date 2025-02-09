@@ -1,9 +1,9 @@
+import type { EditorialDataObject } from '@isardsat/editorial-common';
+import { EditorialSchemaSchema } from '@isardsat/editorial-common';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { writeFileSafe } from './utils/fs.js';
-import type { EditorialDataObject } from '@isardsat/editorial-common';
 import { parse } from 'yaml';
-import { EditorialSchemaSchema } from '@isardsat/editorial-common';
+import { writeFileSafe } from './utils/fs.js';
 
 export function createStorage(dataDirectory: string) {
   const schemaPath = join(dataDirectory, 'schema.yaml');

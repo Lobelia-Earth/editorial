@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -11,31 +12,56 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
+import { Textarea } from '@/components/ui/textarea';
+import { useUpdateObjectMutation } from '@/lib/store/editorialApi';
+import type {
   EditorialDataObject,
   EditorialSchemaItem,
 } from '@isardsat/editorial-common';
 import { Save } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 
 export interface SinglesPageProps {
+  itemType: string;
   fields: EditorialSchemaItem['fields'];
   data: EditorialDataObject;
 }
 
-export default function ItemForm({ fields, data }: SinglesPageProps) {
+export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
+  const [trigger] = useUpdateObjectMutation();
+
   const form = useForm({
     defaultValues: Object.fromEntries(
       Object.keys(fields).map((key) => [
         key,
-        data[key as keyof EditorialDataObject] ?? null,
+        data[key as keyof EditorialDataObject] ?? '',
       ])
     ),
   });
 
-  function onSubmit(values: object) {
-    console.log(values);
+  async function onSubmit(values: object) {
+    trigger({ ...values, type: itemType, id: data.id });
   }
+
+  const flagFields = useMemo(() => {
+    return Object.entries(fields).filter(
+      ([, value]) => value.type === 'boolean'
+    );
+  }, [fields]);
+
+  useEffect(() => {
+    const newValues = Object.fromEntries(
+      Object.keys(fields).map((key) => [
+        key,
+        data[key as keyof EditorialDataObject] ?? '',
+      ])
+    );
+
+    if (form.formState.isDirty) {
+      form.reset(newValues);
+    }
+  }, [data, fields, form]);
 
   return (
     <Form {...form}>
@@ -43,36 +69,81 @@ export default function ItemForm({ fields, data }: SinglesPageProps) {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 max-w-96"
       >
-        {Object.entries(fields).map(([key, value]) => {
-          console.log(value);
-          return (
-            <FormField
-              key={key}
-              name={key}
-              control={form.control}
-              rules={{
-                required: value.isRequired,
-              }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex gap-1 items-baseline">
-                    {value.displayName}{' '}
-                    {!value.isRequired && (
-                      <span className="text-gray-400">(optional)</span>
+        {flagFields.length > 0 && (
+          <div className="flex flex-col gap-3">
+            <FormLabel>Flags</FormLabel>
+            <div className="flex flex-row flex-wrap gap-4">
+              {flagFields.map(([key, value]) => {
+                return (
+                  <FormField
+                    key={key}
+                    name={key}
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-2 space-y-0 ">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="flex gap-1 items-baseline">
+                          {value.displayName}
+                        </FormLabel>
+                        {value.displayExtra && (
+                          <FormDescription>
+                            {value.displayExtra}
+                          </FormDescription>
+                        )}
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder={value.placeholder} {...field} />
-                  </FormControl>
-                  {value.displayExtra && (
-                    <FormDescription>{value.displayExtra}</FormDescription>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          );
-        })}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {Object.entries(fields)
+          .filter(([, value]) => value.type !== 'boolean')
+          .map(([key, value]) => {
+            return (
+              <FormField
+                key={key}
+                name={key}
+                control={form.control}
+                rules={{
+                  required: value.isRequired,
+                }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex gap-1 items-baseline">
+                      {value.displayName}
+                      {!value.isRequired && (
+                        <span className="text-gray-400">(optional)</span>
+                      )}
+                    </FormLabel>
+                    <FormControl>
+                      {value.type === 'markdown' ? (
+                        <Textarea
+                          className="h-52"
+                          placeholder={value.placeholder}
+                          {...field}
+                        />
+                      ) : (
+                        <Input placeholder={value.placeholder} {...field} />
+                      )}
+                    </FormControl>
+                    {value.displayExtra && (
+                      <FormDescription>{value.displayExtra}</FormDescription>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            );
+          })}
 
         <Button disabled={!form.formState.isDirty} type="submit">
           <Save /> Save

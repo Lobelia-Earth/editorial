@@ -1,9 +1,9 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { clientEnv } from '../env';
-import {
+import type {
   EditorialDataObject,
   EditorialSchema,
 } from '@isardsat/editorial-common';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { clientEnv } from '../env';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: new URL('/api/v1', clientEnv.NEXT_PUBLIC_EDITORIAL_API_URL).href,
@@ -22,18 +22,33 @@ export const editorialApi = createApi({
       query: () => '/data',
       providesTags: () => [{ type: 'data' }],
     }),
+    updateObject: builder.mutation<
+      EditorialDataObject,
+      Partial<EditorialDataObject>
+    >({
+      query: ({ id, type, ...patch }) => ({
+        url: `/data/${type}/${id}`,
+        method: 'PATCH',
+        body: { id, type, ...patch },
+      }),
+      invalidatesTags: () => [{ type: 'data' }],
+    }),
     deleteObject: builder.mutation<
       void,
       Pick<EditorialDataObject, 'id' | 'type'>
     >({
       query: ({ id, type }) => ({
         url: `/data/${type}/${id}`,
-        method: 'delete',
+        method: 'DELETE',
       }),
       invalidatesTags: () => [{ type: 'data' }],
     }),
   }),
 });
 
-export const { useGetSchemaQuery, useGetDataQuery, useDeleteObjectMutation } =
-  editorialApi;
+export const {
+  useGetSchemaQuery,
+  useGetDataQuery,
+  useDeleteObjectMutation,
+  useUpdateObjectMutation,
+} = editorialApi;
