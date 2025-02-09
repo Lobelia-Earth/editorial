@@ -56,3 +56,22 @@ export const EditorialSchemaSchema = z.record(
   z.string(),
   EditorialSchemaItemSchema
 );
+
+export const BaseEditorialFileSchema = z.object({
+  name: z.string(),
+  type: z.enum(['file', 'directory']),
+  path: z.string(),
+  size: z.number(),
+});
+
+export type BaseEditorialFile = z.infer<typeof BaseEditorialFileSchema> & {
+  children?: BaseEditorialFile[];
+};
+
+export const EditorialFileSchema: z.ZodType<BaseEditorialFile> =
+  BaseEditorialFileSchema.extend({
+    children: z.lazy(() => EditorialFileSchema.array()),
+  });
+
+export const EditorialFilesSchema = z.array(EditorialFileSchema);
+export type EditorialFiles = z.infer<typeof EditorialFilesSchema>;

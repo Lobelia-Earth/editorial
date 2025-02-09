@@ -12,12 +12,6 @@ export default function Singleton({ itemType }: SinglesPageProps) {
   const { data: schema } = useGetSchemaQuery();
   const { data } = useGetDataQuery();
 
-  const itemSchema = useMemo(() => {
-    if (!schema) return null;
-
-    return schema[itemType];
-  }, [schema, itemType]);
-
   const itemFields = useMemo(() => {
     if (!schema) return null;
 
@@ -29,8 +23,6 @@ export default function Singleton({ itemType }: SinglesPageProps) {
   return (
     <div className="flex flex-1 h-full p-4 gap-4">
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
-        <h1 className="text-2xl">{itemSchema?.displayName}</h1>
-
         <ItemForm
           itemType={itemType}
           fields={itemFields}

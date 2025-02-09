@@ -1,6 +1,7 @@
 import type {
   EditorialData,
   EditorialDataObject,
+  EditorialFiles,
   EditorialSchema,
 } from '@isardsat/editorial-common';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
@@ -13,7 +14,7 @@ const baseQuery = fetchBaseQuery({
 export const editorialApi = createApi({
   reducerPath: 'editorialApi',
   baseQuery,
-  tagTypes: ['schema', 'data'],
+  tagTypes: ['schema', 'data', 'files'],
   endpoints: (builder) => ({
     getSchema: builder.query<EditorialSchema, void>({
       query: () => '/schema',
@@ -22,6 +23,10 @@ export const editorialApi = createApi({
     getData: builder.query<EditorialData, void>({
       query: () => '/data',
       providesTags: () => [{ type: 'data' }],
+    }),
+    getFiles: builder.query<EditorialFiles, void>({
+      query: () => '/files',
+      providesTags: () => [{ type: 'files' }],
     }),
     updateObject: builder.mutation<
       EditorialDataObject,
@@ -50,6 +55,7 @@ export const editorialApi = createApi({
 export const {
   useGetSchemaQuery,
   useGetDataQuery,
+  useGetFilesQuery,
   useDeleteObjectMutation,
   useUpdateObjectMutation,
 } = editorialApi;
