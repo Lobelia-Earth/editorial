@@ -67,7 +67,7 @@ export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 max-w-96"
+        className="space-y-4 max-w-[800px]"
       >
         {flagFields.length > 0 && (
           <div className="flex flex-col gap-3">
@@ -80,16 +80,18 @@ export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
                     name={key}
                     control={form.control}
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-2 space-y-0 ">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="flex gap-1 items-baseline">
-                          {value.displayName}
-                        </FormLabel>
+                      <FormItem className="flex flex-col items-start">
+                        <div className="flex flex-row space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="flex gap-1 items-baseline">
+                            {value.displayName}
+                          </FormLabel>
+                        </div>
                         {value.displayExtra && (
                           <FormDescription>
                             {value.displayExtra}

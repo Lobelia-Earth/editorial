@@ -1,4 +1,5 @@
 import type {
+  EditorialData,
   EditorialDataObject,
   EditorialSchema,
 } from '@isardsat/editorial-common';
@@ -18,7 +19,7 @@ export const editorialApi = createApi({
       query: () => '/schema',
       providesTags: [{ type: 'schema' }],
     }),
-    getData: builder.query<object, void>({
+    getData: builder.query<EditorialData, void>({
       query: () => '/data',
       providesTags: () => [{ type: 'data' }],
     }),

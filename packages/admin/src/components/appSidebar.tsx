@@ -2,6 +2,7 @@
 
 import { ChevronDown, Files, Grid, Square, Upload } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import SidebarSchemaItems from './sidebarSchemaItems';
 import { Button } from './ui/button';
 import {
@@ -23,6 +24,8 @@ import {
 } from './ui/sidebar';
 
 export default function AppSidebar() {
+  const pathname = usePathname();
+
   return (
     <Sidebar className="z-50">
       <SidebarHeader className="h-14 justify-center">
@@ -38,7 +41,10 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Content</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <Collapsible className="group/collapsible">
+              <Collapsible
+                defaultOpen={pathname.startsWith('/collections')}
+                className="group/collapsible"
+              >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">
@@ -53,7 +59,10 @@ export default function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
-              <Collapsible className="group/collapsible">
+              <Collapsible
+                defaultOpen={pathname.startsWith('/singles')}
+                className="group/collapsible"
+              >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">

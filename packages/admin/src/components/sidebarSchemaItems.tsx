@@ -1,6 +1,6 @@
 'use client';
 
-import { useGetSchemaQuery } from '@/lib/store/editorialApi';
+import { useGetDataQuery, useGetSchemaQuery } from '@/lib/store/editorialApi';
 import Link from 'next/link';
 import { SidebarMenuSub, SidebarMenuSubButton } from './ui/sidebar';
 
@@ -14,6 +14,7 @@ export default function SidebarSchemaItems({
   singleton,
 }: SidebarSchemaItemsProps) {
   const { data: schema } = useGetSchemaQuery();
+  const { data } = useGetDataQuery();
 
   if (!schema) return null;
 
@@ -32,6 +33,12 @@ export default function SidebarSchemaItems({
                 <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
                   {value.displayName}
                 </span>
+
+                {!singleton && data && (
+                  <span className="text-xs text-gray-500 ml-auto pr-1">
+                    {Object.keys(data[key]).length}
+                  </span>
+                )}
               </Link>
             </SidebarMenuSubButton>
           </SidebarMenuSub>
