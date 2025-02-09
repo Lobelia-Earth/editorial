@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -10,7 +12,6 @@ import {
 import {
   useDeleteObjectMutation,
   useGetDataQuery,
-  useGetSchemaEntryQuery,
   useGetSchemaQuery,
 } from '@/lib/store/editorialApi';
 import { EditorialDataObject } from '@/lib/store/types';
@@ -22,6 +23,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { Circle, CircleCheck, Ellipsis, Trash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 const columnHelper = createColumnHelper<EditorialDataObject>();
@@ -51,6 +53,8 @@ export interface SchemaTableProps {
 }
 
 export default function SchemaTable({ itemType }: SchemaTableProps) {
+  const { push } = useRouter();
+
   const { data: schema } = useGetSchemaQuery();
   const { data } = useGetDataQuery();
 
@@ -176,7 +180,13 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow
+              key={row.id}
+              className="cursor-pointer"
+              onClick={() =>
+                push(`/collections/${itemType}/${row.original.id}`)
+              }
+            >
               {row.getVisibleCells().map((cell, index) => (
                 <TableCell
                   key={cell.id}

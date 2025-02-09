@@ -1,4 +1,4 @@
-import { z } from '@hono/zod-openapi';
+import { z } from 'zod';
 
 export const EditorialConfigSchema = z.object({
   name: z.string(),
@@ -6,12 +6,12 @@ export const EditorialConfigSchema = z.object({
   previewUrl: z.string().optional(),
   silent: z.boolean().optional(),
 });
-export type EditorialConfig = z.infer<typeof EditorialConfigSchema>;
 
 export const EditorialDataObjectSchema = z.object({
   id: z.string(),
   type: z.string(),
 });
+
 export const EditorialDataSchema = z.record(
   z.string(),
   EditorialDataObjectSchema
@@ -27,13 +27,16 @@ export const EditorialSchemaItemFieldType = z.enum([
   'select',
 ]);
 
-export const EditorialSchemaItemFieldSchema = z.object({
-  type: EditorialSchemaItemFieldType,
-  displayName: z.string(),
-  placeholder: z.string().optional(),
-  isRequired: z.boolean().optional(),
-  showInSummary: z.boolean().optional(),
-});
+export const EditorialSchemaItemFieldSchema = z
+  .object({
+    type: EditorialSchemaItemFieldType,
+    displayName: z.string(),
+    displayExtra: z.string().optional(),
+    placeholder: z.string().optional(),
+    isRequired: z.boolean().optional(),
+    showInSummary: z.boolean().optional(),
+  })
+  .passthrough();
 
 export const EditorialSchemaItemSchema = z.object({
   displayName: z.string(),

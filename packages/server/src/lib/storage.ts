@@ -1,9 +1,9 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { writeFileSafe } from './utils/fs.js';
-import type { EditorialObject } from './types.js';
+import type { EditorialDataObject } from '@isardsat/editorial-common';
 import { parse } from 'yaml';
-import { EditorialSchemaSchema } from './schemas.js';
+import { EditorialSchemaSchema } from '@isardsat/editorial-common';
 
 export function createStorage(dataDirectory: string) {
   const schemaPath = join(dataDirectory, 'schema.yaml');
@@ -25,7 +25,7 @@ export function createStorage(dataDirectory: string) {
     return await readFile(dataPath, 'utf-8').then((value) => JSON.parse(value));
   }
 
-  async function createItem(item: EditorialObject) {
+  async function createItem(item: EditorialDataObject) {
     const content = await getContent();
     content[item.type][item.id] = item;
     // TODO: Use superjson to safely encode different types.
@@ -33,7 +33,7 @@ export function createStorage(dataDirectory: string) {
     return item;
   }
 
-  async function updateItem(item: EditorialObject) {
+  async function updateItem(item: EditorialDataObject) {
     const content = await getContent();
     const oldItem = content[item.type][item.id];
     const newItem = {
@@ -47,7 +47,7 @@ export function createStorage(dataDirectory: string) {
     return newItem;
   }
 
-  async function deleteItem(item: Pick<EditorialObject, 'id' | 'type'>) {
+  async function deleteItem(item: Pick<EditorialDataObject, 'id' | 'type'>) {
     const content = await getContent();
     delete content[item.type][item.id];
     // TODO: Use superjson to safely encode different types.

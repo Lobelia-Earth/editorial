@@ -1,7 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import { Grid, Image, LucideIcon, Square } from 'lucide-react';
+import { Grid, Image, Square } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';

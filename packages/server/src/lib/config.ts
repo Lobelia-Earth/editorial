@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { EditorialConfigSchema } from './schemas.js';
+import { EditorialConfigSchema } from '@isardsat/editorial-common';
 
 export async function createConfig(configDirectory: string) {
   const configFile = await readFile(

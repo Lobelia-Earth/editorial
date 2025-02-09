@@ -15,8 +15,8 @@
     "url": "https://github.com/Lobelia-Earth/editorial.git"
   },
   "scripts": {
-    "compile": "pnpm --recursive compile",
-    "compile:watch": "pnpm --recursive compile:watch",
+    "compile": "pnpm --recursive --parallel compile",
+    "compile:watch": "pnpm run --recursive --parallel compile:watch",
     "compileWatch": "oao run-script compileWatch --parallel",
     "build:tool": "cd packages/editorial && yarn build",
     "lint": "eslint packages || exit 0",

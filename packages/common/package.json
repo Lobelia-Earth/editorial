@@ -1,0 +1,20 @@
+{
+  "name": "@isardsat/editorial-common",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "compile": "tsc",
+    "compile:watch": "tsc --watch"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.0",
+    "typescript": "catalog:"
+  }
+}

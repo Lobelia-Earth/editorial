@@ -12,6 +12,7 @@
   ],
   "dependencies": {
     "@hono/zod-openapi": "^0.18.4",
+    "@isardsat/editorial-common": "workspace:^",
     "hono": "^4.6.20",
     "yaml": "^2.7.0",
     "zod": "^3.24.1"

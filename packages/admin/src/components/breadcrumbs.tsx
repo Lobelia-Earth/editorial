@@ -17,7 +17,7 @@ export default function Breadcrumbs() {
       {pathname.split('/').map((value, index, array) => {
         return (
           <React.Fragment key={value}>
-            {array.length > 2 && index === array.length - 1 && (
+            {array.length > 2 && index >= 2 && (
               <ChevronRight size={12} className="text-gray-500 pt-[1px]" />
             )}
             <p

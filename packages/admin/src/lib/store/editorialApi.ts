@@ -3,8 +3,7 @@ import { clientEnv } from '../env';
 import {
   EditorialDataObject,
   EditorialSchema,
-  EditorialSchemaItem,
-} from './types';
+} from '@isardsat/editorial-common';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: new URL('/api/v1', clientEnv.NEXT_PUBLIC_EDITORIAL_API_URL).href,

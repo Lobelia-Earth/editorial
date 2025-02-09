@@ -3,7 +3,7 @@ import { logger } from 'hono/logger';
 import { createStorage, type Storage } from './lib/storage.js';
 import { createDataRoutes } from './routes/data.js';
 import { createConfig } from './lib/config.js';
-import type { EditorialConfig } from './lib/schemas.js';
+import type { EditorialConfig } from '@isardsat/editorial-common';
 
 export const BASE_EDITORIAL_PATH = './editorial';
 

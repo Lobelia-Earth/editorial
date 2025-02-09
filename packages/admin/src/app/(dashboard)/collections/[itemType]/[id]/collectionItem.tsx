@@ -2,13 +2,14 @@
 
 import { useGetDataQuery, useGetSchemaQuery } from '@/lib/store/editorialApi';
 import { useMemo } from 'react';
-import ItemForm from './itemForm';
+import ItemForm from '../../../singles/[itemType]/itemForm';
 
-export interface SinglesPageProps {
+export interface CollectionItemProps {
   itemType: string;
+  id: string;
 }
 
-export default function Singleton({ itemType }: SinglesPageProps) {
+export default function CollectionItem({ itemType, id }: CollectionItemProps) {
   const { data: schema } = useGetSchemaQuery();
   const { data } = useGetDataQuery();
 
@@ -24,14 +25,14 @@ export default function Singleton({ itemType }: SinglesPageProps) {
     return schema[itemType].fields;
   }, [schema, itemType]);
 
-  if (!itemFields || !data) return null;
+  if (!schema || !data) return null;
 
   return (
     <div className="flex flex-1 h-full p-4 gap-4">
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
         <h1 className="text-2xl">{itemSchema?.displayName}</h1>
 
-        <ItemForm fields={itemFields} data={data[itemType]['default']} />
+        <ItemForm fields={itemFields} data={data[itemType][id]} />
       </div>
     </div>
   );

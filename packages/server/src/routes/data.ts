@@ -4,7 +4,7 @@ import {
   EditorialDataObjectSchema,
   EditorialDataSchema,
   EditorialSchemaSchema,
-} from '../lib/schemas.js';
+} from '@isardsat/editorial-common';
 
 export function createDataRoutes(storage: Storage) {
   const app = new OpenAPIHono();
@@ -156,7 +156,7 @@ export function createDataRoutes(storage: Storage) {
     }),
     async (c) => {
       const { itemType, id } = c.req.valid('param');
-      const itemAtts = c.req.json();
+      const itemAtts = await c.req.json();
       const content = await storage.updateItem(itemAtts);
 
       return c.json(content[itemType][id]);
