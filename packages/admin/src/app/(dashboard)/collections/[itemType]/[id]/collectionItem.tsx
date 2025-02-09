@@ -27,16 +27,12 @@ export default function CollectionItem({ itemType, id }: CollectionItemProps) {
 
   if (!schema || !data) return null;
 
+  const item = data[itemType][id];
+
   return (
     <div className="flex flex-1 h-full p-4 gap-4">
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
-        <h1 className="text-2xl">{itemSchema?.displayName}</h1>
-
-        <ItemForm
-          itemType={itemType}
-          fields={itemFields}
-          data={data[itemType][id]}
-        />
+        <ItemForm itemType={itemType} fields={itemFields} data={item} />
       </div>
     </div>
   );

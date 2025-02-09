@@ -18,7 +18,7 @@ import type {
   EditorialSchemaItem,
 } from '@isardsat/editorial-common';
 import { Save } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import MarkdownEditor from './markdownEditor';
 
@@ -31,13 +31,23 @@ export interface SinglesPageProps {
 export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
   const [trigger] = useUpdateObjectMutation();
 
-  const form = useForm({
-    defaultValues: Object.fromEntries(
-      Object.keys(fields).map((key) => [
-        key,
-        data[key as keyof EditorialDataObject] ?? '',
-      ])
-    ),
+  const getDefaultValues = useCallback(
+    (fields: EditorialSchemaItem['fields']) => {
+      return {
+        id: data.id,
+        ...Object.fromEntries(
+          Object.keys(fields).map((key) => [
+            key,
+            data[key as keyof EditorialDataObject] ?? '',
+          ])
+        ),
+      };
+    },
+    [data]
+  );
+
+  const form = useForm<Record<string, string>>({
+    defaultValues: getDefaultValues(fields),
   });
 
   async function onSubmit(values: object) {
@@ -51,17 +61,12 @@ export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
   }, [fields]);
 
   useEffect(() => {
-    const newValues = Object.fromEntries(
-      Object.keys(fields).map((key) => [
-        key,
-        data[key as keyof EditorialDataObject] ?? '',
-      ])
-    );
+    const newValues = getDefaultValues(fields);
 
     if (form.formState.isDirty) {
       form.reset(newValues);
     }
-  }, [data, fields, form]);
+  }, [data, fields, form, getDefaultValues]);
 
   return (
     <Form {...form}>
@@ -69,6 +74,27 @@ export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 max-w-[800px]"
       >
+        <FormField
+          name="id"
+          control={form.control}
+          disabled={data.id === 'default'}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
+              <FormControl>
+                <Input placeholder="url-slug" {...field} />
+              </FormControl>
+              {data.id !== 'default' && (
+                <FormDescription>
+                  Choose a descriptive ID, since it will be part of the URL
+                </FormDescription>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {flagFields.length > 0 && (
           <div className="flex flex-col gap-3">
             <FormLabel>Flags</FormLabel>

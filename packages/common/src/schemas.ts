@@ -27,10 +27,12 @@ export const EditorialSchemaItemFieldType = z.enum([
   'string',
   'boolean',
   'date',
+  'datetime',
   'markdown',
   'number',
   'color',
   'select',
+  'color',
 ]);
 
 export const EditorialSchemaItemFieldSchema = z

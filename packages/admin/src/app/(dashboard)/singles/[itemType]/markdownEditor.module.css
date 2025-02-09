@@ -9,6 +9,10 @@
   overflow: auto;
 }
 
+:global(.mdxeditor-root-contenteditable) [role='textbox'] > :first-child {
+  margin-top: 0;
+}
+
 :global(.mdxeditor-root-contenteditable) a {
   @apply text-blue-600 underline;
 }
