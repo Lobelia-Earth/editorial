@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
+    "@icons-pack/react-simple-icons": "^11.2.0",
     "@isardsat/editorial-common": "workspace:^",
     "@mdxeditor/editor": "^3.21.3",
     "@radix-ui/react-checkbox": "^1.1.4",

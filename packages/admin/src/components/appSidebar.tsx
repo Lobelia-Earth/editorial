@@ -3,6 +3,8 @@
 import { ChevronDown, Files, Grid, Square, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { Modal } from './modal';
 import SidebarSchemaItems from './sidebarSchemaItems';
 import { Button } from './ui/button';
 import {
@@ -24,10 +26,14 @@ import {
 } from './ui/sidebar';
 
 export default function AppSidebar() {
+  const [aboutModalOpen, setAboutModalOpen] = useState(false);
+
   const pathname = usePathname();
 
   return (
     <Sidebar className="z-50">
+      <Modal isOpen={aboutModalOpen} setOpen={setAboutModalOpen} />
+
       <SidebarHeader className="h-14 justify-center">
         <SidebarGroup>
           <h2 className="text-3xl font-semibold tracking-tight transition-colors">
@@ -107,6 +113,9 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <SidebarMenuButton onClick={() => setAboutModalOpen(true)}>
+          About
+        </SidebarMenuButton>
         <Button variant="ghost" className="text-sidebar-foreground">
           Log out
         </Button>
