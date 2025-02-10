@@ -22,7 +22,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { Circle, CircleCheck, Trash } from 'lucide-react';
+import { Circle, CircleCheck, Copy, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
@@ -72,6 +72,20 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
       cell(props) {
         return (
           <div className="flex gap-2 justify-end">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="group"
+              onClick={() =>
+                trigger({
+                  type: itemType,
+                  id: props.row.original.id,
+                })
+              }
+            >
+              <Copy size={14} className="group-hover:text-yellow-600" />
+              <span className="sr-only">Copy this entry</span>
+            </Button>
             <Button
               size="icon"
               variant="ghost"

@@ -11,6 +11,7 @@
     "extends": "../../package.json"
   },
   "dependencies": {
+    "@hono/zod-openapi": "^0.18.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {

@@ -22,27 +22,31 @@ export default function SidebarSchemaItems({
     <>
       {Object.entries(schema)
         .filter(([, value]) => (singleton ? value.singleton : !value.singleton))
-        .map(([key, value]) => (
-          <SidebarMenuSub key={key}>
-            <SidebarMenuSubButton asChild>
-              <Link
-                href={
-                  singleton ? `${href}/${key}` : `${href}#${value.displayName}`
-                }
-              >
-                <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
-                  {value.displayName}
-                </span>
-
-                {!singleton && data && (
-                  <span className="text-xs text-gray-500 ml-auto pr-1">
-                    {Object.keys(data[key]).length}
+        .map(([key, value]) => {
+          return (
+            <SidebarMenuSub key={value.displayName}>
+              <SidebarMenuSubButton asChild>
+                <Link
+                  href={
+                    singleton
+                      ? `${href}/${key}`
+                      : `${href}#${value.displayName}`
+                  }
+                >
+                  <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
+                    {value.displayName}
                   </span>
-                )}
-              </Link>
-            </SidebarMenuSubButton>
-          </SidebarMenuSub>
-        ))}
+
+                  {!singleton && data && (
+                    <span className="text-xs text-gray-500 ml-auto pr-1">
+                      {Object.keys(data[key]).length}
+                    </span>
+                  )}
+                </Link>
+              </SidebarMenuSubButton>
+            </SidebarMenuSub>
+          );
+        })}
     </>
   );
 }

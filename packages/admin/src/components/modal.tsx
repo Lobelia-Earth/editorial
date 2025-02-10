@@ -47,7 +47,8 @@ export function Modal({ isOpen, setOpen }: ModalProps) {
 
         <DialogFooter>
           <p className="flex items-center gap-1">
-            Created with <Heart size={14} className="fill-red-500" /> by{' '}
+            Created with
+            <Heart size={14} className="stroke-red-500 fill-red-500" /> by{' '}
             <Link
               href="https://lobelia.earth"
               className="underline hover:text-blue-500"

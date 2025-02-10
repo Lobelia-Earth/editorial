@@ -1,8 +1,8 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
 import { useGetSchemaQuery } from '@/lib/store/editorialApi';
+import { ChevronRight } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 
 export default function Breadcrumbs() {
@@ -16,7 +16,7 @@ export default function Breadcrumbs() {
     <>
       {pathname.split('/').map((value, index, array) => {
         return (
-          <React.Fragment key={value}>
+          <React.Fragment key={index}>
             {array.length > 2 && index >= 2 && (
               <ChevronRight size={12} className="text-gray-500 pt-[1px]" />
             )}

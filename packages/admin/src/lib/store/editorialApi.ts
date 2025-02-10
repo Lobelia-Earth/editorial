@@ -28,6 +28,14 @@ export const editorialApi = createApi({
       query: () => '/files',
       providesTags: () => [{ type: 'files' }],
     }),
+    deleteFile: builder.mutation<boolean, string>({
+      query: (path) => ({
+        url: `/files`,
+        method: 'DELETE',
+        body: { path },
+      }),
+      invalidatesTags: () => [{ type: 'files' }],
+    }),
     updateObject: builder.mutation<
       EditorialDataObject,
       Partial<EditorialDataObject>
@@ -56,6 +64,7 @@ export const {
   useGetSchemaQuery,
   useGetDataQuery,
   useGetFilesQuery,
+  useDeleteFileMutation,
   useDeleteObjectMutation,
   useUpdateObjectMutation,
 } = editorialApi;

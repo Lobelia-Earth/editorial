@@ -1,12 +1,11 @@
 'use client';
 
-import { ChevronDown, Files, Grid, Square, Upload } from 'lucide-react';
+import { ChevronDown, Files, Grid, LogOut, Square, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Modal } from './modal';
 import SidebarSchemaItems from './sidebarSchemaItems';
-import { Button } from './ui/button';
 import {
   Collapsible,
   CollapsibleContent,
@@ -116,9 +115,10 @@ export default function AppSidebar() {
         <SidebarMenuButton onClick={() => setAboutModalOpen(true)}>
           About
         </SidebarMenuButton>
-        <Button variant="ghost" className="text-sidebar-foreground">
+        <SidebarMenuButton>
+          <LogOut />
           Log out
-        </Button>
+        </SidebarMenuButton>
       </SidebarFooter>
     </Sidebar>
   );

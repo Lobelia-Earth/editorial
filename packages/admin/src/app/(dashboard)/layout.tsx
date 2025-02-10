@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { inter } from '@/lib/fonts';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/appSidebar';
+import Breadcrumbs from '@/components/breadcrumbs';
 import StoreProvider from '@/components/providers/StoreProvider';
 import { Separator } from '@/components/ui/separator';
-import Breadcrumbs from '@/components/breadcrumbs';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { inter } from '@/lib/fonts';
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: {

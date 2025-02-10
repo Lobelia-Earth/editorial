@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@hono/zod-openapi';
 
 export const EditorialConfigSchema = z.object({
   name: z.string(),
@@ -70,7 +70,11 @@ export type BaseEditorialFile = z.infer<typeof BaseEditorialFileSchema> & {
 
 export const EditorialFileSchema: z.ZodType<BaseEditorialFile> =
   BaseEditorialFileSchema.extend({
-    children: z.lazy(() => EditorialFileSchema.array()),
+    children: z
+      .lazy(() => EditorialFileSchema.array())
+      .openapi({
+        type: 'array',
+      }),
   });
 
 export const EditorialFilesSchema = z.array(EditorialFileSchema);
