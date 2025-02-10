@@ -26,9 +26,11 @@ export const startCommand = new Command()
     const editorialServer = await createEditorialServer({});
 
     console.log(`  Editorial ${version}`);
-    console.log(`  - Local:      ${editorialServer.config.publicUrl}:${port}`);
     console.log(
-      `  - OpenAPI:    ${editorialServer.config.publicUrl}:${port}/doc\n`
+      `  - Local:         ${editorialServer.config.publicUrl}:${port}`
+    );
+    console.log(
+      `  - Swagger UI:    ${editorialServer.config.publicUrl}:${port}/doc/ui\n`
     );
 
     console.log('Starting api...');

@@ -48,6 +48,7 @@ export async function createEditorialServer({
       title: `Editorial API: ${config.name}`,
     },
   });
+  app.get('/doc/ui', swaggerUI({ url: '/doc' }));
 
   return {
     app,
