@@ -8,6 +8,7 @@ import { writeFileSafe } from './utils/fs.js';
 export function createStorage(dataDirectory: string) {
   const schemaPath = join(dataDirectory, 'schema.yaml');
   const dataPath = join(dataDirectory, 'data.json');
+  const dataProdPath = join(dataDirectory, 'data.prod.json');
 
   async function getSchema() {
     const schemaFile = await readFile(schemaPath, 'utf-8').then((value) =>
@@ -23,6 +24,12 @@ export function createStorage(dataDirectory: string) {
    */
   async function getContent() {
     return await readFile(dataPath, 'utf-8').then((value) => JSON.parse(value));
+  }
+
+  async function saveProdContent() {
+    const content = await getContent();
+    await writeFileSafe(dataProdPath, JSON.stringify(content, null, 2));
+    return true;
   }
 
   async function createItem(item: EditorialDataObject) {
@@ -56,6 +63,13 @@ export function createStorage(dataDirectory: string) {
     return content;
   }
 
-  return { getSchema, getContent, createItem, updateItem, deleteItem };
+  return {
+    getSchema,
+    getContent,
+    createItem,
+    updateItem,
+    deleteItem,
+    saveProdContent,
+  };
 }
 export type Storage = ReturnType<typeof createStorage>;
