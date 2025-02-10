@@ -1,9 +1,11 @@
 import { serveStatic } from '@hono/node-server/serve-static';
+import { swaggerUI } from '@hono/swagger-ui';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import type { EditorialConfig } from '@isardsat/editorial-common';
 import { logger } from 'hono/logger';
 import { createConfig } from './lib/config.js';
 import { createStorage, type Storage } from './lib/storage.js';
+import { createActionRoutes } from './routes/actions.js';
 import { createDataRoutes } from './routes/data.js';
 import { createFilesRoutes } from './routes/files.js';
 
@@ -33,6 +35,7 @@ export async function createEditorialServer({
 
   app.route('/api/v1', createDataRoutes(storage));
   app.route('/api/v1', createFilesRoutes());
+  app.route('/api/v1', createActionRoutes(storage));
 
   app.use(
     '/public/*',
