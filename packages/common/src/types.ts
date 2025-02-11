@@ -2,15 +2,21 @@ import type { z } from 'zod';
 import type {
   EditorialConfigSchema,
   EditorialDataObjectSchema,
+  EditorialDataObjectWithTypeSchema,
   EditorialDataSchema,
+  EditorialDataTypeSchema,
   EditorialSchemaItemFieldSchema,
   EditorialSchemaItemSchema,
   EditorialSchemaSchema,
 } from './schemas.js';
 
 export type EditorialConfig = z.infer<typeof EditorialConfigSchema>;
-export type EditorialDataObject = z.infer<typeof EditorialDataObjectSchema>;
 export type EditorialData = z.infer<typeof EditorialDataSchema>;
+export type EditorialDataType = z.infer<typeof EditorialDataTypeSchema>;
+export type EditorialDataObject = z.infer<typeof EditorialDataObjectSchema>;
+export type EditorialDataObjectWithType = z.infer<
+  typeof EditorialDataObjectWithTypeSchema
+>;
 export type EditorialSchemaItemField = z.infer<
   typeof EditorialSchemaItemFieldSchema
 >;

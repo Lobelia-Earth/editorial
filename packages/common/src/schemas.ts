@@ -7,20 +7,27 @@ export const EditorialConfigSchema = z.object({
   silent: z.boolean().optional(),
 });
 
-export const EditorialDataObjectNoTypeSchema = z
+export const EditorialDataObjectWithTypeSchema = z
+  .object({
+    id: z.string(),
+    type: z.string(),
+  })
+  .passthrough();
+
+export const EditorialDataObjectSchema = z
   .object({
     id: z.string(),
   })
   .passthrough();
 
-export const EditorialDataObjectSchema = z.object({
-  id: z.string(),
-  type: z.string(),
-});
+export const EditorialDataTypeSchema = z.record(
+  z.string(),
+  EditorialDataObjectSchema
+);
 
 export const EditorialDataSchema = z.record(
   z.string(),
-  EditorialDataObjectSchema
+  EditorialDataTypeSchema
 );
 
 export const EditorialSchemaItemFieldType = z.enum([

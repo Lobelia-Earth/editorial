@@ -12,7 +12,7 @@ import {
 import {
   useDeleteObjectMutation,
   useGetDataQuery,
-  useGetSchemaQuery,
+  useGetSchemaTypeQuery,
 } from '@/lib/store/editorialApi';
 import { cn } from '@/lib/utils';
 import type { EditorialDataObject } from '@isardsat/editorial-common';
@@ -55,15 +55,10 @@ export interface SchemaTableProps {
 export default function SchemaTable({ itemType }: SchemaTableProps) {
   const { push } = useRouter();
 
-  const { data: schema } = useGetSchemaQuery();
+  const { data: schema } = useGetSchemaTypeQuery(itemType);
   const { data } = useGetDataQuery();
 
-  const [trigger, { isSuccess }] = useDeleteObjectMutation();
-
-  const itemSchema = useMemo(
-    () => (schema ? schema[itemType] : null),
-    [schema]
-  );
+  const [trigger] = useDeleteObjectMutation();
 
   const actionColumn = useMemo(() => {
     return columnHelper.display({
@@ -107,14 +102,14 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
   }, [trigger]);
 
   const columns = useMemo(() => {
-    if (!itemSchema) return baseColumns;
+    if (!schema) return baseColumns;
 
-    const fields = Object.entries(itemSchema.fields);
+    const fields = Object.entries(schema.fields);
 
     return [
       ...baseColumns,
       ...fields
-        .filter(([key, value]) => value.showInSummary)
+        .filter(([, value]) => value.showInSummary)
         .map(([key, value]) =>
           columnHelper.accessor((row) => row[key], {
             id: key,
@@ -129,7 +124,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   );
 
                 case 'date':
-                  const date = new Date(props.getValue());
+                  const date = new Date(props.getValue() as string);
 
                   return (
                     <span className="text-nowrap">
@@ -138,7 +133,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   );
                 case 'markdown':
                 case 'string':
-                  const content = props.getValue();
+                  const content = props.getValue() as string;
 
                   return (
                     <span
@@ -158,7 +153,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
         ),
       actionColumn,
     ];
-  }, [itemSchema]);
+  }, [actionColumn, schema]);
 
   const schemaEntries = useMemo(
     () => (data ? Object.values(data[itemType]) : []),
@@ -171,7 +166,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  if (!itemSchema || !data) return null;
+  if (!schema || !data) return null;
 
   return (
     <div className="rounded-sm border overflow-auto">

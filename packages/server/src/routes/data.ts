@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import {
-  EditorialDataObjectNoTypeSchema,
+  EditorialDataObjectSchema,
   EditorialDataSchema,
   EditorialSchemaSchema,
 } from '@isardsat/editorial-common';
@@ -121,6 +121,49 @@ export function createDataRoutes(storage: Storage) {
 
   app.openapi(
     createRoute({
+      method: 'put',
+      path: '/data/{itemType}/{id}',
+      request: {
+        params: z.object({
+          itemType: z.string().openapi({
+            param: { name: 'itemType', in: 'path' },
+            example: 'newsItem',
+          }),
+          id: z.string().openapi({
+            param: { name: 'id', in: 'path' },
+            example: 'learn-about-us',
+          }),
+        }),
+        body: {
+          content: {
+            'application/json': {
+              schema: EditorialDataObjectSchema,
+            },
+          },
+          required: true,
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: EditorialDataObjectSchema,
+            },
+          },
+          description: 'Create a new object',
+        },
+      },
+    }),
+    async (c) => {
+      const itemAtts = await c.req.json();
+      const newItem = await storage.createItem(itemAtts);
+
+      return c.json(newItem);
+    }
+  );
+
+  app.openapi(
+    createRoute({
       method: 'patch',
       path: '/data/{itemType}/{id}',
       request: {
@@ -137,7 +180,7 @@ export function createDataRoutes(storage: Storage) {
         body: {
           content: {
             'application/json': {
-              schema: EditorialDataObjectNoTypeSchema,
+              schema: EditorialDataObjectSchema,
             },
           },
           required: true,

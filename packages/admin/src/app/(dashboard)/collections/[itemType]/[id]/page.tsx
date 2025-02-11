@@ -9,5 +9,11 @@ export default async function CollectionItemPage({
 }: CollectionItemPageProps) {
   const { itemType, id } = await params;
 
-  return <CollectionItem itemType={itemType} id={id} />;
+  return (
+    <div className="flex flex-1 h-full p-4 gap-4">
+      <div className="flex flex-col overflow-hidden flex-1 gap-8">
+        <CollectionItem itemType={itemType} id={id} />
+      </div>
+    </div>
+  );
 }

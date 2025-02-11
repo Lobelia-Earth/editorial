@@ -26,20 +26,23 @@ export interface SinglesPageProps {
   itemType: string;
   fields: EditorialSchemaItem['fields'];
   data: EditorialDataObject;
+  isNew?: boolean;
 }
 
-export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
+export default function ItemForm({
+  itemType,
+  fields,
+  data,
+  isNew,
+}: SinglesPageProps) {
   const [trigger] = useUpdateObjectMutation();
 
   const getDefaultValues = useCallback(
     (fields: EditorialSchemaItem['fields']) => {
       return {
-        id: data.id,
+        id: data.id ?? '',
         ...Object.fromEntries(
-          Object.keys(fields).map((key) => [
-            key,
-            data[key as keyof EditorialDataObject] ?? '',
-          ])
+          Object.keys(fields).map((key) => [key, data[key] ?? ''])
         ),
       };
     },
@@ -51,7 +54,7 @@ export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
   });
 
   async function onSubmit(values: object) {
-    trigger({ ...values, type: itemType, id: data.id });
+    trigger({ ...values, type: itemType });
   }
 
   const flagFields = useMemo(() => {
@@ -174,7 +177,7 @@ export default function ItemForm({ itemType, fields, data }: SinglesPageProps) {
             );
           })}
 
-        <Button disabled={!form.formState.isDirty} type="submit">
+        <Button disabled={!form.formState.isDirty && !isNew} type="submit">
           <Save /> Save
         </Button>
       </form>

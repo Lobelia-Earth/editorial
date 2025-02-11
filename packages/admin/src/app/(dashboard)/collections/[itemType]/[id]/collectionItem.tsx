@@ -1,7 +1,9 @@
 'use client';
 
-import { useGetDataQuery, useGetSchemaQuery } from '@/lib/store/editorialApi';
-import { useMemo } from 'react';
+import {
+  useGetDataObjectQuery,
+  useGetSchemaTypeQuery,
+} from '@/lib/store/editorialApi';
 import ItemForm from '../../../singles/[itemType]/itemForm';
 
 export interface CollectionItemProps {
@@ -10,30 +12,10 @@ export interface CollectionItemProps {
 }
 
 export default function CollectionItem({ itemType, id }: CollectionItemProps) {
-  const { data: schema } = useGetSchemaQuery();
-  const { data } = useGetDataQuery();
+  const { data: schema } = useGetSchemaTypeQuery(itemType);
+  const { data: item } = useGetDataObjectQuery({ itemType, id });
 
-  const itemSchema = useMemo(() => {
-    if (!schema) return null;
+  if (!schema || !item) return null;
 
-    return schema[itemType];
-  }, [schema, itemType]);
-
-  const itemFields = useMemo(() => {
-    if (!schema) return null;
-
-    return schema[itemType].fields;
-  }, [schema, itemType]);
-
-  if (!schema || !data) return null;
-
-  const item = data[itemType][id];
-
-  return (
-    <div className="flex flex-1 h-full p-4 gap-4">
-      <div className="flex flex-col overflow-hidden flex-1 gap-8">
-        <ItemForm itemType={itemType} fields={itemFields} data={item} />
-      </div>
-    </div>
-  );
+  return <ItemForm itemType={itemType} fields={schema.fields} data={item} />;
 }

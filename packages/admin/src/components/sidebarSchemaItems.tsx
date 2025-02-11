@@ -26,13 +26,7 @@ export default function SidebarSchemaItems({
           return (
             <SidebarMenuSub key={value.displayName}>
               <SidebarMenuSubButton asChild>
-                <Link
-                  href={
-                    singleton
-                      ? `${href}/${key}`
-                      : `${href}#${value.displayName}`
-                  }
-                >
+                <Link href={`${href}/${key}`}>
                   <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
                     {value.displayName}
                   </span>

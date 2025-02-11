@@ -1,4 +1,4 @@
-import type { EditorialDataObject } from '@isardsat/editorial-common';
+import type { EditorialDataObjectWithType } from '@isardsat/editorial-common';
 import { EditorialSchemaSchema } from '@isardsat/editorial-common';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
@@ -32,7 +32,7 @@ export function createStorage(dataDirectory: string) {
     return true;
   }
 
-  async function createItem(item: EditorialDataObject) {
+  async function createItem(item: EditorialDataObjectWithType) {
     const content = await getContent();
     content[item.type][item.id] = item;
     // TODO: Use superjson to safely encode different types.
@@ -40,7 +40,7 @@ export function createStorage(dataDirectory: string) {
     return item;
   }
 
-  async function updateItem(item: EditorialDataObject) {
+  async function updateItem(item: EditorialDataObjectWithType) {
     const content = await getContent();
     const oldItem = content[item.type][item.id];
     const newItem = {
@@ -54,7 +54,7 @@ export function createStorage(dataDirectory: string) {
     return newItem;
   }
 
-  async function deleteItem(item: Pick<EditorialDataObject, 'id' | 'type'>) {
+  async function deleteItem(item: EditorialDataObjectWithType) {
     const content = await getContent();
     delete content[item.type][item.id];
     // TODO: Use superjson to safely encode different types.

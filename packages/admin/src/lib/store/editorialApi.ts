@@ -3,6 +3,7 @@ import type {
   EditorialDataObject,
   EditorialFiles,
   EditorialSchema,
+  EditorialSchemaItem,
 } from '@isardsat/editorial-common';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { clientEnv } from '../env';
@@ -20,8 +21,25 @@ export const editorialApi = createApi({
       query: () => '/schema',
       providesTags: [{ type: 'schema' }],
     }),
+    getSchemaType: builder.query<EditorialSchemaItem | null, string>({
+      query: () => '/schema',
+      transformResponse: (response: EditorialSchema, _, itemType) => {
+        return response[itemType] || null;
+      },
+      providesTags: [{ type: 'schema' }],
+    }),
     getData: builder.query<EditorialData, void>({
       query: () => '/data',
+      providesTags: () => [{ type: 'data' }],
+    }),
+    getDataObject: builder.query<
+      EditorialDataObject,
+      { itemType: string; id: string }
+    >({
+      query: () => '/data',
+      transformResponse: (response: EditorialData, _, { itemType, id }) => {
+        return response[itemType][id] || null;
+      },
       providesTags: () => [{ type: 'data' }],
     }),
     getFiles: builder.query<EditorialFiles, void>({
@@ -47,6 +65,14 @@ export const editorialApi = createApi({
       }),
       invalidatesTags: () => [{ type: 'data' }],
     }),
+    createObject: builder.mutation<EditorialDataObject, EditorialDataObject>({
+      query: ({ id, type, ...put }) => ({
+        url: `/data/${type}/${id}`,
+        method: 'PUT',
+        body: { id, type, ...put },
+      }),
+      invalidatesTags: () => [{ type: 'data' }],
+    }),
     deleteObject: builder.mutation<
       void,
       Pick<EditorialDataObject, 'id' | 'type'>
@@ -62,7 +88,9 @@ export const editorialApi = createApi({
 
 export const {
   useGetSchemaQuery,
+  useGetSchemaTypeQuery,
   useGetDataQuery,
+  useGetDataObjectQuery,
   useGetFilesQuery,
   useDeleteFileMutation,
   useDeleteObjectMutation,

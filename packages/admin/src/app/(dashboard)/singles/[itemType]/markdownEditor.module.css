@@ -5,8 +5,13 @@
 :global(.mdxeditor-root-contenteditable) {
   @apply prose;
 
+  height: 100%;
   max-width: 100%;
   overflow: auto;
+}
+
+:global(.mdxeditor-root-contenteditable) div {
+  height: 100%;
 }
 
 :global(.mdxeditor-root-contenteditable) [role='textbox'] > :first-child {
