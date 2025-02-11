@@ -1,6 +1,14 @@
 'use client';
 
-import { ChevronDown, Files, Grid, LogOut, Square, Upload } from 'lucide-react';
+import {
+  Blocks,
+  ChevronDown,
+  Files,
+  Grid,
+  LogOut,
+  Square,
+  Upload,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -89,6 +97,13 @@ export default function AppSidebar() {
                     <Files />
                     <span>Files</span>
                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton disabled>
+                  <Blocks />
+                  <span>Components</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

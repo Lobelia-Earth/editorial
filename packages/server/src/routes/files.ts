@@ -80,6 +80,36 @@ export function createFilesRoutes() {
           },
           description: '',
         },
+        400: {
+          content: {
+            'application/json': {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: 'Invalid file path',
+        },
+        404: {
+          content: {
+            'application/json': {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: 'File not found',
+        },
+        500: {
+          content: {
+            'application/json': {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: 'Server error',
+        },
       },
     }),
     async (c) => {
