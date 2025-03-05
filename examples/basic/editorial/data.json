@@ -2041,7 +2041,7 @@
       "affectedServices": "Data Discovery Platform (online catalogue; viewer and subsetter)",
       "homepageAnnouncementStartDate": "2024/10/29 00:00",
       "contents": "Sentinel-5P file structure on the CDSE will change starting 5th Nov 2024. The full archive will be updated in the following weeks. \n\nMore information: [Removing Sentinel-5p cdl from product download | Copernicus Data Space Ecosystem.](https://dataspace.copernicus.eu/news/2024-10-16-removing-sentinel-5p-cdl-product-download)",
-      "displayInHomepage": true
+      "displayInHomepage": false
     },
     "20241127-0800": {
       "id": "20241127-0800",
@@ -2086,6 +2086,50 @@
       "affectedServices": "Specific datasets",
       "displayInHomepage": true,
       "homepageAnnouncementStartDate": "2024/12/17 14:00"
+    },
+    "20250205-1200": {
+      "id": "20250205-1200",
+      "title": "User registration temporarily unavailable",
+      "severity": "Major",
+      "startDate": "2025/02/05 12:00",
+      "affectedServices": "User registration",
+      "displayInHomepage": true,
+      "homepageAnnouncementStartDate": "2025/02/05 12:00",
+      "contents": "We're currently experiencing issues with the user registration. We apologize for any inconvenience caused. \n\n\n\n\n\n",
+      "endDate": "2025/02/05 15:30"
+    },
+    "20250211-2100": {
+      "id": "20250211-2100",
+      "title": "JupyterHub: Limited Access to S3 Buckets",
+      "contents": "Since the evening of February 11, 2025, there has been a major issue on CDSE affecting access to the EODATA bucket. As a result, opening a Jupyter User session was not possible.\n\nA workaround has been applied to JupyterHub, removing all mount of all S3 buckets. Users can now open Jupyter sessions, but access to S3 buckets like EODATA and Public remains unavailable.\n\nFor more details, please visit: [EODATA Access Issue.](https://dataspace.copernicus.eu/news/2025-2-11-eodata-access-issue)",
+      "severity": "Major",
+      "startDate": "2025/02/11 21:00",
+      "affectedServices": "JupyterHub",
+      "displayInHomepage": false,
+      "homepageAnnouncementStartDate": "2025/02/11 21:00",
+      "endDate": "2025/02/14 14:00"
+    },
+    "20250218-2200": {
+      "id": "20250218-2200",
+      "startDate": "2025/02/18 22:00",
+      "endDate": "2025/02/19 08:00",
+      "title": "Planned maintenance in WAW3-1 cloud network",
+      "severity": "Major",
+      "affectedServices": "Data Discovery Platform (online catalogue; viewer and subsetter)",
+      "displayInHomepage": true,
+      "homepageAnnouncementStartDate": "2025/02/16 22:00",
+      "contents": "Dear user,\n\nWe would like to inform you about an upcoming scheduled maintenance window for WAW3-1 cloud’s network, which will take place from 18th to 19th February, between 22:00 and 08:00 CET.\n\nDuring this period, you will have access to limited features of WEkEO portal.\n\nMap layers and time series in WEkEO viewer will not be available for CMEMS datasets during this time window. The data download flow for these datasets will be affected as well.\n\nAccess to HRVPP datasets will also be interrupted during the maintenance window.\n"
+    },
+    "20250219-1200": {
+      "id": "20250219-1200",
+      "contents": "Due to a scheduled infrastructure maintenance, you will have access to limited features of WEkEO portal.\n\nMap layers in WEkEO viewer will not be available for HRVPP datasets during this time window. The data download flow for these datasets will be affected as well.\n\nAccess to several CLMS datasets will also be interrupted during the maintenance window.",
+      "title": "Planned maintenance in WAW3-1 cloud network",
+      "startDate": "2025/02/19 12:00",
+      "severity": "Major",
+      "homepageAnnouncementStartDate": "2025/02/19 12:00",
+      "displayInHomepage": false,
+      "affectedServices": "Data Discovery Platform (online catalogue; viewer and subsetter), Harmonised Data Access",
+      "endDate": "2025/02/19 20:00"
     }
   },
   "audiencesBlock": {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useGetSchemaQuery } from '@/lib/store/editorialApi';
+import { useGetSchemaQuery } from '@/lib/store/slices/editorialApi';
 import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React from 'react';

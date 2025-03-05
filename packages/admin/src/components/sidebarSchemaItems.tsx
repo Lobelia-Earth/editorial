@@ -1,6 +1,9 @@
 'use client';
 
-import { useGetDataQuery, useGetSchemaQuery } from '@/lib/store/editorialApi';
+import {
+  useGetDataQuery,
+  useGetSchemaQuery,
+} from '@/lib/store/slices/editorialApi';
 import Link from 'next/link';
 import { SidebarMenuSub, SidebarMenuSubButton } from './ui/sidebar';
 

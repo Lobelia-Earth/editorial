@@ -12,7 +12,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useUpdateObjectMutation } from '@/lib/store/editorialApi';
+import {
+  useCreateObjectMutation,
+  useUpdateObjectMutation,
+} from '@/lib/store/slices/editorialApi';
 import type {
   EditorialDataObject,
   EditorialSchemaItem,
@@ -35,7 +38,8 @@ export default function ItemForm({
   data,
   isNew,
 }: SinglesPageProps) {
-  const [trigger] = useUpdateObjectMutation();
+  const [createItem] = useCreateObjectMutation();
+  const [updateItem] = useUpdateObjectMutation();
 
   const getDefaultValues = useCallback(
     (fields: EditorialSchemaItem['fields']) => {
@@ -54,7 +58,11 @@ export default function ItemForm({
   });
 
   async function onSubmit(values: object) {
-    trigger({ ...values, type: itemType });
+    if (isNew) {
+      createItem({ ...values, type: itemType });
+    } else {
+      updateItem({ ...values, id: data.id, type: itemType });
+    }
   }
 
   const flagFields = useMemo(() => {

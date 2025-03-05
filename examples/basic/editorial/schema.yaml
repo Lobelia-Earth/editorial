@@ -1,92 +1,3 @@
-event:
-  displayName: Events
-  fields:
-    redirect:
-      type: string
-      displayName: Redirect url
-    name:
-      type: string
-      displayName: Event name
-      showInSummary: true
-      isRequired: true
-    startDate:
-      type: string
-      displayName: Event start date
-      displayExtra: 'Assumes France local time. Format: yyyy/mm/dd hh:mm'
-      showInSummary: true
-      isRequired: true
-    endDate:
-      type: string
-      displayName: Event end date
-      displayExtra: 'Assumes France local time. Format: yyyy/mm/dd hh:mm'
-      showInSummary: true
-      isRequired: true
-    location:
-      type: string
-      displayName: Event location
-      displayExtra: 'Leave blank for online-only events'
-      showInSummary: true
-    isOnline:
-      type: boolean
-      displayName: Online
-      showInSummary: true
-      labelLevel: 3
-    isHighlighted:
-      type: boolean
-      displayName: Highlighted
-      showInSummary: true
-      labelLevel: 2
-    isHidden:
-      type: boolean
-      displayName: Hidden
-      showInSummary: true
-    image:
-      type: string
-      displayName: Image
-      displayExtra: 'Used when sharing page in social media. Recommended aspect ratio: 2:1'
-      isRequired: true
-      isUploadedFile: true
-    registerLink:
-      type: string
-      displayName: Link to registration page
-      displayExtra: Only shown for future events. Opens in new tab.
-    testLink:
-      type: string
-      displayName: Link to connection test page
-      displayExtra: Only shown for future events. It is displayed in the page footer, using the variable {{testConnectionUrl}}
-    introduction:
-      type: string
-      displayName: Event introduction
-    description:
-      type: markdown
-      displayName: Event description
-      displayExtra: You can use Image, Screenshot, Button and YoutubeEmbed custom blocks
-      height: 300
-
-eventsCommonTexts:
-  displayName: Events common texts
-  singleton: true
-  fields:
-    indexTitle:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    indexDescription:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    eventFooter:
-      type: markdown
-      displayName: Event footer
-      displayExtra: Shown at the bottom of event pages. Use the variable {{testConnectionUrl}} to insert the connection test address.
-      showInSummary: true
-      isRequired: true
-      height: 300
-
 newsItem:
   displayName: News items
   fields:
@@ -100,6 +11,7 @@ newsItem:
       displayName: Image
       displayExtra: 'Recommended aspect ratio: 20:9 (e.g. 800x360 px). Please, do not use images that contain text.'
       showInSummary: true
+      dontTranslate: true
       isRequired: true
       isUploadedFile: true
     date:
@@ -108,6 +20,7 @@ newsItem:
       displayExtra: 'Format: yyyy/mm/dd'
       showInSummary: true
       isRequired: true
+      dontTranslate: true
     isHidden:
       type: boolean
       displayName: Hidden
@@ -156,377 +69,6 @@ page:
       dontTranslate: true
       isUploadedFile: true
 
-homepage:
-  displayName: Homepage
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    heroImage:
-      type: string
-      displayName: Hero main image
-      displayExtra: 'Recommended size: 1920x1225. Recommended format: JPG. This image is autamatically centered and cropped so that it covers the hero section of the homepage.'
-      isRequired: true
-      dontTranslate: true
-      isUploadedFile: true
-    heroEventsImage:
-      type: string
-      displayName: Hero events image
-      displayExtra: 'Recommended size: 800x600. Recommended format: JPG. This image is autamatically centered and cropped so that it covers the hero section of the homepage.'
-      isRequired: true
-      dontTranslate: true
-      isUploadedFile: true
-    heroNewsImage:
-      type: string
-      displayName: Hero news image
-      displayExtra: 'Recommended size: 800x600. Recommended format: JPG. This image is autamatically centered and cropped so that it covers the hero section of the homepage.'
-      isRequired: true
-      dontTranslate: true
-      isUploadedFile: true
-    tagline:
-      type: string
-      displayName: Tagline
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    descriptionItem1:
-      type: markdown
-      displayName: Description item 1
-      isRequired: true
-    descriptionItem2:
-      type: markdown
-      displayName: Description item 2
-      isRequired: true
-    descriptionItem3:
-      type: markdown
-      displayName: Description item 3
-      isRequired: true
-    dataTitle:
-      type: string
-      displayName: Data section title
-      isRequired: true
-    dataSubtitle:
-      type: string
-      displayName: Data section sub-title
-      isRequired: true
-    dataCallToAction:
-      type: string
-      displayName: Data call to action
-      isRequired: true
-    descriptionVideoUrl:
-      type: string
-      displayName: Service description video URL
-      isRequired: true
-
-servicesPage:
-  displayName: Services Page
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    heroContents:
-      type: markdown
-      displayName: Hero contents
-      isRequired: true
-
-pricing:
-  displayName: Pricing
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    heroContents:
-      type: markdown
-      displayName: Hero contents
-      isRequired: true
-    subscriptionTypes:
-      type: markdown
-      displayName: Subscription types
-      displayExtra: Use SubscriptionType custom blocks
-      isRequired: true
-      height: 300
-    vmIntro:
-      type: markdown
-      displayName: VM section intro
-      isRequired: true
-    vmTable:
-      type: markdown
-      displayName: VM comparison table area
-      displayExtra: Use VmTable custom block
-      isRequired: true
-      height: 300
-    vmCta:
-      type: markdown
-      displayName: VM section call to action
-      isRequired: true
-
-computing:
-  displayName: Computing
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    heroTitle:
-      type: string
-      displayName: Hero title
-      isRequired: true
-    heroDescription:
-      type: string
-      displayName: Hero description
-      isRequired: true
-    freePlansTitle:
-      type: string
-      displayName: Free plans title
-      isRequired: true
-    freePlansIcon:
-      type: string
-      displayName: Free plans icon
-      dontTranslate: true
-      isRequired: true
-      isUploadedFile: true
-    freePlans:
-      type: markdown
-      displayName: Free plans
-      displayExtra: Use ComputingCard custom block
-      isRequired: true
-      height: 300
-    paidPlansTitle:
-      type: string
-      displayName: Paid plans title
-      isRequired: true
-    paidPlansIcon:
-      type: string
-      displayName: Paid plans icon
-      dontTranslate: true
-      isRequired: true
-      isUploadedFile: true
-    paidPlans:
-      type: markdown
-      displayName: Paid plans
-      displayExtra: Use ComputingCard custom block
-      isRequired: true
-      height: 300
-audiencesBlock:
-  displayName: Audiences block
-  singleton: true
-  fields:
-    introText:
-      type: string
-      displayName: Audiences block intro text
-      showInSummary: true
-      isRequired: true
-
-audience:
-  displayName: Audiences
-  allowManualSorting: true
-  fields:
-    name:
-      type: string
-      displayName: Audience name
-      displayExtra: 'Example: Insitutional bodies'
-      showInSummary: true
-      isRequired: true
-    examples:
-      type: string
-      displayName: Audience examples
-      displayExtra: 'Example: H2020 projects, expert groups, thematic platforms...'
-      showInSummary: true
-      isRequired: true
-    summary:
-      type: markdown
-      displayName: Summary
-      showInSummary: false
-      isRequired: true
-    image:
-      type: string
-      displayName: Image
-      showInSummary: true
-      isRequired: true
-      dontTranslate: true
-      isUploadedFile: true
-
-audienceInstance:
-  displayName: Audience Instances
-  allowManualSorting: true
-  fields:
-    name:
-      type: string
-      displayName: Instance name
-      displayExtra: 'Example: Support environmental directives'
-      showInSummary: true
-      isRequired: true
-    audienceId:
-      type: string
-      displayName: Audience ID
-      displayExtra: Identifier of container audience
-      showInSummary: true
-      isRequired: true
-      colorCode: true
-      choicesPreviousValues: true
-    description:
-      type: markdown
-      displayName: Instance description
-      isRequired: true
-    image:
-      type: string
-      displayName: Instance image
-      displayExtra: 'Recommended width: 1100px'
-      showInSummary: false
-      isRequired: true
-      dontTranslate: true
-      isUploadedFile: true
-
-trustedBy:
-  displayName: Trusted By
-  allowManualSorting: true
-  fields:
-    name:
-      type: string
-      displayName: Entity name
-      showInSummary: true
-      dontTranslate: true
-      isRequired: true
-    audienceId:
-      type: string
-      displayName: Audience ID
-      displayExtra: Identifier of container audience
-      showInSummary: true
-      isRequired: true
-      colorCode: true
-      choicesPreviousValues: true
-    image:
-      type: string
-      displayName: Entity logo
-      showInSummary: false
-      isRequired: true
-      dontTranslate: true
-      isUploadedFile: true
-
-tutorialsIndex:
-  displayName: Tutorials index
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    registerClaimn:
-      type: string
-      displayName: Register claim
-      displayExtra: Displayed after the tutorial teasers, as a claim for registration
-      isRequired: true
-
-tutorial:
-  displayName: Tutorials
-  allowManualSorting: true
-  fields:
-    title:
-      type: string
-      displayName: Tutorial title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    teaser:
-      type: markdown
-      displayName: Teaser contents
-      displayExtra: Available for all users, both logged and unlogged
-      isRequired: true
-      height: 300
-      allowCustomBlocks: true
-    contents:
-      type: markdown
-      displayName: Tutorial contents
-      height: 300
-      isRequired: true
-      allowCustomBlocks: true
-    tags:
-      type: string
-      displayName: Tags
-      displayExtra: Comma-separated
-      placeholder: Ocean, Climate, DIAS
-      isMultiple: true
-      choicesPreviousValues: true
-
-docs:
-  displayName: Documentation pages
-  allowManualSorting: true
-  fields:
-    redirect:
-      type: string
-      displayName: Redirect url
-      showInSummary: true
-    title:
-      type: string
-      displayName: Tutorial title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    parentPage:
-      type: string
-      displayName: Parent page
-      showInSummary: true
-      choicesPreviousValues: true
-      colorCode: true
-    contents:
-      type: markdown
-      displayName: Contents
-      displayExtra: You can use Image, Screenshot, Button and YoutubeEmbed custom blocks
-      isRequired: true
-      height: 300
-
 incident:
   displayName: Incidents
   fields:
@@ -551,11 +93,13 @@ incident:
       displayExtra: 'Assumes France local time. Format: yyyy/mm/dd hh:mm'
       showInSummary: true
       isRequired: true
+      dontTranslate: true
     endDate:
       type: string
       displayName: End date
       displayExtra: 'Assumes France local time. Format: yyyy/mm/dd hh:mm'
       showInSummary: true
+      dontTranslate: true
     affectedServices:
       type: string
       isMultiple: true
@@ -582,6 +126,7 @@ incident:
       displayName: Homepage announcement start date
       displayExtra: 'Assumes France local time. Format: yyyy/mm/dd hh:mm'
       showInSummary: true
+      dontTranslate: true
     contents:
       type: markdown
       displayName: Contents
@@ -641,6 +186,7 @@ aboutEntities:
       displayName: URL
       showInSummary: true
       isRequired: true
+      dontTranslate: true
 
 support:
   displayName: Support page
@@ -753,8 +299,8 @@ pressRelease:
       type: string
       displayName: Image
       isRequired: true
-      dontTranslate: true
       isUploadedFile: true
+      dontTranslate: true
     location:
       type: string
       displayName: Location
@@ -765,6 +311,7 @@ pressRelease:
       displayName: Date
       showInSummary: true
       isRequired: true
+      dontTranslate: true
     standfirst:
       type: string
       displayName: Standfirst
@@ -788,11 +335,13 @@ clipping:
       displayName: Link
       showInSummary: true
       isRequired: true
+      dontTranslate: true
     date:
       type: date
       displayName: Date
       showInSummary: true
       isRequired: true
+      dontTranslate: true
     mediaName:
       type: string
       displayName: Media name
@@ -911,16 +460,19 @@ useCase:
       displayName: Description image (primary)
       displayExtra: Please provide a high resolution image of the service in action or any other relevant image. Minimum width is 1500px. Horizontal images are preferred.
       isUploadedFile: true
+      dontTranslate: true
     descriptionPrimaryImageLegend:
       type: string
       displayName: Description image (primary) legend
     descriptionVideoUrl:
       type: string
       displayName: Description video URL
+      dontTranslate: true
     descriptionVideoFile:
       type: string
       displayName: Description video file
       isUploadedFile: true
+      dontTranslate: true
     descriptionVideoFallbackImage:
       type: string
       displayName: Description video fallback image (if video not available)
@@ -966,6 +518,7 @@ useCase:
       placeholder: EO:MO:DAT:GLOBAL_ANALYSISFORECAST_PHY_001_024
       isMultiple: true
       choicesPreviousValues: true
+      dontTranslate: true
     contactInfo:
       type: markdown
       height: 200
@@ -981,352 +534,3 @@ useCase:
       height: 200
       displayName: Draft videos
       displayExtra: Entered by use case author in the use case submission form. This field contains a list of uploaded video files (available in Editorial) and/or external video links. These video resources may be edited to produce a video and use it as the "Description video file" (see input field above)
-benefits:
-  displayName: Subscription benefits page
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    heroText:
-      type: string
-      displayName: Hero text
-      isRequired: true
-    introduction:
-      type: markdown
-      displayName: Introduction
-      showInSummary: true
-      isRequired: true
-      height: 200
-    aboutTitle:
-      type: string
-      displayName: About section title
-      showInSummary: true
-      isRequired: true
-    aboutVideoUrl:
-      type: string
-      displayName: About section video URL
-      isRequired: true
-    aboutText:
-      type: markdown
-      displayName: About section text
-      showInSummary: true
-      isRequired: true
-      height: 200
-    aboutButtonLabel:
-      type: string
-      displayName: About button label
-      dontTranslate: true
-    aboutButtonUrl:
-      type: string
-      displayName: About button URL
-      dontTranslate: true
-      height: 200
-    createAccTitle:
-      type: string
-      displayName: Create account section title
-      showInSummary: true
-      isRequired: true
-    createAccIntroduction:
-      type: string
-      displayName: Create account section introduction
-      showInSummary: true
-      isRequired: true
-    cardTitle1:
-      type: string
-      displayName: Card 1 title
-      showInSummary: true
-      isRequired: true
-    cardText1:
-      type: markdown
-      displayName: Card 1 text
-      showInSummary: true
-      isRequired: true
-      height: 200
-    cardTitle2:
-      type: string
-      displayName: Card 2 title
-      showInSummary: true
-      isRequired: true
-    cardText2:
-      type: markdown
-      displayName: Card 2 text
-      showInSummary: true
-      isRequired: true
-      height: 200
-    cardTitle3:
-      type: string
-      displayName: Card 3 title
-      showInSummary: true
-      isRequired: true
-    cardText3:
-      type: markdown
-      displayName: Card 3 text
-      showInSummary: true
-      isRequired: true
-      height: 200
-    cardTitle4:
-      type: string
-      displayName: Card 4 title
-      showInSummary: true
-      isRequired: true
-    cardText4:
-      type: markdown
-      displayName: Card 4 text
-      showInSummary: true
-      isRequired: true
-      height: 200
-    createAccButtonLabel:
-      type: string
-      displayName: Create account button label
-      dontTranslate: true
-    createAccButtonUrl:
-      type: string
-      displayName: Create account button URL
-      dontTranslate: true
-      height: 200
-jupyter-v3-landing:
-  displayName: Jupyter notebooks catalogue v3 page
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    heroText:
-      type: string
-      displayName: Hero text
-      isRequired: true
-    introduction:
-      type: markdown
-      displayName: Introduction
-      showInSummary: true
-      height: 200
-    accessButtonLabel:
-      type: string
-      displayName: Access Jupyter Catalogue button label
-      dontTranslate: true
-    accessButtonUrl:
-      type: string
-      displayName: Access Jupyter Catalogue button URL
-      dontTranslate: true
-      height: 200
-    whatIsWekeoTitle:
-      type: string
-      displayName: What is WEkEO section title
-    whatIsWekeoText:
-      type: markdown
-      displayName: What is WEkEO section text
-      height: 200
-    whatIsWekeoImage:
-      type: string
-      displayName: What is WEkEO image
-      dontTranslate: true
-      isUploadedFile: true
-    wekeoToolsTitle:
-      type: string
-      displayName: WEkEO tools section title
-    wekeoToolsText:
-      type: markdown
-      displayName: WEkEO tools subsection text
-      height: 200
-    wekeoToolsImage:
-      type: string
-      displayName: WEkEO tools subsection image
-      dontTranslate: true
-      isUploadedFile: true
-    jupyterCatalogueTitle:
-      type: string
-      displayName: Jupyter Catalogue subsection title
-    jupyterCatalogueText:
-      type: markdown
-      displayName: Jupyter Catalogue subsection text
-      height: 200
-    jupyterCatalogueImage:
-      type: string
-      displayName: Jupyter Catalogue subsection image
-      dontTranslate: true
-      isUploadedFile: true
-    jupyterCatalogueLabel:
-      type: string
-      displayName: Jupyter Catalogue subsection button label
-      dontTranslate: true
-    jupyterCatalogueUrl:
-      type: string
-      displayName: Jupyter Catalogue subsection button URL
-      dontTranslate: true
-      height: 200
-    jupyterNotebooksTitle:
-      type: string
-      displayName: Jupyter Notebooks subsection title
-    jupyterNotebooksText:
-      type: markdown
-      displayName: Jupyter Notebook subsection text
-      height: 200
-    jupyterNotebooksLabel:
-      type: string
-      displayName: Jupyter Notebooks subsection button label
-      dontTranslate: true
-    jupyterNotebooksUrl:
-      type: string
-      displayName: Jupyter Notebooks subsection button URL
-      dontTranslate: true
-      height: 200
-    howToUseTitle:
-      type: string
-      displayName: How to use Jupyter Notebooks section title
-    howToUseVideoUrl:
-      type: string
-      displayName: How to use Jupyter Notebooks section video URL
-    howToUseFirstText:
-      type: markdown
-      displayName: How to use Jupyter Notebooks section first text
-      height: 200
-    howToUseFirstImage:
-      type: string
-      displayName: How to use Jupyter Notebooks section first image
-      dontTranslate: true
-      isUploadedFile: true
-    howToUseSecondText:
-      type: markdown
-      displayName: How to use Jupyter Notebooks section second text
-      height: 200
-    howToUseSecondImage:
-      type: string
-      displayName: How to use Jupyter Notebooks section second image
-      dontTranslate: true
-      isUploadedFile: true
-    howToUseThirdText:
-      type: markdown
-      displayName: How to use Jupyter Notebooks section third text
-      height: 200
-    howToUseThirdImage:
-      type: string
-      displayName: How to use Jupyter Notebooks section third image
-      dontTranslate: true
-      isUploadedFile: true
-    howToUseFourthText:
-      type: markdown
-      displayName: How to use Jupyter Notebooks section fourth text
-      height: 200
-    helpTitle:
-      type: string
-      displayName: Help section title
-    helpImage:
-      type: string
-      displayName: Help section image
-      dontTranslate: true
-      isUploadedFile: true
-    helpText:
-      type: markdown
-      displayName: Help section text
-      displayExtra: Use ContactLink custom block
-      height: 200
-    helpLabel:
-      type: string
-      displayName: Help section button label
-      dontTranslate: true
-    helpUrl:
-      type: string
-      displayName: Help section button URL
-      dontTranslate: true
-      height: 200
-
-innovation-lab-page:
-  displayName: Innovation lab page
-  singleton: true
-  fields:
-    title:
-      type: string
-      displayName: Title
-      displayExtra: Used as tab title, page title in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    description:
-      type: string
-      displayName: Description
-      displayExtra: Used as page description in search results (SEO) and when sharing page in social networks
-      showInSummary: true
-      isRequired: true
-    heroText:
-      type: string
-      displayName: Hero text
-      isRequired: true
-    introduction:
-      type: markdown
-      displayName: Introduction
-      isRequired: true
-    block1Title:
-      type: string
-      displayName: Block 1 title
-      isRequired: true
-    block1Text:
-      type: markdown
-      displayName: Block 1 text
-      isRequired: true
-    block1Image:
-      type: string
-      displayName: Block 1 image
-      isUploadedFile: true
-      isRequired: true
-    block1TextBelowBlock:
-      type: markdown
-      displayName: Block 1 text below
-    block2Title:
-      type: string
-      displayName: Block 2 title
-      isRequired: true
-    block2Text:
-      type: markdown
-      displayName: Block 2 text
-      isRequired: true
-    block2Image:
-      type: string
-      displayName: Block 2 image
-      isUploadedFile: true
-      isRequired: true
-    block2TextBelowBlock:
-      type: markdown
-      displayName: Block 2 text below
-    calloutTitle:
-      type: string
-      displayName: Callout title
-      isRequired: true
-    calloutText:
-      type: markdown
-      displayName: Callout text
-      isRequired: true
-    calloutImage:
-      type: string
-      displayName: Callout image
-      isRequired: true
-      isUploadedFile: true
-    callToActionText:
-      type: markdown
-      displayName: Call to action text
-      isRequired: true
-    callToActionLabel:
-      type: string
-      displayName: Call to action label
-      isRequired: true
-    callToActionUrl:
-      type: string
-      displayName: Call to action URL
-      isRequired: true

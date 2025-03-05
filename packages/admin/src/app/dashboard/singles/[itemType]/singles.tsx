@@ -3,7 +3,7 @@
 import {
   useGetDataObjectQuery,
   useGetSchemaTypeQuery,
-} from '@/lib/store/editorialApi';
+} from '@/lib/store/slices/editorialApi';
 import ItemForm from './itemForm';
 
 export interface SinglesPageProps {

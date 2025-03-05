@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import type {
   EditorialConfigSchema,
-  EditorialDataObjectSchema,
+  EditorialDataItemSchema,
   EditorialDataObjectWithTypeSchema,
   EditorialDataSchema,
   EditorialDataTypeSchema,
@@ -13,7 +13,7 @@ import type {
 export type EditorialConfig = z.infer<typeof EditorialConfigSchema>;
 export type EditorialData = z.infer<typeof EditorialDataSchema>;
 export type EditorialDataType = z.infer<typeof EditorialDataTypeSchema>;
-export type EditorialDataObject = z.infer<typeof EditorialDataObjectSchema>;
+export type EditorialDataItem = z.infer<typeof EditorialDataItemSchema>;
 export type EditorialDataObjectWithType = z.infer<
   typeof EditorialDataObjectWithTypeSchema
 >;

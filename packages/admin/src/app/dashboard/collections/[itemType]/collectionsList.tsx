@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useGetSchemaTypeQuery } from '@/lib/store/editorialApi';
+import { useGetSchemaTypeQuery } from '@/lib/store/slices/editorialApi';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import SchemaTable from '../schemaTable';

@@ -1,7 +1,8 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import type { Hooks } from '../lib/hooks.js';
 import type { Storage } from '../lib/storage.js';
 
-export function createActionRoutes(storage: Storage) {
+export function createActionRoutes(storage: Storage, hooks: Hooks) {
   const app = new OpenAPIHono();
 
   app.openapi(
@@ -19,13 +20,22 @@ export function createActionRoutes(storage: Storage) {
         },
       },
     }),
-    (c) => {
-      storage.saveProdContent();
+    // TODO: Don't async, let the promises run in the background.
+    async (c) => {
+      await storage.saveProdContent();
 
-      // TODO: Allow running of automated builds
-      // runScript('build');
+      const content = await storage.getContent();
+      const schema = await storage.getSchema();
 
-      return c.json(true, 202);
+      try {
+        const scriptResult = await hooks.onLocalize(content, schema);
+        await storage.saveLocalisationMessages(scriptResult);
+      } catch (error) {
+        console.error('Error executing script:', error);
+        return c.json(false);
+      }
+
+      return c.json(true);
     }
   );
 

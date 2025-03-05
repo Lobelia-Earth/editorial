@@ -4,6 +4,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import type { EditorialConfig } from '@isardsat/editorial-common';
 import { logger } from 'hono/logger';
 import { createConfig } from './lib/config.js';
+import { createHooks } from './lib/hooks.js';
 import { createStorage, type Storage } from './lib/storage.js';
 import { createActionRoutes } from './routes/actions.js';
 import { createDataRoutes } from './routes/data.js';
@@ -30,12 +31,13 @@ export async function createEditorialServer({
 
   const config = await createConfig(configDirectory);
   const storage = createStorage(editorialDirectory);
+  const hooks = await createHooks(configDirectory);
 
   app.use(logger());
 
   app.route('/api/v1', createDataRoutes(storage));
   app.route('/api/v1', createFilesRoutes());
-  app.route('/api/v1', createActionRoutes(storage));
+  app.route('/api/v1', createActionRoutes(storage, hooks));
 
   app.use(
     '/public/*',

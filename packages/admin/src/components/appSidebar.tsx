@@ -1,5 +1,8 @@
 'use client';
 
+import { useAppDispatch } from '@/lib/store/hooks';
+import { signOut } from '@/lib/store/slices/authSlice';
+import { usePublishMutation } from '@/lib/store/slices/editorialApi';
 import {
   Blocks,
   ChevronDown,
@@ -33,9 +36,10 @@ import {
 } from './ui/sidebar';
 
 export default function AppSidebar() {
-  const [aboutModalOpen, setAboutModalOpen] = useState(false);
-
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
+  const [aboutModalOpen, setAboutModalOpen] = useState(false);
+  const [publish] = usePublishMutation();
 
   return (
     <Sidebar className="z-50">
@@ -43,9 +47,12 @@ export default function AppSidebar() {
 
       <SidebarHeader className="h-14 justify-center">
         <SidebarGroup>
-          <h2 className="text-3xl font-semibold tracking-tight transition-colors">
+          <Link
+            href="/dashboard"
+            className="text-3xl font-semibold tracking-tight transition-colors"
+          >
             WEkEO
-          </h2>
+          </Link>
         </SidebarGroup>
       </SidebarHeader>
 
@@ -67,7 +74,7 @@ export default function AppSidebar() {
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <SidebarSchemaItems href="/collections" />
+                    <SidebarSchemaItems href="/dashboard/collections" />
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
@@ -86,14 +93,14 @@ export default function AppSidebar() {
                   </CollapsibleTrigger>
 
                   <CollapsibleContent>
-                    <SidebarSchemaItems href="/singles" singleton />
+                    <SidebarSchemaItems href="/dashboard/singles" singleton />
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/files">
+                  <Link href="/dashboard/files">
                     <Files />
                     <span>Files</span>
                   </Link>
@@ -115,7 +122,7 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton disabled>
+                <SidebarMenuButton onClick={() => publish()}>
                   <Upload />
                   <span>Publish</span>
                 </SidebarMenuButton>
@@ -130,7 +137,7 @@ export default function AppSidebar() {
         <SidebarMenuButton onClick={() => setAboutModalOpen(true)}>
           About
         </SidebarMenuButton>
-        <SidebarMenuButton>
+        <SidebarMenuButton onClick={() => dispatch(signOut())}>
           <LogOut />
           Log out
         </SidebarMenuButton>

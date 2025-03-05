@@ -1,6 +1,6 @@
 'use client';
 
-import { useGetSchemaQuery } from '@/lib/store/editorialApi';
+import { useGetSchemaQuery } from '@/lib/store/slices/editorialApi';
 import { useMemo } from 'react';
 import ItemForm from '../../../singles/[itemType]/itemForm';
 

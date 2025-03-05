@@ -14,15 +14,23 @@ export const EditorialDataObjectWithTypeSchema = z
   })
   .passthrough();
 
-export const EditorialDataObjectSchema = z
+export const EditorialDataItemSchema = z
   .object({
     id: z.string(),
+    createdAt: z
+      .string()
+      .datetime()
+      .default(() => new Date().toISOString()),
+    updatedAt: z
+      .string()
+      .datetime()
+      .default(() => new Date().toISOString()),
   })
   .passthrough();
 
 export const EditorialDataTypeSchema = z.record(
   z.string(),
-  EditorialDataObjectSchema
+  EditorialDataItemSchema
 );
 
 export const EditorialDataSchema = z.record(
@@ -85,4 +93,5 @@ export const EditorialFileSchema: z.ZodType<BaseEditorialFile> =
   });
 
 export const EditorialFilesSchema = z.array(EditorialFileSchema);
+export type EditorialFile = z.infer<typeof EditorialFileSchema>;
 export type EditorialFiles = z.infer<typeof EditorialFilesSchema>;

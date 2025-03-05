@@ -1,5 +1,9 @@
 import type { EditorialDataObjectWithType } from '@isardsat/editorial-common';
-import { EditorialSchemaSchema } from '@isardsat/editorial-common';
+import {
+  EditorialDataItemSchema,
+  EditorialDataSchema,
+  EditorialSchemaSchema,
+} from '@isardsat/editorial-common';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { parse } from 'yaml';
@@ -9,6 +13,7 @@ export function createStorage(dataDirectory: string) {
   const schemaPath = join(dataDirectory, 'schema.yaml');
   const dataPath = join(dataDirectory, 'data.json');
   const dataProdPath = join(dataDirectory, 'data.prod.json');
+  const dataExtractedPath = join(dataDirectory, 'data.messages.json');
 
   async function getSchema() {
     const schemaFile = await readFile(schemaPath, 'utf-8').then((value) =>
@@ -22,21 +27,34 @@ export function createStorage(dataDirectory: string) {
   /**
    * TODO: This should ideally cache the result of reading the file until an update occurs.
    */
-  async function getContent() {
+  async function getContent(): Promise<Record<string, Record<string, Object>>> {
     return await readFile(dataPath, 'utf-8').then((value) => JSON.parse(value));
   }
 
   async function saveProdContent() {
     const content = await getContent();
-    await writeFileSafe(dataProdPath, JSON.stringify(content, null, 2));
+
+    await writeFileSafe(
+      dataProdPath,
+      JSON.stringify(EditorialDataSchema.parse(content), null, 2)
+    );
+
+    return true;
+  }
+
+  async function saveLocalisationMessages(messages: any) {
+    await writeFileSafe(dataExtractedPath, JSON.stringify(messages, null, 2));
+
     return true;
   }
 
   async function createItem(item: EditorialDataObjectWithType) {
     const content = await getContent();
-    content[item.type][item.id] = item;
+    content[item.type][item.id] = EditorialDataItemSchema.parse(item);
+
     // TODO: Use superjson to safely encode different types.
     await writeFileSafe(dataPath, JSON.stringify(content, null, 2));
+
     return item;
   }
 
@@ -46,7 +64,9 @@ export function createStorage(dataDirectory: string) {
     const newItem = {
       ...oldItem,
       ...item,
-    };
+      updatedAt: new Date().toISOString(),
+    } satisfies EditorialDataObjectWithType;
+
     content[item.type][item.id] = newItem;
     // TODO: Use superjson to safely encode different types.
     await writeFileSafe(dataPath, JSON.stringify(content, null, 2));
@@ -66,6 +86,7 @@ export function createStorage(dataDirectory: string) {
   return {
     getSchema,
     getContent,
+    saveLocalisationMessages,
     createItem,
     updateItem,
     deleteItem,

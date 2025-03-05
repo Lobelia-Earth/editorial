@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import {
   EditorialFilesSchema,
+  type EditorialFile,
   type EditorialFiles,
 } from '@isardsat/editorial-common';
 import { readdirSync, statSync } from 'node:fs';
@@ -46,8 +47,9 @@ export function createFilesRoutes() {
               children: isDirectory
                 ? readDirectoryChildren(join(path, fileName))
                 : undefined,
-            };
-          });
+            } satisfies EditorialFile;
+          })
+          .sort((a, b) => (a.type === 'directory' ? -1 : 0));
       }
 
       const files = readDirectoryChildren(publicDirPath);

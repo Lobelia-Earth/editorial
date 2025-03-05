@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import {
-  EditorialDataObjectSchema,
+  EditorialDataItemSchema,
   EditorialDataSchema,
   EditorialSchemaSchema,
 } from '@isardsat/editorial-common';
@@ -137,7 +137,7 @@ export function createDataRoutes(storage: Storage) {
         body: {
           content: {
             'application/json': {
-              schema: EditorialDataObjectSchema,
+              schema: EditorialDataItemSchema,
             },
           },
           required: true,
@@ -147,7 +147,7 @@ export function createDataRoutes(storage: Storage) {
         200: {
           content: {
             'application/json': {
-              schema: EditorialDataObjectSchema,
+              schema: EditorialDataItemSchema,
             },
           },
           description: 'Create a new object',
@@ -180,7 +180,7 @@ export function createDataRoutes(storage: Storage) {
         body: {
           content: {
             'application/json': {
-              schema: EditorialDataObjectSchema,
+              schema: EditorialDataItemSchema,
             },
           },
           required: true,

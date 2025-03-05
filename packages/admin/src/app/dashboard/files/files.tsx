@@ -3,14 +3,15 @@
 import {
   useDeleteFileMutation,
   useGetFilesQuery,
-} from '@/lib/store/editorialApi';
+} from '@/lib/store/slices/editorialApi';
 import { cn, formatFileSize } from '@/lib/utils';
 import type { EditorialFiles } from '@isardsat/editorial-common';
 import {
   ChevronDown,
   Copy,
-  Ellipsis,
   File,
+  FileImage,
+  FileText,
   Folder,
   FolderOpen,
   Trash,
@@ -18,13 +19,36 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 
+const textFileSuffixes = ['txt', 'html', 'pdf'] as const;
+const imageFileSuffixes = ['svg', 'webp', 'png', 'jpeg', 'jpg'] as const;
+
+const fileTypes = [
+  {
+    Icon: FileImage,
+    test: (node: EditorialFiles[number]) =>
+      imageFileSuffixes.some((suffix) => node.name.endsWith(suffix)),
+  },
+  {
+    Icon: FileText,
+    test: (node: EditorialFiles[number]) =>
+      textFileSuffixes.some((suffix) => node.name.endsWith(suffix)),
+  },
+] as const;
+
+const defaultFileType = {
+  Icon: File,
+};
+
 export interface TreeNodeProps {
   node: EditorialFiles[number];
   level?: number;
   onDelete: (path: string) => void;
 }
+
 const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const fileType = fileTypes.find((type) => type.test(node)) ?? defaultFileType;
   const isDirectory = node.type === 'directory';
 
   const Comp = isDirectory ? 'div' : Link;
@@ -63,7 +87,7 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
               <Folder size={16} className="text-yellow-500" />
             )
           ) : (
-            <File size={16} className=" text-gray-500" />
+            <fileType.Icon size={16} className=" text-gray-500" />
           )}
           <span className="text-sm whitespace-nowrap text-ellipsis overflow-hidden w-full">
             {node.name}
@@ -77,23 +101,29 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
         </div>
 
         <div className="flex items-center gap-1 ml-4 group-hover:visible invisible z-20">
-          <Copy
-            size={14}
+          <button
+            className="hover:text-yellow-500 p-1 hover:bg-muted rounded-sm"
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
               navigator.clipboard.writeText(node.path);
             }}
-          />
-          <Trash
-            size={14}
+          >
+            <Copy size={14} />
+          </button>
+
+          <button
+            className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
               onDelete(node.path);
             }}
-          />
-          <Ellipsis size={14} className="text-gray-400" />
+          >
+            <Trash size={14} />
+          </button>
+
+          {/* <Ellipsis size={14} className="text-gray-400" /> */}
         </div>
       </Comp>
 
@@ -114,31 +144,12 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
 };
 
 export default function Files() {
-  const { data: files } = useGetFilesQuery();
+  const { data: files, isLoading } = useGetFilesQuery();
   const [trigger] = useDeleteFileMutation();
 
-  return (
-    <>
-      <div className={`flex items-center gap-2 py-1 px-2 border-b group`}>
-        <div className="w-4" />
-        <div className="flex flex-grow items-center gap-2 ml-2">
-          <span className="text-sm font-semibold">Name</span>
-        </div>
-        <div className="flex w-24 items-center gap-2 ml-2">
-          <span className="text-sm font-semibold">Size</span>
-        </div>
+  if (!files || isLoading) return null;
 
-        <div className="flex items-center gap-1 invisible">
-          <Copy size={14} />
-          <Trash size={14} />
-          <Ellipsis size={14} />
-        </div>
-      </div>
-      {files
-        ?.toSorted((a) => (a.type === 'directory' ? -1 : 1))
-        .map((file) => (
-          <TreeNode key={file.name} node={file} onDelete={trigger} />
-        ))}
-    </>
-  );
+  return files
+    .toSorted((a) => (a.type === 'directory' ? -1 : 1))
+    .map((file) => <TreeNode key={file.name} node={file} onDelete={trigger} />);
 }
