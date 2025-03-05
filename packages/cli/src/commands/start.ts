@@ -26,12 +26,8 @@ export const startCommand = new Command()
     const editorialServer = await createEditorialServer({});
 
     console.log(`  Editorial ${version}`);
-    console.log(
-      `  - Local:         ${editorialServer.config.publicUrl}:${port}`
-    );
-    console.log(
-      `  - Swagger UI:    ${editorialServer.config.publicUrl}:${port}/doc/ui\n`
-    );
+    console.log(`  - Local:         http://localhost:${port}`);
+    console.log(`  - Swagger UI:    http://localhost:${port}/doc/ui\n`);
 
     console.log('Starting api...');
     serve({
