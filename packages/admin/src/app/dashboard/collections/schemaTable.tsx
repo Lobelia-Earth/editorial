@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -22,7 +21,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { Circle, CircleCheck, Copy, Ellipsis, Trash } from 'lucide-react';
+import { Circle, CircleCheck, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
@@ -67,14 +66,8 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
       cell(props) {
         return (
           <div className="flex gap-2 justify-end">
-            <Button size="icon" variant="ghost" className="group" disabled>
-              <Copy className="group-hover:text-yellow-600" />
-              <span className="sr-only">Copy this entry</span>
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="group"
+            <button
+              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
               onClick={(event) => {
                 event.stopPropagation();
 
@@ -84,13 +77,14 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                 });
               }}
             >
-              <Trash className="group-hover:text-red-400" />
+              <Trash size={16} className="group-hover:text-red-400" />
               <span className="sr-only">Delete entry</span>
-            </Button>
-            <Button size="icon" variant="ghost" disabled className="group">
+            </button>
+
+            {/* <Button size="icon" variant="ghost" disabled className="group">
               <Ellipsis className="group-hover:text-red-400" />
               <span className="sr-only">Delete entry</span>
-            </Button>
+            </Button> */}
           </div>
         );
       },
@@ -183,6 +177,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
             </TableRow>
           ))}
         </TableHeader>
+
         <TableBody>
           {table.getRowModel().rows.map((row) => (
             <TableRow
@@ -195,7 +190,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               {row.getVisibleCells().map((cell, index) => (
                 <TableCell
                   key={cell.id}
-                  className={cn('p-2', {
+                  className={cn('h-10', {
                     'w-full': index == columns.length - 1,
                   })}
                 >

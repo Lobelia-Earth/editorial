@@ -1,11 +1,14 @@
 'use client';
 
+import { clientEnv } from '@/lib/env';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { signOut } from '@/lib/store/slices/authSlice';
 import { usePublishMutation } from '@/lib/store/slices/editorialApi';
 import {
   Blocks,
   ChevronDown,
+  ExternalLink,
+  Eye,
   Files,
   Grid,
   LogOut,
@@ -121,6 +124,16 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href={clientEnv.NEXT_PUBLIC_PREVIEW_URL}>
+                    <Eye />
+                    <span>Preview</span>
+                    <ExternalLink className="ml-auto" />
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={() => publish()}>
                   <Upload />

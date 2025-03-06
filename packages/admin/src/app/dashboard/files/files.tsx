@@ -64,7 +64,7 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
       <Comp
         href={new URL(node.path, process.env.NEXT_PUBLIC_EDITORIAL_API_URL)}
         target="_blank"
-        className={`flex items-center gap-2 py-1 px-2 group hover:bg-gray-100 cursor-pointer`}
+        className={`flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer`}
         style={{ paddingLeft: `calc(0.5rem + ${level * 20}px)` }}
         onClick={toggleExpand}
       >
@@ -101,16 +101,21 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
         </div>
 
         <div className="flex items-center gap-1 ml-4 group-hover:visible invisible z-20">
-          <button
-            className="hover:text-yellow-500 p-1 hover:bg-muted rounded-sm"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              navigator.clipboard.writeText(node.path);
-            }}
-          >
-            <Copy size={14} />
-          </button>
+          {isDirectory ? (
+            <Copy className="invisible" size={16} />
+          ) : (
+            <button
+              className="hover:text-yellow-500 p-1 hover:bg-muted rounded-sm"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                navigator.clipboard.writeText(node.path);
+              }}
+            >
+              <Copy size={16} />
+              <span className="sr-only">Copy file URL</span>
+            </button>
+          )}
 
           <button
             className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
@@ -120,7 +125,8 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
               onDelete(node.path);
             }}
           >
-            <Trash size={14} />
+            <Trash size={16} />
+            <span className="sr-only">Delete this file</span>
           </button>
 
           {/* <Ellipsis size={14} className="text-gray-400" /> */}
