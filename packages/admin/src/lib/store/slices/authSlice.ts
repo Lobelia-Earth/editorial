@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import {
   browserLocalPersistence,
   signOut as firebaseSignOut,
@@ -8,6 +8,7 @@ import {
   setPersistence,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
+import { createAppAsyncThunk } from '../hooks';
 
 interface User {
   uid: string;
@@ -24,7 +25,7 @@ const initialState: AuthState = {
   isLoading: true,
 };
 
-export const loginUser = createAsyncThunk(
+export const loginUser = createAppAsyncThunk(
   'auth/login',
   async (
     {
@@ -47,19 +48,27 @@ export const loginUser = createAsyncThunk(
         email: userCredential.user.email ?? email,
       };
     } catch (error) {
-      return rejectWithValue(error.message);
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        return rejectWithValue(error.message as string);
+      }
+
+      return rejectWithValue('Unknown error occured');
     }
   }
 );
 
-export const signOut = createAsyncThunk(
+export const signOut = createAppAsyncThunk(
   'auth/signOut',
   async (_, { rejectWithValue }) => {
     try {
       await firebaseSignOut(auth);
       return null;
     } catch (error) {
-      return rejectWithValue(error.message);
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        return rejectWithValue(error.message as string);
+      }
+
+      return rejectWithValue('Unknown error occured');
     }
   }
 );

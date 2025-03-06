@@ -10,7 +10,7 @@ export default async function CollectionItemPage({
   const { itemType, id } = await params;
 
   return (
-    <div className="flex flex-1 h-full p-4 gap-4">
+    <div className="flex flex-1 p-4 gap-4">
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
         <CollectionItem itemType={itemType} id={id} />
       </div>

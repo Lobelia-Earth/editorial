@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     default: 'Editorial Admin',
     template: '%s - Editorial Admin',
   },
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

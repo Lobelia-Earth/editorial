@@ -16,7 +16,7 @@ export default function CollectionsList({ itemType }: CollectionsListProps) {
   if (!schema) return null;
 
   return (
-    <div className="flex flex-1 h-full p-4 gap-4">
+    <div className="flex flex-1 p-4 gap-4">
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
         <div className="flex flex-col gap-4 last:mb-20">
           <div className="flex items-center">
@@ -27,7 +27,7 @@ export default function CollectionsList({ itemType }: CollectionsListProps) {
               {schema.displayName}
             </h2>
             <Button asChild variant="default" size="sm" className="ml-auto">
-              <Link href={`/collections/${itemType}/new`}>
+              <Link href={`/dashboard/collections/${itemType}/new`}>
                 <Plus />
                 Create
               </Link>

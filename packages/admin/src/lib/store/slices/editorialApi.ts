@@ -103,7 +103,10 @@ export const editorialApi = createApi({
       }),
       invalidatesTags: () => [{ type: 'data' }],
     }),
-    createObject: builder.mutation<EditorialDataItem, EditorialDataItem>({
+    createObject: builder.mutation<
+      EditorialDataItem,
+      Omit<EditorialDataItem, 'createdAt' | 'updatedAt'>
+    >({
       query: ({ id, type, ...put }) => ({
         url: `/data/${type}/${id}`,
         method: 'PUT',

@@ -1,8 +1,8 @@
-:global(.mdxeditor) {
+.mdxeditor :global(.mdxeditor) {
   overflow: hidden;
 }
 
-:global(.mdxeditor-root-contenteditable) {
+.mdxeditor :global(.mdxeditor-root-contenteditable) {
   @apply prose;
 
   height: 100%;
@@ -10,26 +10,31 @@
   overflow: auto;
 }
 
-:global(.mdxeditor-root-contenteditable) div {
+.mdxeditor :global(.mdxeditor-root-contenteditable) div {
   height: 100%;
 }
 
-:global(.mdxeditor-root-contenteditable) [role='textbox'] > :first-child {
+.mdxeditor
+  :global(.mdxeditor-root-contenteditable)
+  [role='textbox']
+  > :first-child {
   margin-top: 0;
 }
 
-:global(.mdxeditor-root-contenteditable) a {
+.mdxeditor :global(.mdxeditor-root-contenteditable) a {
   @apply text-blue-600 underline;
 }
 
-:global(.mdxeditor-root-contenteditable) [data-editor-block-type='image'] {
+.mdxeditor
+  :global(.mdxeditor-root-contenteditable)
+  [data-editor-block-type='image'] {
   @apply border rounded-sm;
 
   height: 10rem;
   width: 10rem;
 }
 
-:global(.mdxeditor-toolbar) {
+.mdxeditor :global(.mdxeditor-toolbar) {
   @apply gap-2 p-2;
 
   align-items: center;
@@ -46,7 +51,7 @@
   z-index: 2;
 }
 
-:global(.mdxeditor-popup-container) {
+.mdxeditor :global(.mdxeditor-popup-container) {
   border: 0;
   height: 0;
   min-height: 0;

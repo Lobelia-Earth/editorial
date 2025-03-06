@@ -17,7 +17,7 @@ import {
   useUpdateObjectMutation,
 } from '@/lib/store/slices/editorialApi';
 import type {
-  EditorialDataObject,
+  EditorialDataItem,
   EditorialSchemaItem,
 } from '@isardsat/editorial-common';
 import { Save } from 'lucide-react';
@@ -28,7 +28,7 @@ import MarkdownEditor from './markdownEditor';
 export interface SinglesPageProps {
   itemType: string;
   fields: EditorialSchemaItem['fields'];
-  data: EditorialDataObject;
+  data?: EditorialDataItem;
   isNew?: boolean;
 }
 
@@ -44,9 +44,9 @@ export default function ItemForm({
   const getDefaultValues = useCallback(
     (fields: EditorialSchemaItem['fields']) => {
       return {
-        id: data.id ?? '',
+        id: data?.id ?? '',
         ...Object.fromEntries(
-          Object.keys(fields).map((key) => [key, data[key] ?? ''])
+          Object.keys(fields).map((key) => [key, data?.[key] ?? ''])
         ),
       };
     },
@@ -61,7 +61,7 @@ export default function ItemForm({
     if (isNew) {
       createItem({ ...values, type: itemType });
     } else {
-      updateItem({ ...values, id: data.id, type: itemType });
+      updateItem({ ...values, type: itemType });
     }
   }
 
@@ -88,7 +88,7 @@ export default function ItemForm({
         <FormField
           name="id"
           control={form.control}
-          disabled={data.id === 'default'}
+          disabled={data?.id === 'default'}
           rules={{ required: true }}
           render={({ field }) => (
             <FormItem>
@@ -96,7 +96,7 @@ export default function ItemForm({
               <FormControl>
                 <Input placeholder="url-slug" {...field} />
               </FormControl>
-              {data.id !== 'default' && (
+              {data?.id !== 'default' && (
                 <FormDescription>
                   Choose a descriptive ID, since it will be part of the URL
                 </FormDescription>
@@ -121,7 +121,7 @@ export default function ItemForm({
                         <div className="flex flex-row space-x-2">
                           <FormControl>
                             <Checkbox
-                              checked={field.value}
+                              checked={field.value as unknown as boolean}
                               onCheckedChange={field.onChange}
                             />
                           </FormControl>

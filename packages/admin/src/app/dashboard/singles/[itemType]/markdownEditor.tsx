@@ -18,7 +18,7 @@ import {
   UndoRedo,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
-import './markdownEditor.module.css';
+import styles from './markdownEditor.module.css';
 
 export interface MarkdownEditorProps extends MDXEditorProps {
   className?: string;
@@ -33,6 +33,7 @@ export default function MarkdownEditor({
     <MDXEditor
       className={cn(
         'flex flex-col w-full rounded-md border border-input bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+        styles.mdxeditor,
         className
       )}
       suppressHtmlProcessing={true}

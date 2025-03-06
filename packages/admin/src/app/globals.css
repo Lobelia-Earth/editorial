@@ -88,7 +88,12 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.mdxeditor-popup-container {
+  display: none !important;
 }

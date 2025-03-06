@@ -19,12 +19,12 @@ export default function NewCollectionItem({
     return schema[itemType].fields;
   }, [schema, itemType]);
 
-  if (!schema) return null;
+  if (!schema || !itemFields) return null;
 
   return (
     <div className="flex flex-1 h-full p-4 gap-4">
       <div className="flex flex-col overflow-hidden flex-1 gap-8">
-        <ItemForm itemType={itemType} fields={itemFields} data={{}} isNew />
+        <ItemForm itemType={itemType} fields={itemFields} isNew />
       </div>
     </div>
   );

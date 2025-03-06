@@ -109,9 +109,11 @@ export default function RecentActivity() {
               className="cursor-pointer"
               onClick={() => {
                 if (row.original.id === 'default') {
-                  push(`/singles/${row.original.type}`);
+                  push(`/dashboard/singles/${row.original.type}`);
                 } else {
-                  push(`/collections/${row.original.type}/${row.original.id}`);
+                  push(
+                    `/dashboard/collections/${row.original.type}/${row.original.id}`
+                  );
                 }
               }}
             >

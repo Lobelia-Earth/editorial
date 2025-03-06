@@ -14,7 +14,7 @@ import {
   useGetSchemaTypeQuery,
 } from '@/lib/store/slices/editorialApi';
 import { cn } from '@/lib/utils';
-import type { EditorialDataObject } from '@isardsat/editorial-common';
+import type { EditorialDataItem } from '@isardsat/editorial-common';
 import {
   createColumnHelper,
   flexRender,
@@ -25,7 +25,7 @@ import { Circle, CircleCheck, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
-const columnHelper = createColumnHelper<EditorialDataObject>();
+const columnHelper = createColumnHelper<EditorialDataItem>();
 
 export const baseColumns = [
   columnHelper.accessor('id', {
@@ -184,7 +184,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               key={row.id}
               className="cursor-pointer"
               onClick={() =>
-                push(`/collections/${itemType}/${row.original.id}`)
+                push(`/dashboard/collections/${itemType}/${row.original.id}`)
               }
             >
               {row.getVisibleCells().map((cell, index) => (
