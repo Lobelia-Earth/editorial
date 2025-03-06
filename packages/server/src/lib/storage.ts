@@ -1,4 +1,7 @@
-import type { EditorialDataObjectWithType } from '@isardsat/editorial-common';
+import type {
+  EditorialData,
+  EditorialDataObjectWithType,
+} from '@isardsat/editorial-common';
 import {
   EditorialDataItemSchema,
   EditorialDataSchema,
@@ -27,7 +30,7 @@ export function createStorage(dataDirectory: string) {
   /**
    * TODO: This should ideally cache the result of reading the file until an update occurs.
    */
-  async function getContent(): Promise<Record<string, Record<string, Object>>> {
+  async function getContent(): Promise<EditorialData> {
     return await readFile(dataPath, 'utf-8').then((value) => JSON.parse(value));
   }
 
@@ -61,11 +64,12 @@ export function createStorage(dataDirectory: string) {
   async function updateItem(item: EditorialDataObjectWithType) {
     const content = await getContent();
     const oldItem = content[item.type][item.id];
-    const newItem = {
+
+    const newItem = EditorialDataItemSchema.parse({
       ...oldItem,
       ...item,
       updatedAt: new Date().toISOString(),
-    } satisfies EditorialDataObjectWithType;
+    });
 
     content[item.type][item.id] = newItem;
     // TODO: Use superjson to safely encode different types.

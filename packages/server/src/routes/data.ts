@@ -63,6 +63,13 @@ export function createDataRoutes(storage: Storage) {
             param: { name: 'itemType', in: 'path' },
             example: 'newsItem',
           }),
+          locale: z
+            .string()
+            .optional()
+            .openapi({
+              param: { name: 'locale', in: 'query' },
+              example: 'es_ES',
+            }),
         }),
       },
       responses: {
@@ -98,6 +105,13 @@ export function createDataRoutes(storage: Storage) {
             param: { name: 'id', in: 'path' },
             example: 'about-us',
           }),
+          locale: z
+            .string()
+            .optional()
+            .openapi({
+              param: { name: 'locale', in: 'query' },
+              example: 'es_ES',
+            }),
         }),
       },
       responses: {
