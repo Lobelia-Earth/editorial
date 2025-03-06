@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 
-const textFileSuffixes = ['txt', 'html', 'pdf'] as const;
+const textFileSuffixes = ['txt', 'md', 'html', 'pdf'] as const;
 const imageFileSuffixes = ['svg', 'webp', 'png', 'jpeg', 'jpg'] as const;
 
 const fileTypes = [
