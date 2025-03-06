@@ -94,6 +94,37 @@ export function createDataRoutes(storage: Storage) {
   app.openapi(
     createRoute({
       method: 'get',
+      path: '/data/{itemType}/ids',
+      request: {
+        params: z.object({
+          itemType: z.string().openapi({
+            param: { name: 'itemType', in: 'path' },
+            example: 'newsItem',
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: z.array(z.string()),
+            },
+          },
+          description: 'Get object ids by type',
+        },
+      },
+    }),
+    async (c) => {
+      const { itemType } = c.req.valid('param');
+      const content = await storage.getContent();
+
+      return c.json(Object.keys(content[itemType]));
+    }
+  );
+
+  app.openapi(
+    createRoute({
+      method: 'get',
       path: '/data/{itemType}/{id}',
       request: {
         params: z.object({
