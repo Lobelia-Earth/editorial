@@ -1,6 +1,6 @@
 # Editorial
 
-**Editorial** is a [Headless CMS](https://en.wikipedia.org/wiki/Headless_CMS) that helps non-programmers edit website content, upload static files and publish contents to production.
+**Editorial** is a [headless CMS](https://en.wikipedia.org/wiki/Headless_CMS) that helps non-programmers edit website content, upload static files and publish contents to production.
 
 Some example sites built with Editorial:
 
@@ -10,6 +10,62 @@ Some example sites built with Editorial:
 ## Contributing
 
 Currently we don't accept PRs from external collaborators.
+
+## Getting Started
+
+Install Editorial's CLI tooling first:
+
+```sh
+npm install @isardsat/editorial-cli
+```
+
+This will enable you to run the Editorial API server.
+
+```
+npm run editorial start --port 3001
+```
+
+Editorial is now ready to accept requests.
+
+## Hooks
+
+Editorial provides a "hook" interface into the API's lifecycle. By writing a JavaScript file with the corresponding name of the hook into the `editorial/hooks` directory you can manage the flow of data through editorial and respond to changes within the scope of your own application.
+
+### onPublish
+
+This hook triggers when Editorial's publishing process starts. The publishing process takes the preview content (`data.json`) and saves it safely to `data.prod.json`. The hook triggers _after_ this is completed and includes the production `content` as well as the `schema`.
+
+Example:
+
+```JavaScript
+// editorial/hooks/onPublish.mjs
+// @ts-check
+
+/**
+ * @param {Object} content
+ * @param {Object} schema
+ * @returns {Object}
+ */
+export default async function onPublish(content, schema) {
+  console.log('onPublish', content, schema);
+  return content;
+}
+```
+
+### onLocalize
+
+This hook triggers when Editorial's publishing process requests translations, it includes the production content and schema and can be used to extract messages for translations.
+
+Example:
+
+`````JavaScript
+// editorial/hooks/onLocalize.mjs
+// @ts-check
+export default async function onLocalize(content, schema) {
+  console.log('onLocalize', content, schema)
+  return content;
+}
+```
 
 ## Developing a website/application with Editorial
 
@@ -181,13 +237,15 @@ Editorial-based **web sites** have the following structure:
 
   For instance, a `Home` component can be specified by the user within the markdown text as:
 
-  ````
-  ```Home
-  tagline: "**Observing the Earth** to anticipate the effects of a changing climate."
-  providersTitle: Working with the leading data providers
-  marketsTitle: We work with organisations across the globe affected by our changing climate
-  ```
-  ````
+`````
+
+```Home
+tagline: "**Observing the Earth** to anticipate the effects of a changing climate."
+providersTitle: Working with the leading data providers
+marketsTitle: We work with organisations across the globe affected by our changing climate
+```
+
+```
 
 ## Schema documentation
 
@@ -201,20 +259,21 @@ Each item type can have:
 Each field can have:
 
 - General:
-  - `type`: `markdown` | `string` | `boolean` | `date` | `datetime` | `number` | `select` | `color`
-  - `displayName`
-  - `displayExtra` (instructions, etc.)
-  - `dontTranslate` (not necessary for fields of type `boolean` | `date` | `number` | `color`)
-  - `placeholder`
-  - `height` (for `markdown` fields, mainly)
-  - `allowCustomBlocks`: `true | Array<string>` (array of allowed blocks)
-  - `inlineSelect` (for `select`)
-  - `choicesFixed`: `Array<string>`
-  - `choicesPreviousValues` (`boolean`)
-  - `isMultiple` (comma-separated list)
-  - `isRequired`
-  - `isExternalUrl` (adds a button to go to that URL)
-  - `isUploadedFile` (adds a menu to choose one of the uploaded files)
+- `type`: `markdown` | `string` | `boolean` | `date` | `datetime` | `number` | `select` | `color`
+- `displayName`
+- `displayExtra` (instructions, etc.)
+- `dontTranslate` (not necessary for fields of type `boolean` | `date` | `number` | `color`)
+- `placeholder`
+- `height` (for `markdown` fields, mainly)
+- `allowCustomBlocks`: `true | Array<string>` (array of allowed blocks)
+- `inlineSelect` (for `select`)
+- `choicesFixed`: `Array<string>`
+- `choicesPreviousValues` (`boolean`)
+- `isMultiple` (comma-separated list)
+- `isRequired`
+- `isExternalUrl` (adds a button to go to that URL)
+- `isUploadedFile` (adds a menu to choose one of the uploaded files)
 - How field appears in summary:
-  - `showInSummary`
-  - `labelLevel`
+- `showInSummary`
+- `labelLevel`
+```
