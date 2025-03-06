@@ -16,16 +16,7 @@
   },
   "scripts": {
     "compile": "pnpm --recursive --parallel compile",
-    "compile:watch": "pnpm run --recursive --parallel compile:watch",
-    "compileWatch": "oao run-script compileWatch --parallel",
-    "build:tool": "cd packages/editorial && yarn build",
-    "lint": "eslint packages || exit 0",
-    "flow": "flow check || exit 0",
-    "prettier": "prettier --single-quote --trailing-comma es5 --write \"packages/**/*.js\""
-  },
-  "devDependencies": {
-    "oao": "^2.0.1",
-    "prettier": "^3.4.2"
+    "compile:watch": "pnpm run --recursive --parallel compile:watch"
   },
   "volta": {
     "node": "22.13.1",
