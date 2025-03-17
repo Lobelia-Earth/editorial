@@ -1,0 +1,21 @@
+{
+  "name": "@isardsat/create-editorial",
+  "version": "1.0.0",
+  "description": "Create a new editorial project",
+  "keywords": [],
+  "license": "MIT",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "catalog:",
+    "@types/node": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  }
+}
