@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@tsconfig/node22':
+      specifier: ^22.0.0
+      version: 22.0.0
     '@types/node':
       specifier: 22.13.1
       version: 22.13.1
@@ -21,6 +24,12 @@ importers:
   .: {}
 
   examples/basic:
+    devDependencies:
+      '@isardsat/editorial-cli':
+        specifier: workspace:^
+        version: link:../../packages/cli
+
+  examples/test:
     devDependencies:
       '@isardsat/editorial-cli':
         specifier: workspace:^
@@ -175,7 +184,7 @@ importers:
         version: 13.1.0
     devDependencies:
       '@tsconfig/node22':
-        specifier: ^22.0.0
+        specifier: 'catalog:'
         version: 22.0.0
       '@types/node':
         specifier: 'catalog:'
@@ -194,8 +203,27 @@ importers:
         version: 3.24.1
     devDependencies:
       '@tsconfig/node22':
-        specifier: ^22.0.0
+        specifier: 'catalog:'
         version: 22.0.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
+
+  packages/create-editorial:
+    dependencies:
+      commander:
+        specifier: ^13.1.0
+        version: 13.1.0
+    devDependencies:
+      '@tsconfig/node22':
+        specifier: 'catalog:'
+        version: 22.0.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.13.1
+      prettier:
+        specifier: 'catalog:'
+        version: 3.4.2
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -224,6 +252,9 @@ importers:
         specifier: ^3.24.1
         version: 3.24.1
     devDependencies:
+      '@tsconfig/node22':
+        specifier: 'catalog:'
+        version: 22.0.0
       '@types/node':
         specifier: 'catalog:'
         version: 22.13.1
