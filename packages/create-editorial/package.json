@@ -17,5 +17,8 @@
     "@types/node": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
+  },
+  "volta": {
+    "extends": "../../package.json"
   }
 }
