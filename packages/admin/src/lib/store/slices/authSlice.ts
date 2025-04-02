@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { auth, firebaseDb } from '@/lib/auth';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 import {
@@ -8,6 +8,7 @@ import {
   setPersistence,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
+import { get, ref } from 'firebase/database';
 import { createAppAsyncThunk } from '../hooks';
 
 interface User {
@@ -17,6 +18,7 @@ interface User {
 
 export interface AuthState {
   user?: User;
+  role?: string;
   isLoading: boolean;
   error?: string;
 }
@@ -43,9 +45,17 @@ export const loginUser = createAppAsyncThunk(
         return signInWithEmailAndPassword(auth, email, password);
       });
 
+      const emailKey = userCredential.user.email?.replace(/[.@]/g, '_');
+      const editorRef = ref(firebaseDb, `editors/wekeo-client/${emailKey}`);
+      const editorSnapshot = await get(editorRef);
+      const editorData = editorSnapshot.val();
+
       return {
-        uid: userCredential.user.uid,
-        email: userCredential.user.email ?? email,
+        user: {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email ?? email,
+        },
+        role: editorData as UserRole,
       };
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'message' in error) {
@@ -96,7 +106,8 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
+        state.role = action.payload.role;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -108,6 +119,7 @@ const authSlice = createSlice({
       .addCase(signOut.fulfilled, (state) => {
         state.isLoading = false;
         state.user = undefined;
+        state.role = undefined;
       })
       .addCase(signOut.rejected, (state, action) => {
         state.isLoading = false;

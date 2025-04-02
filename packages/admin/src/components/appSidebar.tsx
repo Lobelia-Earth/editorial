@@ -1,30 +1,31 @@
-'use client';
+"use client";
 
-import { clientEnv } from '@/lib/env';
-import { useAppDispatch } from '@/lib/store/hooks';
-import { signOut } from '@/lib/store/slices/authSlice';
-import { usePublishMutation } from '@/lib/store/slices/editorialApi';
+import { clientEnv } from "@/lib/env";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { signOut } from "@/lib/store/slices/authSlice";
+import { usePublishMutation, usePullMutation, usePushMutation } from "@/lib/store/slices/editorialApi";
 import {
+  ArrowDown,
+  ArrowUp,
   Blocks,
   ChevronDown,
   ExternalLink,
-  Eye,
   Files,
   Grid,
   LogOut,
   Square,
   Upload,
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { Modal } from './modal';
-import SidebarSchemaItems from './sidebarSchemaItems';
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Modal } from "./modal";
+import SidebarSchemaItems from "./sidebarSchemaItems";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from './ui/collapsible';
+} from "./ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -36,13 +37,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from './ui/sidebar';
+} from "./ui/sidebar";
 
 export default function AppSidebar() {
   const dispatch = useAppDispatch();
   const pathname = usePathname();
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [publish] = usePublishMutation();
+  const [pull] = usePullMutation();
+  const [push] = usePushMutation();
+  const role = useAppSelector((state) => state.auth.role);
 
   return (
     <Sidebar className="z-50">
@@ -65,7 +69,7 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <Collapsible
-                defaultOpen={pathname.startsWith('/collections')}
+                defaultOpen={pathname.startsWith("/collections")}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
@@ -83,7 +87,7 @@ export default function AppSidebar() {
               </Collapsible>
 
               <Collapsible
-                defaultOpen={pathname.startsWith('/singles')}
+                defaultOpen={pathname.startsWith("/singles")}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
@@ -124,15 +128,22 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href={clientEnv.NEXT_PUBLIC_PREVIEW_URL}>
-                    <Eye />
-                    <span>Preview</span>
-                    <ExternalLink className="ml-auto" />
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {role === "developer" && (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => pull()}>
+                      <ArrowDown />
+                      <span>Pull from repo</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => push()}>
+                      <ArrowUp />
+                      <span>Push to repo</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
 
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={() => publish()}>
@@ -147,6 +158,12 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <SidebarMenuButton asChild>
+          <Link href={clientEnv.NEXT_PUBLIC_PREVIEW_URL}>
+            Preview
+            <ExternalLink className="ml-auto" />
+          </Link>
+        </SidebarMenuButton>
         <SidebarMenuButton onClick={() => setAboutModalOpen(true)}>
           About
         </SidebarMenuButton>

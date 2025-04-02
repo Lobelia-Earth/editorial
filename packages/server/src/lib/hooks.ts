@@ -4,8 +4,8 @@ export async function createHooks(configDirectory: string) {
   const hooksDirPath = join(configDirectory, 'hooks');
 
   async function loadHook(name: string): Promise<Function | null> {
-    const onLocalizeScript = join(process.cwd(), hooksDirPath, 'onLocalize');
-    const module = await import(`${onLocalizeScript}.mjs`);
+    const hookScript = join(process.cwd(), hooksDirPath, name);
+    const module = await import(`${hookScript}.mjs`);
 
     const hookFunction =
       typeof module.default === 'function' ? module.default : null;
@@ -13,30 +13,36 @@ export async function createHooks(configDirectory: string) {
     return hookFunction;
   }
 
+  async function executeHook<T = any, Args extends any[] = any[]>(
+    hookName: string,
+    ...args: Args
+  ): Promise<T | undefined> {
+    const hook = await loadHook(hookName);
+    if (!hook) return;
+    return hook(...args);
+  }
+
   async function onPublish(content: any, schema: any) {
-    const onPublishHook = await loadHook('onPublish');
-
-    if (!onPublishHook) return;
-
-    return onPublishHook(content, schema);
+    return executeHook('onPublish', content, schema);
   }
 
   async function onLocalize(content: any, schema: any): Promise<any> {
-    const onLocalizeHook = await loadHook('onLocalize');
-
-    if (!onLocalizeHook) return;
-
-    return onLocalizeHook(content, schema);
+    return executeHook('onLocalize', content, schema);
   }
 
   async function onLocalizeEnd(content: any, schema: any) {
-    const onLocalizeEndHook = await loadHook('onLocalizeEnd');
-
-    if (!onLocalizeEndHook) return;
-
-    return onLocalizeEndHook(content, schema);
+    return executeHook('onLocalizeEnd', content, schema);
   }
 
-  return { onPublish, onLocalize, onLocalizeEnd };
+  async function onPull() {
+    return executeHook('onPull');
+  }
+
+  async function onPush() {
+    return executeHook('onPush');
+  }
+
+  return { onPublish, onLocalize, onLocalizeEnd, onPull, onPush };
 }
+
 export type Hooks = Awaited<ReturnType<typeof createHooks>>;

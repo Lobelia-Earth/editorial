@@ -39,5 +39,39 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
     }
   );
 
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/pull',
+      responses: {
+        200: {
+          description: 'Trigger the pull process',
+        },
+      },
+    }),
+    async (c) => {
+      await hooks.onPull();
+
+      return c.json(true);
+    }
+  );
+
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/push',
+      responses: {
+        200: {
+          description: 'Trigger the push process',
+        },
+      },
+    }),
+    async (c) => {
+      await hooks.onPush();
+
+      return c.json(true);
+    }
+  );
+
   return app;
 }

@@ -18,6 +18,12 @@ export const editorialApi = createApi({
   baseQuery,
   tagTypes: ['schema', 'data', 'files'],
   endpoints: (builder) => ({
+    pull: builder.mutation<boolean, void>({
+      query: () => ({ url: '/pull', method: 'POST' }),
+    }),
+    push: builder.mutation<boolean, void>({
+      query: () => ({ url: '/push', method: 'POST' }),
+    }),
     publish: builder.mutation<boolean, void>({
       query: () => ({ url: '/publish', method: 'POST' }),
     }),
@@ -139,5 +145,7 @@ export const {
   useGetSchemaQuery,
   useGetSchemaTypeQuery,
   usePublishMutation,
+  usePullMutation,
+  usePushMutation,
   useUpdateObjectMutation,
 } = editorialApi;
