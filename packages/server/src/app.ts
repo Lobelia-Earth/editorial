@@ -7,6 +7,7 @@ import { createConfig } from "./lib/config.js";
 import { createHooks } from "./lib/hooks.js";
 import { createStorage, type Storage } from "./lib/storage.js";
 import { createActionRoutes } from "./routes/actions.js";
+import { createAdminRoutes } from "./routes/admin.js";
 import { createDataRoutes } from "./routes/data.js";
 import { createFilesRoutes } from "./routes/files.js";
 
@@ -38,13 +39,7 @@ export async function createEditorialServer({
   app.route("/api/v1", createDataRoutes(storage));
   app.route("/api/v1", createFilesRoutes());
   app.route("/api/v1", createActionRoutes(storage, hooks));
-
-  app.use(
-    "/public/*",
-    serveStatic({
-      root: "./",
-    })
-  );
+  app.route("/", createAdminRoutes());
 
   app.doc("/doc", {
     openapi: "3.0.0",
@@ -54,6 +49,13 @@ export async function createEditorialServer({
     },
   });
   app.get("/doc/ui", swaggerUI({ url: "/doc" }));
+
+  app.use(
+    "/public/*",
+    serveStatic({
+      root: "./",
+    })
+  );
 
   return {
     app,
