@@ -23,7 +23,7 @@ import {
 } from "@tanstack/react-table";
 import { Circle, CircleCheck, Trash } from "lucide-react";
 import { useMemo } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const columnHelper = createColumnHelper<EditorialDataItem>();
 
@@ -62,7 +62,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
   const actionColumn = useMemo(() => {
     return columnHelper.display({
       id: "actions",
-      header: () => <span className="flex justify-end ml-auto">Actions</span>,
+      header: () => <span className="flex justify-end ml-auto"></span>,
       cell(props) {
         return (
           <div className="flex gap-2 justify-end">
@@ -81,10 +81,15 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               <span className="sr-only">Delete entry</span>
             </button>
 
-            {/* <Button size="icon" variant="ghost" disabled className="group">
+            {/* <button
+              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
               <Ellipsis className="group-hover:text-red-400" />
               <span className="sr-only">Delete entry</span>
-            </Button> */}
+            </button> */}
           </div>
         );
       },
@@ -134,10 +139,8 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                     </span>
                   );
                 default:
-                  break;
+                  return props.getValue();
               }
-
-              return props.getValue();
             },
           })
         ),
@@ -161,15 +164,17 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
   return (
     <div className="rounded-sm border overflow-auto">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 z-50">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
+              }}
+              key={headerGroup.id}
+            >
               {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-
-                  // style={{ position: "sticky", top: 0, zIndex: 100 }}
-                >
+                <TableHead key={header.id} className="bg-background">
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -184,27 +189,26 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
 
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              className="cursor-pointer"
-              onClick={() =>
-                navigate(
-                  `/admin/dashboard/collections/${itemType}/${row.original.id}`
-                )
-              }
-            >
-              {row.getVisibleCells().map((cell, index) => (
-                <TableCell
-                  key={cell.id}
-                  className={cn("h-10", {
-                    "w-full": index == columns.length - 1,
-                  })}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-              {/* <TableCell className="p-0 w-0" /> */}
-            </TableRow>
+            <Link to={`/admin/dashboard/${itemType}/${row.original.id}`}>
+              <TableRow
+                key={row.id}
+                className="grid"
+                style={{
+                  gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
+                }}
+              >
+                {row.getVisibleCells().map((cell, index) => (
+                  <TableCell
+                    key={cell.id}
+                    className={cn("h-10", {
+                      "w-full": index == columns.length - 1,
+                    })}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </Link>
           ))}
         </TableBody>
       </Table>

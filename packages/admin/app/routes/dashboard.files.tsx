@@ -1,5 +1,5 @@
 import { Copy, Ellipsis, Trash } from "lucide-react";
-import Files from "./files";
+import Files from "../components/files";
 
 export default function FilesPage() {
   return (

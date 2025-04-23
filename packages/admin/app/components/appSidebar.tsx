@@ -69,10 +69,7 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Content</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <Collapsible
-                defaultOpen={pathname.startsWith("/collections")}
-                className="group/collapsible"
-              >
+              <Collapsible className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">
@@ -81,16 +78,14 @@ export default function AppSidebar() {
                       <ChevronDown className="transition-transform ml-auto -mr-[2px] group-data-[state=open]:rotate-180" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
+
                   <CollapsibleContent>
-                    <SidebarSchemaItems href="/admin/dashboard/collections" />
+                    <SidebarSchemaItems />
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
 
-              <Collapsible
-                defaultOpen={pathname.startsWith("/singles")}
-                className="group/collapsible"
-              >
+              <Collapsible className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">
@@ -101,10 +96,7 @@ export default function AppSidebar() {
                   </CollapsibleTrigger>
 
                   <CollapsibleContent>
-                    <SidebarSchemaItems
-                      href="/admin/dashboard/singles"
-                      singleton
-                    />
+                    <SidebarSchemaItems singleton />
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>

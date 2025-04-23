@@ -2,14 +2,6 @@ import LoginForm from "@/components/LoginForm";
 import { useAppSelector } from "@/lib/store/hooks";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import type { Route } from "./+types/home";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
 
 export default function Login() {
   const navigate = useNavigate();

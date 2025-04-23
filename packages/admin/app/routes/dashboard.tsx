@@ -1,13 +1,11 @@
-'use client';
-
-import InfoCard from '@/components/infoCard';
+import InfoCard from "@/components/infoCard";
 import {
   useGetDataCountQuery,
   useGetFileCountQuery,
-} from '@/lib/store/slices/editorialApi';
-import RecentActivity from './recentActivity';
+} from "@/lib/store/slices/editorialApi";
+import RecentActivity from "./recentActivity";
 
-export default function Homepage() {
+export default function Dashboard() {
   const { data: dataCount, isLoading: dataCountLoading } =
     useGetDataCountQuery();
   const { data: fileCount, isLoading: fileCountLoading } =

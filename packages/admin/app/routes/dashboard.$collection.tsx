@@ -1,18 +1,15 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { useGetSchemaTypeQuery } from "@/lib/store/slices/editorialApi";
 import { Plus } from "lucide-react";
 import { Link } from "react-router";
-import SchemaTable from "../schemaTable";
+import SchemaTable from "../components/schemaTable";
+import type { Route } from "./+types/dashboard.$collection";
 
-export interface CollectionsListProps {
-  itemType: string;
-}
+export default function CollectionsList({ params }: Route.ComponentProps) {
+  const { collectionId } = params;
 
-export default function CollectionsList({ itemType }: CollectionsListProps) {
   const { data: schema, isFetching: isSchemaFetching } =
-    useGetSchemaTypeQuery(itemType);
+    useGetSchemaTypeQuery(collectionId);
 
   if (isSchemaFetching || !schema) return null;
 
@@ -27,15 +24,16 @@ export default function CollectionsList({ itemType }: CollectionsListProps) {
             >
               {schema.displayName}
             </h2>
+
             <Button asChild variant="default" size="sm" className="ml-auto">
-              <Link to={`/admin/dashboard/collections/${itemType}/new`}>
+              <Link to={`/admin/dashboard/${collectionId}/new`}>
                 <Plus />
                 Create
               </Link>
             </Button>
           </div>
 
-          <SchemaTable key={itemType} itemType={itemType} />
+          <SchemaTable key={collectionId} itemType={collectionId} />
         </div>
       </div>
     </div>

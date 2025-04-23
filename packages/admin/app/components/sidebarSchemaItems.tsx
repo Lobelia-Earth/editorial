@@ -2,16 +2,14 @@ import {
   useGetDataQuery,
   useGetSchemaQuery,
 } from "@/lib/store/slices/editorialApi";
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 import { SidebarMenuSub, SidebarMenuSubButton } from "./ui/sidebar";
 
 export interface SidebarSchemaItemsProps {
-  href: string;
   singleton?: boolean;
 }
 
 export default function SidebarSchemaItems({
-  href,
   singleton,
 }: SidebarSchemaItemsProps) {
   const { data: schema } = useGetSchemaQuery();
@@ -26,19 +24,30 @@ export default function SidebarSchemaItems({
         .map(([key, value]) => {
           return (
             <SidebarMenuSub key={value.displayName}>
-              <SidebarMenuSubButton asChild>
-                <Link to={`${href}/${key}`}>
-                  <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
-                    {value.displayName}
-                  </span>
-
-                  {!singleton && data && (
-                    <span className="text-xs text-gray-500 ml-auto pr-1">
-                      {Object.keys(data[key]).length}
+              <NavLink
+                to={
+                  singleton
+                    ? `/admin/dashboard/${key}/default`
+                    : `/admin/dashboard/${key}`
+                }
+                className={({ isActive, isPending }) =>
+                  isPending ? "pending" : isActive ? "active" : ""
+                }
+              >
+                {({ isActive }) => (
+                  <SidebarMenuSubButton isActive={isActive}>
+                    <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
+                      {value.displayName}
                     </span>
-                  )}
-                </Link>
-              </SidebarMenuSubButton>
+
+                    {!singleton && data && (
+                      <span className="text-xs text-gray-500 ml-auto pr-1">
+                        {Object.keys(data[key]).length}
+                      </span>
+                    )}
+                  </SidebarMenuSubButton>
+                )}
+              </NavLink>
             </SidebarMenuSub>
           );
         })}

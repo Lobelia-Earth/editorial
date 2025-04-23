@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Table,
   TableBody,
@@ -8,7 +6,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetDataQuery } from "@/lib/store/slices/editorialApi";
+import {
+  useGetDataQuery,
+  useGetSchemaQuery,
+} from "@/lib/store/slices/editorialApi";
 import { cn } from "@/lib/utils";
 import type { EditorialDataItem } from "@isardsat/editorial-common";
 import {
@@ -18,7 +19,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 
 type RecentDataObject = EditorialDataItem & {
   type: string;
@@ -59,23 +60,24 @@ export const columns = [
 ];
 
 export default function RecentActivity() {
-  const navigate = useNavigate();
-
   const { data } = useGetDataQuery();
+  const { data: schema } = useGetSchemaQuery();
 
   const flatData = useMemo(() => {
-    if (!data) return [];
+    if (!data || !schema) return [];
 
-    const items = Object.entries(data).reduce((acc, [type, item]) => {
-      return acc.concat(Object.values(item).map((i) => ({ ...i, type })));
-    }, [] as RecentDataObject[]);
+    const items = Object.entries(data)
+      .filter(([type]) => type in schema)
+      .reduce((acc, [type, item]) => {
+        return acc.concat(Object.values(item).map((i) => ({ ...i, type })));
+      }, [] as RecentDataObject[]);
 
     const sortedItems = items.toSorted((a, b) => {
       return a.updatedAt > b.updatedAt ? -1 : 1;
     });
 
     return sortedItems.slice(0, 6);
-  }, [data]);
+  }, [data, schema]);
 
   const table = useReactTable({
     data: flatData,
@@ -88,7 +90,13 @@ export default function RecentActivity() {
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow
+              key={headerGroup.id}
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
+              }}
+            >
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
                   {header.isPlaceholder
@@ -104,26 +112,24 @@ export default function RecentActivity() {
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              className="cursor-pointer"
-              onClick={() => {
-                if (row.original.id === "default") {
-                  navigate(`/dashboard/singles/${row.original.type}`);
-                } else {
-                  navigate(
-                    `/dashboard/collections/${row.original.type}/${row.original.id}`
-                  );
-                }
-              }}
+            <Link
+              to={`/admin/dashboard/${row.original.type}/${row.original.id}`}
             >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className={cn("p-2")}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-              {/* <TableCell className="p-0 w-0" /> */}
-            </TableRow>
+              <TableRow
+                key={row.id}
+                className="grid"
+                style={{
+                  gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className={cn("p-2")}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+                {/* <TableCell className="p-0 w-0" /> */}
+              </TableRow>
+            </Link>
           ))}
         </TableBody>
       </Table>

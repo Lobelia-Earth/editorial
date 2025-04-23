@@ -1,4 +1,4 @@
-@reference "../../../../app.css";
+@reference "../app.css";
 
 .mdxeditor :global(.mdxeditor) {
   overflow: hidden;

@@ -9,25 +9,18 @@ import {
 export default [
   ...prefix("/admin", [
     index("routes/home.tsx"),
-    layout("routes/dashboard/layout.tsx", [
-      route("dashboard", "routes/dashboard/dashboard.tsx"),
+    layout("routes/dashboard._layout.tsx", [
+      route("dashboard", "routes/dashboard.tsx"),
       route(
-        "dashboard/collections/:collectionId/new",
-        "routes/dashboard/collections/[itemType]/new/newCollectionItem.tsx"
+        "dashboard/:collectionId/new",
+        "routes/dashboard.$collection.new.tsx"
       ),
+      route("dashboard/:collectionId", "routes/dashboard.$collection.tsx"),
       route(
-        "dashboard/collections/:collectionId",
-        "routes/dashboard/collections/[itemType]/collection.tsx"
+        "dashboard/:collectionId/:documentId",
+        "routes/dashboard.$collection.$document.tsx"
       ),
-      route(
-        "dashboard/collections/:collectionId/:documentId",
-        "routes/dashboard/collections/[itemType]/[id]/collectionItem.tsx"
-      ),
-      route(
-        "dashboard/singles/:itemType",
-        "routes/dashboard/singles/[itemType]/singles.tsx"
-      ),
-      route("dashboard/files", "routes/dashboard/files/page.tsx"),
+      route("dashboard/files", "routes/dashboard.files.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;
