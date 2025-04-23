@@ -1,22 +1,14 @@
 {
   "name": "editorial",
   "private": true,
-  "version": "6.0.0",
-  "author": "Lobelia Earth",
-  "license": "MIT",
-  "description": "Simple CMS for static websites",
-  "keywords": [],
-  "homepage": "https://github.com/Lobelia-Earth/editorial",
-  "bugs": {
-    "url": "https://github.com/Lobelia-Earth/editorial/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Lobelia-Earth/editorial.git"
-  },
+  "version": "0.0.0",
   "scripts": {
     "compile": "pnpm --recursive --parallel compile",
     "compile:watch": "pnpm run --recursive --parallel compile:watch"
+  },
+  "engines": {
+    "node": ">=22.13.1",
+    "pnpm": "10.2.0"
   },
   "volta": {
     "node": "22.13.1",
