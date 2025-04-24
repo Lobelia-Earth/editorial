@@ -1,14 +1,11 @@
 {
   "name": "@isardsat/editorial-common",
-  "version": "0.0.0",
+  "version": "6.0.0-canary-001",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "compile": "tsc",
     "compile:watch": "tsc --watch"
-  },
-  "volta": {
-    "extends": "../../package.json"
   },
   "dependencies": {
     "@hono/zod-openapi": "^0.18.4",
@@ -17,5 +14,8 @@
   "devDependencies": {
     "@tsconfig/node22": "catalog:",
     "typescript": "catalog:"
+  },
+  "volta": {
+    "extends": "../../package.json"
   }
 }

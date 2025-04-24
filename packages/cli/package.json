@@ -1,9 +1,9 @@
 {
   "name": "@isardsat/editorial-cli",
-  "version": "5.3.6",
+  "version": "6.0.0-canary-001",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "type": "module",
   "bin": {
     "editorial": "bin/index.js"
   },
@@ -11,16 +11,16 @@
     "compile": "tsc",
     "compile:watch": "tsc --watch"
   },
-  "devDependencies": {
-    "@tsconfig/node22": "catalog:",
-    "@types/node": "catalog:",
-    "typescript": "^5.7.3"
-  },
   "dependencies": {
     "@commander-js/extra-typings": "^13.0.0",
     "@hono/node-server": "^1.13.8",
     "@isardsat/editorial-server": "workspace:^",
     "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "^5.7.3"
   },
   "volta": {
     "extends": "../../package.json"

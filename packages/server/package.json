@@ -1,21 +1,22 @@
 {
   "name": "@isardsat/editorial-server",
+  "version": "6.0.0-canary-001",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "compile": "tsc",
     "compile:watch": "tsc --watch"
   },
-  "files": [
-    "dist"
-  ],
   "dependencies": {
     "@hono/node-server": "^1.13.8",
     "@hono/swagger-ui": "^0.5.0",
     "@hono/zod-openapi": "^0.18.4",
-    "@isardsat/editorial-common": "workspace:^",
     "@isardsat/editorial-admin": "workspace:^",
+    "@isardsat/editorial-common": "workspace:^",
     "hono": "^4.6.20",
     "yaml": "^2.7.0",
     "zod": "^3.24.1"
