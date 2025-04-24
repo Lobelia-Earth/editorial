@@ -1,5 +1,5 @@
 {
-  "name": "@isardsat/editorial-docs",
+  "name": "editorial-docs",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
