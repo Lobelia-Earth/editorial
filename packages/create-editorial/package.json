@@ -4,7 +4,9 @@
   "description": "Create a new editorial project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublishOnly": "pnpm run compile",
+    "compile": "tsc",
+    "compile:watch": "tsc --watch"
   },
   "dependencies": {
     "commander": "^13.1.0"

@@ -8,6 +8,7 @@
     "dist"
   ],
   "scripts": {
+    "prepublishOnly": "pnpm run compile",
     "compile": "tsc",
     "compile:watch": "tsc --watch"
   },
