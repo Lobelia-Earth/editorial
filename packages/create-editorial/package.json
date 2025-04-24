@@ -3,6 +3,9 @@
   "version": "6.0.0-canary-001",
   "description": "Create a new editorial project",
   "main": "index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prepublishOnly": "pnpm run compile",
     "compile": "tsc",
