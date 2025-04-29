@@ -1,6 +1,6 @@
 {
   "name": "@isardsat/editorial-common",
-  "version": "6.0.0-canary-001",
+  "version": "6.0.0-canary-002",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

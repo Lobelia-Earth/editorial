@@ -1,6 +1,6 @@
 {
   "name": "@isardsat/editorial-server",
-  "version": "6.0.0-canary-001",
+  "version": "6.0.0-canary-002",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
