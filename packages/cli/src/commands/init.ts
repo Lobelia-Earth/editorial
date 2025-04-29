@@ -1,12 +1,19 @@
 import { Command } from "@commander-js/extra-typings";
-import { mkdir, writeFile } from "fs/promises";
-import * as path from "path";
+import { existsSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
+import * as path from "node:path";
 
 export const initCommand = new Command()
   .name("init")
   .description("initialize files required for Editorial to function")
   .action(async () => {
     console.log("Initializing editorial...");
+
+    // Check if the editorial directory already exists
+    if (existsSync("./editorial")) {
+      console.log("Editorial directory already exists!");
+      return process.exit(1);
+    }
 
     try {
       await mkdir("./editorial", { recursive: true });
@@ -15,7 +22,7 @@ export const initCommand = new Command()
       // Create config.json with basic configuration
       const configData = JSON.stringify(
         {
-          name: "WEkEO",
+          name: "Editorial",
           publicUrl: "http://localhost:3001/",
           previewUrl: "http://localhost:3001/preview/",
         },
@@ -37,7 +44,7 @@ dummy:
     body:
       type: markdown
       displayName: Body
-      displayExtra: 'Write anything you want!'
+      displayExtra: "Write anything you want!"
 `;
 
       await writeFile(path.join("editorial", "schema.yaml"), schemaData);

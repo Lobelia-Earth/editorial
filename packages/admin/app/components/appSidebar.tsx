@@ -19,7 +19,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Link } from "react-router";
 import { Modal } from "./modal";
 import SidebarSchemaItems from "./sidebarSchemaItems";
 import {
@@ -42,7 +42,6 @@ import {
 
 export default function AppSidebar() {
   const dispatch = useAppDispatch();
-  const { pathname } = useLocation();
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [publish] = usePublishMutation();
   const [pull] = usePullMutation();

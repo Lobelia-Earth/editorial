@@ -27,6 +27,7 @@ export const startCommand = new Command()
 
     console.log(`  Editorial ${version}`);
     console.log(`  - Local:         http://localhost:${port}`);
+    console.log(`  - Admin panel:   http://localhost:${port}/admin/dashboard`);
     console.log(`  - Swagger UI:    http://localhost:${port}/doc/ui\n`);
 
     console.log("Starting api...");

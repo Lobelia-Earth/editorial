@@ -1,5 +1,5 @@
 {
-  "name": "WEkEO",
-  "publicUrl": "http://localhost",
-  "previewUrl": "http://localhost:3001/preview"
+  "name": "Editorial",
+  "publicUrl": "http://localhost:3001/",
+  "previewUrl": "http://localhost:3001/preview/"
 }
