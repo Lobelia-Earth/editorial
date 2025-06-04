@@ -1,10 +1,12 @@
 {
   "name": "editorial",
   "private": true,
-  "version": "0.0.0",
   "scripts": {
     "compile": "pnpm --recursive --parallel compile",
     "compile:watch": "pnpm run --recursive --parallel compile:watch"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.4"
   },
   "engines": {
     "node": ">=22.16.0",
