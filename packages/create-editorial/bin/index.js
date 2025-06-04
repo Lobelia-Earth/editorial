@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-'use strict';
+"use strict";
 
-const { run } = require('../dist/index.js');
+const { command } = require("../dist/index.js");
 
-run(process.argv);
+command.parse(process.argv);
