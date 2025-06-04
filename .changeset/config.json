@@ -1,10 +1,18 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
   "changelog": "@changesets/cli/changelog",
-  "commit": false,
-  "fixed": [],
+  "commit": true,
+  "fixed": [
+    [
+      "@isardsat/editorial-cli",
+      "@isardsat/editorial-server",
+      "@isardsat/editorial-admin",
+      "@isardsat/editorial-common",
+      "@isardsat/create-editorial"
+    ]
+  ],
   "linked": [],
-  "access": "restricted",
+  "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": []
