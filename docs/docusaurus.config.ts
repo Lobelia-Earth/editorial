@@ -1,35 +1,35 @@
-import type * as Preset from '@docusaurus/preset-classic';
-import type { Config } from '@docusaurus/types';
-import { themes as prismThemes } from 'prism-react-renderer';
+import type * as Preset from "@docusaurus/preset-classic";
+import type { Config } from "@docusaurus/types";
+import { themes as prismThemes } from "prism-react-renderer";
 
 const config: Config = {
-  title: 'Editorial',
-  tagline: 'Flexible headless CMS',
-  favicon: 'img/favicon.ico',
+  title: "Editorial",
+  tagline: "Flexible headless CMS",
+  favicon: "img/favicon.ico",
 
-  url: 'https://lobelia-earth.github.io/',
-  baseUrl: '',
+  url: "https://lobelia-earth.github.io/",
+  baseUrl: "",
 
-  organizationName: 'lobelia-earth',
-  projectName: 'editorial',
+  organizationName: "lobelia-earth",
+  projectName: "editorial",
+  trailingSlash: false,
 
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
 
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
 
   presets: [
     [
-      '@docusaurus/preset-classic',
+      "@docusaurus/preset-classic",
       {
         docs: {
-          routeBasePath: '/',
-          sidebarPath: './sidebars.ts',
-          editUrl:
-            'https://github.com/Lobelia-Earth/editorial/tree/main/docs/',
+          routeBasePath: "/",
+          sidebarPath: "./sidebars.ts",
+          editUrl: "https://github.com/Lobelia-Earth/editorial/tree/main/docs/",
         },
         blog: false,
         // blog: {
@@ -48,7 +48,7 @@ const config: Config = {
         //   onUntruncatedBlogPosts: 'warn',
         // },
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: "./src/css/custom.css",
         },
       } satisfies Preset.Options,
     ],
@@ -56,50 +56,50 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: "img/docusaurus-social-card.jpg",
     navbar: {
-      title: 'Editorial',
+      title: "Editorial",
       // logo: {
       //   alt: 'My Site Logo',
       //   src: 'img/logo.svg',
       // },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Documentation',
+          type: "docSidebar",
+          sidebarId: "tutorialSidebar",
+          position: "left",
+          label: "Documentation",
         },
         // {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/Lobelia-Earth/editorial',
-          label: 'GitHub',
-          position: 'right',
+          href: "https://github.com/Lobelia-Earth/editorial",
+          label: "GitHub",
+          position: "right",
         },
       ],
     },
     footer: {
-      style: 'dark',
+      style: "dark",
       links: [
         {
-          title: 'Docs',
+          title: "Docs",
           items: [
             {
-              label: 'Getting Started',
-              to: '/docs/intro',
+              label: "Getting Started",
+              to: "/docs/intro",
             },
           ],
         },
         {
-          title: 'More',
+          title: "More",
           items: [
             {
-              label: 'GitHub',
-              href: 'https://github.com/Lobelia-Earth/editorial',
+              label: "GitHub",
+              href: "https://github.com/Lobelia-Earth/editorial",
             },
             {
-              label: 'Lobelia',
-              to: 'https://lobelia.earth/',
+              label: "Lobelia",
+              to: "https://lobelia.earth/",
             },
           ],
         },
