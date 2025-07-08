@@ -1,14 +1,15 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getDatabase } from 'firebase/database';
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
+import { clientEnv } from "./env";
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyABCthtosgdR2ccIt8Fi3xfKJhiJo1EzTo',
-  authDomain: 'web-editor-ca399.firebaseapp.com',
-  databaseURL: 'https://web-editor-ca399.firebaseio.com',
-  projectId: 'web-editor-ca399',
-  storageBucket: '',
-  messagingSenderId: '940670473661',
+  apiKey: clientEnv.FIREBASE_API_KEY,
+  authDomain: clientEnv.FIREBASE_AUTH_DOMAIN,
+  databaseURL: clientEnv.FIREBASE_DATABASE_URL,
+  projectId: clientEnv.FIREBASE_PROJECT_ID,
+  storageBucket: clientEnv.FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: clientEnv.FIREBASE_MESSAGING_SENDER_ID || "",
 };
 
 export const app = initializeApp(firebaseConfig);
