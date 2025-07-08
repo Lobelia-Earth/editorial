@@ -10,7 +10,8 @@ The minimum version of Node.js is **18.x**, the recommended version if **20.x**.
 
 **Quickstart**: Use `create-editorial` with `npx @isardsat/create-editorial`, `yarn @isardsat/create create-editorial`, or `pnpm create @isardsat/create-edtitorial` to quickly bootstrap an example Editorial project.
 
+**Examples**: You can use the [examples](./examples/) to get an idea of how editorial works.
+
 ## Contributing
 
 We currently don't accept PRs from external collaborators but we plan to! If you have any problems with Editorial we [track issues on Github](https://github.com/Lobelia-Earth/editorial/issues)
-

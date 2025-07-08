@@ -15,3 +15,7 @@ node_modules
 *.sublime-workspace
 .DS_Store
 .vercel
+
+# Claude Code
+.claude
+CLAUDE.md
