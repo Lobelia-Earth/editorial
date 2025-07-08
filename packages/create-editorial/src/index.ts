@@ -10,12 +10,11 @@ const { version } = JSON.parse(
 
 export const command = new Command()
   .version(version)
-  .argument("[directory]", "root directory for editorial", "./editorial")
+  .argument("[directory]", "root directory for your application")
   .usage("[directory] [options]")
   .description("Create a new Editorial application")
   .action(async (directory) => {
-    console.log("Creating new Editorial application");
-    console.log(directory);
+    console.log("Creating new Editorial application...");
 
     try {
       await access(directory);
