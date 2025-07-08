@@ -9,7 +9,8 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      navigate("/");
+      // TODO: Configurable basename
+      navigate("/admin");
     }
   }, [isLoading, navigate, user]);
 
