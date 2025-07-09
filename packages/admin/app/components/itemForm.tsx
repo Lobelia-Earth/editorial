@@ -154,9 +154,6 @@ export default function ItemForm({
                   required: value.isRequired,
                 }}
                 render={({ field }) => {
-                  console.log(value);
-                  console.log(field);
-
                   return (
                     <FormItem>
                       <FormLabel className="flex gap-1 items-baseline">
