@@ -48,13 +48,13 @@ export const columns = [
   columnHelper.accessor("createdAt", {
     header: "Created",
     cell(props) {
-      return formatTime(new Date(), new Date(props.getValue()));
+      return formatTime(new Date(props.getValue()));
     },
   }),
   columnHelper.accessor("updatedAt", {
     header: "Updated",
     cell(props) {
-      return formatTime(new Date(), new Date(props.getValue()));
+      return formatTime(new Date(props.getValue()));
     },
   }),
 ];
