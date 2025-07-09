@@ -8,6 +8,7 @@ import { createHooks } from "./lib/hooks.js";
 import { createStorage, type Storage } from "./lib/storage.js";
 import { createActionRoutes } from "./routes/actions.js";
 import { createAdminRoutes } from "./routes/admin.js";
+import { createConfigRoutes } from "./routes/config.js";
 import { createDataRoutes } from "./routes/data.js";
 import { createFilesRoutes } from "./routes/files.js";
 
@@ -36,6 +37,7 @@ export async function createEditorialServer({
 
   app.use(logger());
 
+  app.route("/api/v1", createConfigRoutes(config));
   app.route("/api/v1", createDataRoutes(storage));
   app.route("/api/v1", createFilesRoutes());
   app.route("/api/v1", createActionRoutes(storage, hooks));

@@ -10,6 +10,7 @@ export const ClientEnvSchema = z
     FIREBASE_PROJECT_ID: z.string().min(1),
     FIREBASE_STORAGE_BUCKET: z.string().optional(),
     FIREBASE_MESSAGING_SENDER_ID: z.string().optional(),
+    FIREBASE_DB_USERS_PATH: z.string().min(1),
   })
   .strict();
 
@@ -23,6 +24,7 @@ export const clientEnv = ClientEnvSchema.parse({
   FIREBASE_STORAGE_BUCKET: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   FIREBASE_MESSAGING_SENDER_ID: import.meta.env
     .VITE_FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_DB_USERS_PATH: import.meta.env.VITE_FIREBASE_DB_USERS_PATH,
 });
 
 export type ClientEnv = z.infer<typeof ClientEnvSchema>;

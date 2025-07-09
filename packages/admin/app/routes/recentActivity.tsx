@@ -10,7 +10,7 @@ import {
   useGetDataQuery,
   useGetSchemaQuery,
 } from "@/lib/store/slices/editorialApi";
-import { cn } from "@/lib/utils";
+import { cn, formatTime } from "@/lib/utils";
 import type { EditorialDataItem } from "@isardsat/editorial-common";
 import {
   createColumnHelper,
@@ -46,15 +46,15 @@ export const columns = [
     },
   }),
   columnHelper.accessor("createdAt", {
-    header: "Created At",
+    header: "Created",
     cell(props) {
-      return new Date(props.getValue()).toLocaleString();
+      return formatTime(new Date(), new Date(props.getValue()));
     },
   }),
   columnHelper.accessor("updatedAt", {
-    header: "Updated At",
+    header: "Updated",
     cell(props) {
-      return new Date(props.getValue()).toLocaleString();
+      return formatTime(new Date(), new Date(props.getValue()));
     },
   }),
 ];
@@ -113,6 +113,7 @@ export default function RecentActivity() {
         <TableBody>
           {table.getRowModel().rows.map((row) => (
             <Link
+              key={row.original.id}
               to={`/admin/dashboard/${row.original.type}/${row.original.id}`}
             >
               <TableRow

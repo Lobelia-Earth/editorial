@@ -1,7 +1,8 @@
 @reference "../app.css";
 
-.mdxeditor :global(.mdxeditor) {
+:global(.mdxeditor) {
   overflow: hidden;
+  resize: vertical;
 }
 
 .mdxeditor :global(.mdxeditor-root-contenteditable) {
@@ -12,7 +13,7 @@
   overflow: auto;
 }
 
-.mdxeditor :global(.mdxeditor-root-contenteditable) div {
+.mdxeditor :global(.mdxeditor-root-contenteditable) ~ div {
   height: 100%;
 }
 

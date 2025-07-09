@@ -1,4 +1,5 @@
 import { auth, firebaseDb } from "@/lib/auth";
+import { clientEnv } from "@/lib/env";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import {
@@ -46,7 +47,10 @@ export const loginUser = createAppAsyncThunk(
       });
 
       const emailKey = userCredential.user.email?.replace(/[.@]/g, "_");
-      const editorRef = ref(firebaseDb, `editors/wekeo-client/${emailKey}`);
+      const editorRef = ref(
+        firebaseDb,
+        `${clientEnv.FIREBASE_DB_USERS_PATH}/${emailKey}`
+      );
       const editorSnapshot = await get(editorRef);
       const editorData = editorSnapshot.val();
 
@@ -58,7 +62,7 @@ export const loginUser = createAppAsyncThunk(
         role: editorData,
       };
     } catch (error) {
-      if (typeof error === "object" && error !== null && "message" in error) {
+      if (error instanceof Error) {
         return rejectWithValue(error.message as string);
       }
 
@@ -74,7 +78,7 @@ export const signOut = createAppAsyncThunk(
       await firebaseSignOut(auth);
       return null;
     } catch (error) {
-      if (typeof error === "object" && error !== null && "message" in error) {
+      if (error instanceof Error) {
         return rejectWithValue(error.message as string);
       }
 
@@ -90,6 +94,9 @@ const authSlice = createSlice({
     setUser: (state, action: PayloadAction<User | undefined>) => {
       state.isLoading = false;
       state.user = action.payload;
+    },
+    setRole: (state, action: PayloadAction<string>) => {
+      state.role = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -126,7 +133,12 @@ const authSlice = createSlice({
         state.error = action.payload;
       });
   },
+  selectors: {
+    selectUser: (state) => state.user,
+    selectRole: (state) => state.role,
+  },
 });
 
-export const { setUser, setLoading, clearError } = authSlice.actions;
+export const { setUser, setRole, setLoading, clearError } = authSlice.actions;
+export const { selectUser, selectRole } = authSlice.selectors;
 export default authSlice.reducer;

@@ -32,6 +32,7 @@ export default function LoginForm() {
 
   const form = useForm<LoginFormSchema>({
     resolver: zodResolver(loginFormSchema),
+    disabled: isLoading,
     defaultValues: {
       email: "",
       password: "",

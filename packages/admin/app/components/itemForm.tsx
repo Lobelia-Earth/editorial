@@ -22,6 +22,7 @@ import { Save } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import MarkdownEditor from "./markdownEditor";
+import URLInput from "./URLInput";
 
 export interface SinglesPageProps {
   itemType: string;
@@ -76,7 +77,7 @@ export default function ItemForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 max-w-[800px]"
+        className="space-y-4 max-w-[800px] w-[800px]"
       >
         <FormField
           name="id"
@@ -152,32 +153,42 @@ export default function ItemForm({
                 rules={{
                   required: value.isRequired,
                 }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex gap-1 items-baseline">
-                      {value.displayName}
-                      {!value.isRequired && (
-                        <span className="text-gray-400">(optional)</span>
+                render={({ field }) => {
+                  console.log(value);
+                  console.log(field);
+
+                  return (
+                    <FormItem>
+                      <FormLabel className="flex gap-1 items-baseline">
+                        {value.displayName}
+                        {!value.isRequired && (
+                          <span className="text-gray-400">(optional)</span>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        {value.type === "markdown" ? (
+                          <MarkdownEditor
+                            className="h-52"
+                            markdown={field.value}
+                            onChange={field.onChange}
+                            placeholder={value.placeholder}
+                          />
+                        ) : value.type === "url" ? (
+                          <URLInput
+                            placeholder={value.placeholder ?? "https://"}
+                            {...field}
+                          />
+                        ) : (
+                          <Input placeholder={value.placeholder} {...field} />
+                        )}
+                      </FormControl>
+                      {value.displayExtra && (
+                        <FormDescription>{value.displayExtra}</FormDescription>
                       )}
-                    </FormLabel>
-                    <FormControl>
-                      {value.type === "markdown" ? (
-                        <MarkdownEditor
-                          className="h-52"
-                          markdown={field.value}
-                          onChange={field.onChange}
-                          placeholder={value.placeholder}
-                        />
-                      ) : (
-                        <Input placeholder={value.placeholder} {...field} />
-                      )}
-                    </FormControl>
-                    {value.displayExtra && (
-                      <FormDescription>{value.displayExtra}</FormDescription>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             );
           })}

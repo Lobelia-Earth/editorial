@@ -31,7 +31,7 @@ export default function Dashboard() {
 
         <div className="flex flex-col gap-4 last:mb-20">
           <h2 className="scroll-mt-[4.5rem] text-xl font-semibold leading-none capitalize">
-            Recent Collections
+            Recently Updated
           </h2>
 
           <RecentActivity />

@@ -13,7 +13,7 @@ import {
   useGetDataQuery,
   useGetSchemaTypeQuery,
 } from "@/lib/store/slices/editorialApi";
-import { cn } from "@/lib/utils";
+import { cn, formatTime } from "@/lib/utils";
 import type { EditorialDataItem } from "@isardsat/editorial-common";
 import {
   createColumnHelper,
@@ -21,6 +21,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import clsx from "clsx";
 import { Circle, CircleCheck, Trash } from "lucide-react";
 import { useMemo } from "react";
 import { Link, useNavigate } from "react-router";
@@ -112,18 +113,27 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
             cell(props) {
               switch (value.type) {
                 case "boolean":
-                  return props.getValue() ? (
-                    <CircleCheck className="text-green-600 mx-auto" size={14} />
-                  ) : (
-                    <Circle className="text-gray-300 mx-auto" size={14} />
-                  );
+                  const Comp = props.getValue() ? CircleCheck : Circle;
 
+                  return (
+                    <span className="flex justify-center items-center h-full text-nowrap">
+                      <Comp
+                        className={clsx(
+                          "mx-auto",
+                          props.getValue() ? "text-green-600" : "text-gray-300"
+                        )}
+                        size={14}
+                      />
+                    </span>
+                  );
                 case "date":
-                  const date = new Date(props.getValue() as string);
+                  const value = props.getValue();
+
+                  if (!value) return "--";
 
                   return (
                     <span className="text-nowrap">
-                      {date.toLocaleDateString()}
+                      {formatTime(new Date(value as string))}
                     </span>
                   );
                 case "markdown":
@@ -189,9 +199,11 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
 
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <Link to={`/admin/dashboard/${itemType}/${row.original.id}`}>
+            <Link
+              to={`/admin/dashboard/${itemType}/${row.original.id}`}
+              key={row.id}
+            >
               <TableRow
-                key={row.id}
                 className="grid"
                 style={{
                   gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,

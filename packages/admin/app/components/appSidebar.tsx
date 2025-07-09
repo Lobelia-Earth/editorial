@@ -2,6 +2,8 @@ import { clientEnv } from "@/lib/env";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { signOut } from "@/lib/store/slices/authSlice";
 import {
+  useGetConfigQuery,
+  useGetFilesTotalSizeQuery,
   usePublishMutation,
   usePullMutation,
   usePushMutation,
@@ -46,6 +48,9 @@ export default function AppSidebar() {
   const [publish] = usePublishMutation();
   const [pull] = usePullMutation();
   const [push] = usePushMutation();
+
+  const { data: config } = useGetConfigQuery();
+  const { data: filesTotalSize } = useGetFilesTotalSizeQuery();
   const role = useAppSelector((state) => state.auth.role);
 
   return (
@@ -58,7 +63,7 @@ export default function AppSidebar() {
             to="/admin/dashboard"
             className="text-3xl font-semibold tracking-tight transition-colors"
           >
-            WEkEO
+            {config?.name}
           </Link>
         </SidebarGroup>
       </SidebarHeader>
@@ -126,13 +131,19 @@ export default function AppSidebar() {
               {role === "developer" && (
                 <>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => pull()}>
+                    <SidebarMenuButton
+                      className="cursor-pointer"
+                      onClick={() => pull()}
+                    >
                       <ArrowDown />
                       <span>Pull from repo</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => push()}>
+                    <SidebarMenuButton
+                      className="cursor-pointer"
+                      onClick={() => push()}
+                    >
                       <ArrowUp />
                       <span>Push to repo</span>
                     </SidebarMenuButton>
@@ -141,7 +152,10 @@ export default function AppSidebar() {
               )}
 
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => publish()}>
+                <SidebarMenuButton
+                  className="cursor-pointer"
+                  onClick={() => publish()}
+                >
                   <Upload />
                   <span>Publish</span>
                 </SidebarMenuButton>
@@ -159,10 +173,16 @@ export default function AppSidebar() {
             <ExternalLink className="ml-auto" />
           </Link>
         </SidebarMenuButton>
-        <SidebarMenuButton onClick={() => setAboutModalOpen(true)}>
+        <SidebarMenuButton
+          className="cursor-pointer"
+          onClick={() => setAboutModalOpen(true)}
+        >
           About
         </SidebarMenuButton>
-        <SidebarMenuButton onClick={() => dispatch(signOut())}>
+        <SidebarMenuButton
+          className="cursor-pointer"
+          onClick={() => dispatch(signOut())}
+        >
           <LogOut />
           Log out
         </SidebarMenuButton>

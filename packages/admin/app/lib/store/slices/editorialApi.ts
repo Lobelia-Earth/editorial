@@ -1,9 +1,11 @@
 import { clientEnv } from "@/lib/env";
 import type {
+  EditorialConfig,
   EditorialData,
   EditorialDataItem,
   EditorialFile,
   EditorialFiles,
+  EditorialFilesResponse,
   EditorialSchema,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
@@ -16,8 +18,12 @@ const baseQuery = fetchBaseQuery({
 export const editorialApi = createApi({
   reducerPath: "editorialApi",
   baseQuery,
-  tagTypes: ["schema", "data", "files"],
+  tagTypes: ["schema", "data", "files", "config"],
   endpoints: (builder) => ({
+    getConfig: builder.query<EditorialConfig, void>({
+      query: () => "/config",
+      providesTags: [{ type: "config" }],
+    }),
     pull: builder.mutation<boolean, void>({
       query: () => ({ url: "/pull", method: "POST" }),
     }),
@@ -36,7 +42,9 @@ export const editorialApi = createApi({
       transformResponse: (response: EditorialSchema, _, itemType) => {
         return response[itemType] || null;
       },
-      providesTags: [{ type: "schema" }],
+      providesTags: (_result, _error, itemType) => [
+        { type: "schema", id: itemType },
+      ],
     }),
     getData: builder.query<EditorialData, void>({
       query: () => "/data",
@@ -60,15 +68,18 @@ export const editorialApi = createApi({
       transformResponse: (response: EditorialData, _, { itemType, id }) => {
         return response[itemType][id] || null;
       },
-      providesTags: () => [{ type: "data" }],
+      providesTags: (_result, _error, { itemType, id }) => [
+        { type: "data", id: `${itemType}-${id}` },
+      ],
     }),
     getFiles: builder.query<EditorialFiles, void>({
       query: () => "/files",
+      transformResponse: (response: EditorialFilesResponse) => response.files,
       providesTags: () => [{ type: "files" }],
     }),
     getFileCount: builder.query<number, void>({
       query: () => "/files",
-      transformResponse: (response: EditorialFiles) => {
+      transformResponse: (response: EditorialFilesResponse) => {
         function countFiles(item: EditorialFile): number {
           let count = item.type === "file" ? 1 : 0;
 
@@ -87,8 +98,14 @@ export const editorialApi = createApi({
           return items.reduce((acc, item) => acc + countFiles(item), 0);
         }
 
-        return countFilesInArray(response);
+        return countFilesInArray(response.files);
       },
+    }),
+    getFilesTotalSize: builder.query<number, void>({
+      query: () => "/files",
+      transformResponse: (response: EditorialFilesResponse) =>
+        response.totalSize,
+      providesTags: () => [{ type: "files" }],
     }),
     deleteFile: builder.mutation<boolean, string>({
       query: (path) => ({
@@ -137,11 +154,13 @@ export const {
   useCreateObjectMutation,
   useDeleteFileMutation,
   useDeleteObjectMutation,
+  useGetConfigQuery,
   useGetDataCountQuery,
   useGetDataObjectQuery,
   useGetDataQuery,
   useGetFileCountQuery,
   useGetFilesQuery,
+  useGetFilesTotalSizeQuery,
   useGetSchemaQuery,
   useGetSchemaTypeQuery,
   usePublishMutation,

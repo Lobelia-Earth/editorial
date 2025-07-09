@@ -35,16 +35,18 @@ export default function SidebarSchemaItems({
                 }
               >
                 {({ isActive }) => (
-                  <SidebarMenuSubButton isActive={isActive}>
-                    <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
-                      {value.displayName}
-                    </span>
-
-                    {!singleton && data && (
-                      <span className="text-xs text-gray-500 ml-auto pr-1">
-                        {Object.keys(data[key]).length}
+                  <SidebarMenuSubButton isActive={isActive} asChild>
+                    <div>
+                      <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
+                        {value.displayName}
                       </span>
-                    )}
+
+                      {!singleton && data && (
+                        <span className="text-xs text-gray-500 ml-auto pr-1">
+                          {Object.keys(data[key]).length}
+                        </span>
+                      )}
+                    </div>
                   </SidebarMenuSubButton>
                 )}
               </NavLink>

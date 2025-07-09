@@ -8,18 +8,27 @@ import type { Route } from "./+types/dashboard.$collection.$document";
 export default function CollectionItemPage({ params }: Route.ComponentProps) {
   const { collectionId, documentId } = params;
 
-  const { data: schema } = useGetSchemaTypeQuery(collectionId);
-  const { data: item } = useGetDataObjectQuery({
-    itemType: collectionId,
-    id: documentId,
-  });
+  const { data: schema, isFetching: isSchemaFetching } =
+    useGetSchemaTypeQuery(collectionId);
+  const { data: item, isFetching: isDataObjectFetching } =
+    useGetDataObjectQuery({
+      itemType: collectionId,
+      id: documentId,
+    });
 
-  if (!schema || !item) return null;
+  const isFetching = isSchemaFetching || isDataObjectFetching;
+
+  if (!schema || !item || isFetching) return null;
 
   return (
     <div className="overflow-auto">
       <div className="flex p-4 gap-4">
-        <ItemForm itemType={collectionId} fields={schema.fields} data={item} />
+        <ItemForm
+          key={`${collectionId}-${documentId}`}
+          itemType={collectionId}
+          fields={schema.fields}
+          data={item}
+        />
       </div>
     </div>
   );

@@ -1,28 +1,41 @@
-import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import type { Hooks } from '../lib/hooks.js';
-import type { Storage } from '../lib/storage.js';
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import type { Hooks } from "../lib/hooks.js";
+import type { Storage } from "../lib/storage.js";
+
+const ActionRequestSchema = z.object({
+  author: z.string(),
+});
 
 export function createActionRoutes(storage: Storage, hooks: Hooks) {
   const app = new OpenAPIHono();
 
   app.openapi(
     createRoute({
-      method: 'post',
-      path: '/publish',
+      method: "post",
+      path: "/publish",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: ActionRequestSchema,
+            },
+          },
+        },
+      },
       responses: {
         202: {
           content: {
-            'application/json': {
+            "application/json": {
               schema: z.boolean(),
             },
           },
-          description: 'Trigger the publishing process',
+          description: "Trigger the publishing process",
         },
       },
     }),
     // TODO: Don't async, let the promises run in the background.
     async (c) => {
-      await storage.saveProdContent();
+      await storage.saveContent({ production: false });
 
       const content = await storage.getContent();
       const schema = await storage.getSchema();
@@ -31,7 +44,7 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
         const scriptResult = await hooks.onLocalize(content, schema);
         await storage.saveLocalisationMessages(scriptResult);
       } catch (error) {
-        console.error('Error executing script:', error);
+        console.error("Error executing script:", error);
         return c.json(false);
       }
 
@@ -41,16 +54,27 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
 
   app.openapi(
     createRoute({
-      method: 'post',
-      path: '/pull',
+      method: "post",
+      path: "/pull",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: ActionRequestSchema,
+            },
+          },
+        },
+      },
       responses: {
         200: {
-          description: 'Trigger the pull process',
+          description: "Trigger the pull process",
         },
       },
     }),
     async (c) => {
-      await hooks.onPull();
+      const { author } = c.req.valid("json");
+
+      await hooks.onPull(author);
 
       return c.json(true);
     }
@@ -58,16 +82,27 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
 
   app.openapi(
     createRoute({
-      method: 'post',
-      path: '/push',
+      method: "post",
+      path: "/push",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: ActionRequestSchema,
+            },
+          },
+        },
+      },
       responses: {
         200: {
-          description: 'Trigger the push process',
+          description: "Trigger the push process",
         },
       },
     }),
     async (c) => {
-      await hooks.onPush();
+      const { author } = c.req.valid("json");
+
+      await hooks.onPush(author);
 
       return c.json(true);
     }

@@ -1,40 +1,51 @@
-import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
-  EditorialFilesSchema,
+  EditorialFilesResponseSchema,
   type EditorialFile,
   type EditorialFiles,
-} from '@isardsat/editorial-common';
-import { readdirSync, statSync } from 'node:fs';
-import { access, constants, mkdir, rename } from 'node:fs/promises';
-import { basename, join, normalize } from 'node:path';
+} from "@isardsat/editorial-common";
+import { readdirSync, statSync } from "node:fs";
+import { access, constants, mkdir, rename } from "node:fs/promises";
+import { basename, join, normalize } from "node:path";
 
 export function createFilesRoutes() {
   const app = new OpenAPIHono();
 
-  const publicDirPath = 'public';
-  const deletedDirPath = 'public/.deleted';
+  const publicDirPath = "public";
+  const deletedDirPath = "public/.deleted";
 
   app.openapi(
     createRoute({
-      method: 'get',
-      path: '/files',
+      method: "get",
+      path: "/files",
       responses: {
         200: {
           content: {
-            'application/json': {
-              schema: EditorialFilesSchema,
+            "application/json": {
+              schema: EditorialFilesResponseSchema,
             },
           },
-          description: 'Get tree of public files',
+          description: "Get tree of public files with total size",
         },
       },
     }),
     async (c) => {
+      function calculateTotalSize(files: EditorialFiles): number {
+        return files.reduce((total, file) => {
+          if (file.type === "file") {
+            return total + file.size;
+          } else if (file.children) {
+            return total + calculateTotalSize(file.children);
+          }
+          return total;
+        }, 0);
+      }
+
       function readDirectoryChildren(path: string): EditorialFiles {
         const directory = readdirSync(path);
 
         return directory
-          .filter((fileName) => !fileName.startsWith('.'))
+          .filter((fileName) => !fileName.startsWith("."))
           .map((fileName) => {
             const file = statSync(join(path, fileName));
             const isDirectory = file.isDirectory();
@@ -43,28 +54,30 @@ export function createFilesRoutes() {
               name: basename(fileName),
               path: join(path, fileName),
               size: file.size,
-              type: isDirectory ? 'directory' : 'file',
+              type: isDirectory ? "directory" : "file",
               children: isDirectory
                 ? readDirectoryChildren(join(path, fileName))
                 : undefined,
             } satisfies EditorialFile;
           })
-          .sort((a, b) => (a.type === 'directory' ? -1 : 0));
+          .sort((a, b) => (a.type === "directory" ? -1 : 0));
       }
 
       const files = readDirectoryChildren(publicDirPath);
-      return c.json(files);
+      const totalSize = calculateTotalSize(files);
+
+      return c.json({ files, totalSize });
     }
   );
 
   app.openapi(
     createRoute({
-      method: 'delete',
-      path: '/files',
+      method: "delete",
+      path: "/files",
       request: {
         body: {
           content: {
-            'application/json': {
+            "application/json": {
               schema: z.object({
                 path: z.string(),
               }),
@@ -76,52 +89,52 @@ export function createFilesRoutes() {
       responses: {
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               schema: z.boolean(),
             },
           },
-          description: '',
+          description: "",
         },
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               schema: z.object({
                 error: z.string(),
               }),
             },
           },
-          description: 'Invalid file path',
+          description: "Invalid file path",
         },
         404: {
           content: {
-            'application/json': {
+            "application/json": {
               schema: z.object({
                 error: z.string(),
               }),
             },
           },
-          description: 'File not found',
+          description: "File not found",
         },
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               schema: z.object({
                 error: z.string(),
               }),
             },
           },
-          description: 'Server error',
+          description: "Server error",
         },
       },
     }),
     async (c) => {
-      const { path: filePath } = c.req.valid('json');
+      const { path: filePath } = c.req.valid("json");
 
       try {
         const normalizedPath = normalize(filePath);
 
         if (!normalizedPath.startsWith(publicDirPath)) {
-          return c.json({ error: 'Invalid file path' }, 400);
+          return c.json({ error: "Invalid file path" }, 400);
         }
 
         const exists = await access(filePath, constants.W_OK)
@@ -129,7 +142,7 @@ export function createFilesRoutes() {
           .catch(() => false);
 
         if (!exists) {
-          return c.json({ error: 'File not found' }, 404);
+          return c.json({ error: "File not found" }, 404);
         }
 
         // Move to deleted directory
@@ -138,8 +151,8 @@ export function createFilesRoutes() {
 
         return c.json(true, 200);
       } catch (err) {
-        console.error('Delete failed:', err);
-        return c.json({ error: 'Server error' }, 500);
+        console.error("Delete failed:", err);
+        return c.json({ error: "Server error" }, 500);
       }
     }
   );

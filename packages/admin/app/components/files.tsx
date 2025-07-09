@@ -1,10 +1,13 @@
 import { clientEnv } from "@/lib/env";
+import { useAppSelector } from "@/lib/store/hooks";
+import { selectRole } from "@/lib/store/slices/authSlice";
 import {
   useDeleteFileMutation,
   useGetFilesQuery,
 } from "@/lib/store/slices/editorialApi";
 import { cn, formatFileSize } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
+import clsx from "clsx";
 import {
   ChevronDown,
   Copy,
@@ -47,6 +50,8 @@ export interface TreeNodeProps {
 const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const role = useAppSelector(selectRole);
+
   const fileType = fileTypes.find((type) => type.test(node)) ?? defaultFileType;
   const isDirectory = node.type === "directory";
 
@@ -61,7 +66,7 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
   return (
     <div className="select-none">
       <Comp
-        to={new URL(node.path, clientEnv.EDITORIAL_API_URL)}
+        to={`${clientEnv.EDITORIAL_API_URL}${node.path}`}
         target="_blank"
         className={`flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer`}
         style={{ paddingLeft: `calc(0.5rem + ${level * 20}px)` }}
@@ -99,12 +104,13 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
           </span>
         </div>
 
-        <div className="flex items-center gap-1 ml-4 group-hover:visible invisible z-20">
-          {isDirectory ? (
-            <Copy className="invisible" size={16} />
-          ) : (
+        {role === "developer" && (
+          <div className="flex items-center gap-1 ml-4 group-hover:visible invisible z-20">
             <button
-              className="hover:text-yellow-500 p-1 hover:bg-muted rounded-sm"
+              className={clsx(
+                `hover:text-yellow-500 p-1 hover:bg-muted rounded-clsx`,
+                isDirectory && "invisible"
+              )}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -114,22 +120,22 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
               <Copy size={16} />
               <span className="sr-only">Copy file URL</span>
             </button>
-          )}
 
-          <button
-            className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onDelete(node.path);
-            }}
-          >
-            <Trash size={16} />
-            <span className="sr-only">Delete this file</span>
-          </button>
+            <button
+              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onDelete(node.path);
+              }}
+            >
+              <Trash size={16} />
+              <span className="sr-only">Delete this file</span>
+            </button>
 
-          {/* <Ellipsis size={14} className="text-gray-400" /> */}
-        </div>
+            {/* <Ellipsis size={14} className="text-gray-400" /> */}
+          </div>
+        )}
       </Comp>
 
       {isDirectory && isExpanded && node.children && (
