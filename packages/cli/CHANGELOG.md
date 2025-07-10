@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.1.2
+
+### Patch Changes
+
+- d5ecd27: Re-release
+- Updated dependencies [d5ecd27]
+  - @isardsat/editorial-server@6.1.2
+
 ## 6.1.1
 
 ### Patch Changes

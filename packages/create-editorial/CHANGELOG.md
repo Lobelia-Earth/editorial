@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.1.2
+
+### Patch Changes
+
+- d5ecd27: Re-release
+
 ## 6.1.1
 
 ### Patch Changes
