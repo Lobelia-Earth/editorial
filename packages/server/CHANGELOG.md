@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.0.4
+
+### Patch Changes
+
+- 704dbf7: Build re-release
+- Updated dependencies [704dbf7]
+  - @isardsat/editorial-common@6.0.4
+  - @isardsat/editorial-admin@6.0.4
+
 ## 6.0.3
 
 ### Patch Changes
