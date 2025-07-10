@@ -40,7 +40,6 @@ export const EditorialDataSchema = z.record(
 
 export const EditorialSchemaItemFieldType = z.enum([
   "string",
-  "url",
   "boolean",
   "date",
   "datetime",
@@ -48,7 +47,7 @@ export const EditorialSchemaItemFieldType = z.enum([
   "number",
   "color",
   "select",
-  "color",
+  "url",
 ]);
 
 export const EditorialSchemaItemFieldSchema = z

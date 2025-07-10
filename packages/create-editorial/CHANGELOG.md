@@ -1,16 +1,28 @@
 # @isardsat/create-editorial
 
+## 6.0.6
+
+### Patch Changes
+
+- 24fb391: Add url to zod types
+
+## 6.0.5
+
+### Patch Changes
+
+- bcb0c8a: Fix admin URLs
+
 ## 6.0.4
 
 ### Patch Changes
 
-- 704dbf7: Build re-release
+- 4936462: Fix broken release
 
 ## 6.0.3
 
 ### Patch Changes
 
-- d161b48: Initial i18n integration
+- 0c196b0: Fix build errors
 
 ## 6.0.2
 
