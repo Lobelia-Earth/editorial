@@ -1,5 +1,13 @@
 # @isardsat/editorial-admin
 
+## 6.0.5
+
+### Patch Changes
+
+- bcb0c8a: Fix admin URLs
+- Updated dependencies [bcb0c8a]
+  - @isardsat/editorial-common@6.0.5
+
 ## 6.0.4
 
 ### Patch Changes

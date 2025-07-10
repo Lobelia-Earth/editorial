@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.0.5
+
+### Patch Changes
+
+- bcb0c8a: Fix admin URLs
+
 ## 6.0.4
 
 ### Patch Changes
