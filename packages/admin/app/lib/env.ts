@@ -3,7 +3,6 @@ import { z } from "zod";
 export const ClientEnvSchema = z
   .object({
     EDITORIAL_API_URL: z.string().url(),
-    PREVIEW_URL: z.string().url(),
     FIREBASE_API_KEY: z.string().min(1),
     FIREBASE_AUTH_DOMAIN: z.string().min(1),
     FIREBASE_DATABASE_URL: z.string().url(),
@@ -16,7 +15,6 @@ export const ClientEnvSchema = z
 
 export const clientEnv = ClientEnvSchema.parse({
   EDITORIAL_API_URL: import.meta.env.VITE_EDITORIAL_API_URL,
-  PREVIEW_URL: import.meta.env.VITE_PREVIEW_URL,
   FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY,
   FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   FIREBASE_DATABASE_URL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
