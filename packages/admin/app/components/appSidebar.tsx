@@ -1,4 +1,3 @@
-import { clientEnv } from "@/lib/env";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { signOut } from "@/lib/store/slices/authSlice";
 import {
@@ -168,7 +167,7 @@ export default function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenuButton asChild>
-          <Link to={clientEnv.PREVIEW_URL}>
+          <Link to={config?.previewUrl as string}>
             Preview
             <ExternalLink className="ml-auto" />
           </Link>
