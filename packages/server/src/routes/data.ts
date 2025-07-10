@@ -99,7 +99,7 @@ export function createDataRoutes(storage: Storage) {
           const [contentKey, typeKey, fieldKey, hash] = key.split(".");
 
           if (contentKey === itemType) {
-            collection[typeKey][fieldKey] = message.defaultMessage;
+            collection[typeKey][fieldKey] = (message as any).defaultMessage;
           }
         }
       }
@@ -189,7 +189,7 @@ export function createDataRoutes(storage: Storage) {
           const [contentKey, typeKey, fieldKey, hash] = key.split(".");
 
           if (typeKey === id) {
-            item[fieldKey] = message.defaultMessage;
+            item[fieldKey] = (message as any).defaultMessage;
           }
         }
       }
