@@ -1,5 +1,16 @@
 # @isardsat/editorial-cli
 
+## 6.1.0
+
+### Minor Changes
+
+- 7f98a4e: Release bump
+
+### Patch Changes
+
+- Updated dependencies [7f98a4e]
+  - @isardsat/editorial-server@6.1.0
+
 ## 6.0.6
 
 ### Patch Changes

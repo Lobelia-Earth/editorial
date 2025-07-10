@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.1.0
+
+### Minor Changes
+
+- 7f98a4e: Release bump
+
 ## 6.0.6
 
 ### Patch Changes
