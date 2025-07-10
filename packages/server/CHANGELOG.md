@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.0.3
+
+### Patch Changes
+
+- 0c196b0: Fix build errors
+- Updated dependencies [0c196b0]
+  - @isardsat/editorial-common@6.0.3
+  - @isardsat/editorial-admin@6.0.3
+
 ## 6.0.2
 
 ### Patch Changes
