@@ -24,7 +24,7 @@ import {
 import clsx from "clsx";
 import { Circle, CircleCheck, Trash } from "lucide-react";
 import { useMemo } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 const columnHelper = createColumnHelper<EditorialDataItem>();
 
@@ -53,8 +53,6 @@ export interface SchemaTableProps {
 }
 
 export default function SchemaTable({ itemType }: SchemaTableProps) {
-  const navigate = useNavigate();
-
   const { data: schema } = useGetSchemaTypeQuery(itemType);
   const { data } = useGetDataQuery();
 

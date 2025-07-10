@@ -63,12 +63,14 @@ export function createDataRoutes(storage: Storage) {
             param: { name: "itemType", in: "path" },
             example: "newsItem",
           }),
-          locale: z
+        }),
+        query: z.object({
+          lang: z
             .string()
             .optional()
             .openapi({
-              param: { name: "locale", in: "query" },
-              example: "es_ES",
+              param: { name: "lang", in: "query" },
+              example: "es",
             }),
         }),
       },
@@ -85,9 +87,24 @@ export function createDataRoutes(storage: Storage) {
     }),
     async (c) => {
       const { itemType } = c.req.valid("param");
+      const { lang } = c.req.valid("query");
       const content = await storage.getContent();
+      const collection = content[itemType];
 
-      return c.json(content[itemType]);
+      // TODO: Formalize this process.
+      if (lang) {
+        const messages = await storage.getLocalisationMessages(lang);
+
+        for (const [key, message] of Object.entries(messages)) {
+          const [contentKey, typeKey, fieldKey, hash] = key.split(".");
+
+          if (contentKey === itemType) {
+            collection[typeKey][fieldKey] = message.defaultMessage;
+          }
+        }
+      }
+
+      return c.json(collection);
     }
   );
 
@@ -136,12 +153,14 @@ export function createDataRoutes(storage: Storage) {
             param: { name: "id", in: "path" },
             example: "about-us",
           }),
-          locale: z
+        }),
+        query: z.object({
+          lang: z
             .string()
             .optional()
             .openapi({
-              param: { name: "locale", in: "query" },
-              example: "es_ES",
+              param: { name: "lang", in: "query" },
+              example: "es",
             }),
         }),
       },
@@ -158,9 +177,24 @@ export function createDataRoutes(storage: Storage) {
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
+      const { lang } = c.req.valid("query");
       const content = await storage.getContent();
+      const item = content[itemType][id];
 
-      return c.json(content[itemType][id]);
+      // TODO: Formalize this process.
+      if (lang) {
+        const messages = await storage.getLocalisationMessages(lang);
+
+        for (const [key, message] of Object.entries(messages)) {
+          const [contentKey, typeKey, fieldKey, hash] = key.split(".");
+
+          if (typeKey === id) {
+            item[fieldKey] = message.defaultMessage;
+          }
+        }
+      }
+
+      return c.json(item);
     }
   );
 

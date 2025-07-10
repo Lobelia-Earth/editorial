@@ -34,6 +34,13 @@ export function createStorage(dataDirectory: string) {
     return await readFile(dataPath, "utf-8").then((value) => JSON.parse(value));
   }
 
+  async function getLocalisationMessages(langCode: string): Promise<any> {
+    return await readFile(
+      join(dataDirectory, "locales", "messages", `${langCode}.json`),
+      "utf-8"
+    ).then((value) => JSON.parse(value));
+  }
+
   async function saveContent({ production }: { production?: boolean }) {
     const content = await getContent();
 
@@ -90,6 +97,7 @@ export function createStorage(dataDirectory: string) {
   return {
     getSchema,
     getContent,
+    getLocalisationMessages,
     saveLocalisationMessages,
     createItem,
     updateItem,
