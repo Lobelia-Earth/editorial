@@ -1,4 +1,4 @@
-import { z } from '@hono/zod-openapi';
+import { z } from "@hono/zod-openapi";
 
 export const EditorialConfigSchema = z.object({
   name: z.string(),
@@ -39,15 +39,15 @@ export const EditorialDataSchema = z.record(
 );
 
 export const EditorialSchemaItemFieldType = z.enum([
-  'string',
-  'boolean',
-  'date',
-  'datetime',
-  'markdown',
-  'number',
-  'color',
-  'select',
-  'color',
+  "string",
+  "boolean",
+  "date",
+  "datetime",
+  "markdown",
+  "number",
+  "color",
+  "select",
+  "url",
 ]);
 
 export const EditorialSchemaItemFieldSchema = z
@@ -74,7 +74,7 @@ export const EditorialSchemaSchema = z.record(
 
 export const BaseEditorialFileSchema = z.object({
   name: z.string(),
-  type: z.enum(['file', 'directory']),
+  type: z.enum(["file", "directory"]),
   path: z.string(),
   size: z.number(),
 });
@@ -88,7 +88,7 @@ export const EditorialFileSchema: z.ZodType<BaseEditorialFile> =
     children: z
       .lazy(() => EditorialFileSchema.array())
       .openapi({
-        type: 'array',
+        type: "array",
       }),
   });
 
