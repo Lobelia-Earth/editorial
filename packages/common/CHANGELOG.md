@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.0.4
+
+### Patch Changes
+
+- 4936462: Fix broken release
+
 ## 6.0.3
 
 ### Patch Changes

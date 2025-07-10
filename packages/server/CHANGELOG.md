@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.0.4
+
+### Patch Changes
+
+- 4936462: Fix broken release
+- Updated dependencies [4936462]
+  - @isardsat/editorial-common@6.0.4
+  - @isardsat/editorial-admin@6.0.4
+
 ## 6.0.3
 
 ### Patch Changes
