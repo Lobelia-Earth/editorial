@@ -10,7 +10,7 @@ import type {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: new URL("/api/v1", clientEnv.EDITORIAL_API_URL).href,
+  baseUrl: "/api/v1",
 });
 
 export const editorialApi = createApi({
