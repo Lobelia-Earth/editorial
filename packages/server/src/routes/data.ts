@@ -70,7 +70,7 @@ export function createDataRoutes(storage: Storage) {
             .optional()
             .openapi({
               param: { name: "lang", in: "query" },
-              example: "es",
+              example: "es_ES",
             }),
         }),
       },
@@ -160,7 +160,7 @@ export function createDataRoutes(storage: Storage) {
             .optional()
             .openapi({
               param: { name: "lang", in: "query" },
-              example: "es",
+              example: "es_ES",
             }),
         }),
       },

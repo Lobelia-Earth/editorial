@@ -1,4 +1,3 @@
-import { clientEnv } from "@/lib/env";
 import type {
   EditorialConfig,
   EditorialData,
