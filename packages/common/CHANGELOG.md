@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.1.1
+
+### Patch Changes
+
+- 0aaf9cf: Fix hardcoded url
+
 ## 6.1.0
 
 ### Minor Changes
