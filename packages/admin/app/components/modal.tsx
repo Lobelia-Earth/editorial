@@ -30,7 +30,7 @@ export function Modal({ isOpen, setOpen }: ModalProps) {
 
         <div className="flex gap-1">
           <Button asChild variant="ghost">
-            <Link to={new URL("/doc", clientEnv.EDITORIAL_API_URL).href}>
+            <Link to="/doc">
               <SiSwagger size={14} />
               Swagger API UI
             </Link>

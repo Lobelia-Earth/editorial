@@ -61,7 +61,7 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
   return (
     <div className="select-none">
       <Comp
-        to={new URL(node.path, clientEnv.EDITORIAL_API_URL)}
+        to={node.path}
         target="_blank"
         className={`flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer`}
         style={{ paddingLeft: `calc(0.5rem + ${level * 20}px)` }}
