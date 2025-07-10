@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.0.6
+
+### Patch Changes
+
+- 24fb391: Add url to zod types
+
 ## 6.0.5
 
 ### Patch Changes

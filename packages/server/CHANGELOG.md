@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.0.6
+
+### Patch Changes
+
+- 24fb391: Add url to zod types
+- Updated dependencies [24fb391]
+  - @isardsat/editorial-common@6.0.6
+  - @isardsat/editorial-admin@6.0.6
+
 ## 6.0.5
 
 ### Patch Changes
