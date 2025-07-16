@@ -64,7 +64,7 @@ jobs:
       id-token: write
 
     environment:
-      name: Preview
+      name: github-pages
       url: ${{ steps.vercel-deploy.outputs.url }}
 
     steps:
