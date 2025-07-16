@@ -1,0 +1,9 @@
+{
+  "dummy": {
+    "test-1": {
+      "id": "test-1",
+      "title": "Test Object",
+      "body": "This is a **test** object"
+    }
+  }
+}

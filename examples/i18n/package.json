@@ -1,0 +1,13 @@
+{
+  "name": "example-editorial-i18n-app",
+  "private": true,
+  "scripts": {
+    "editorial": "editorial"
+  },
+  "devDependencies": {
+    "@isardsat/editorial-cli": "workspace:^"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  }
+}

@@ -1,3 +1,6 @@
+# Outputs
+dist/
+
 logs
 *.log
 npm-debug.log*
@@ -10,5 +13,9 @@ node_modules
 /.nyc_tmp
 *.sublime-project
 *.sublime-workspace
-lib
 .DS_Store
+.vercel
+
+# Claude Code
+.claude
+CLAUDE.md

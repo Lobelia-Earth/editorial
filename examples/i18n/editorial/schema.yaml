@@ -1,0 +1,13 @@
+# Editorial Schema
+  dummy:
+    displayName: Dummy Object
+    fields:
+      title:
+        type: string
+        displayName: Title
+        showInSummary: true
+      body:
+        type: markdown
+        displayName: Body
+        displayExtra: 'Write anything you want!'
+  

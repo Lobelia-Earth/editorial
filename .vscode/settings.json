@@ -1,0 +1,16 @@
+{
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit",
+    "source.removeUnusedImports": "explicit"
+  },
+  "terminal.integrated.env.osx": {
+    "PATH": "/Users/${env:USER}/.volta/bin:${env:PATH}"
+  }
+}

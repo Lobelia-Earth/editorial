@@ -1,0 +1,27 @@
+{
+  "name": "@isardsat/create-editorial",
+  "version": "6.1.2",
+  "description": "Create a new editorial project",
+  "main": "dist/index.js",
+  "bin": "bin/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "compile": "tsc",
+    "compile:watch": "tsc --watch",
+    "prepublishOnly": "pnpm run compile"
+  },
+  "dependencies": {
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "catalog:",
+    "@types/node": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  }
+}

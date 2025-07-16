@@ -1,0 +1,78 @@
+name: Deploy documentation
+run-name: Deploy documentation
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  ISARDSAT_NPM_TOKEN: ${{ secrets.ISARDSAT_NPM_TOKEN }}
+  GSAP_NPM_TOKEN: ${{ secrets.GSAP_NPM_TOKEN }}
+  VOLTA_FEATURE_PNPM: 1
+  VERCEL_TELEMETRY_DISABLED: 1
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  build:
+    name: Build docusaurus
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: ./docs
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: volta-cli/action@v4
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pnpm-store
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build documentation
+        run: pnpm build
+
+      - name: Upload artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+  deploy:
+    name: Deploy to GitHub pages
+    runs-on: ubuntu-22.04
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: Preview
+      url: ${{ steps.vercel-deploy.outputs.url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
