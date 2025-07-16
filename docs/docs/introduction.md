@@ -22,9 +22,9 @@ cd my-project
 
 ## Next Steps
 
-- [Installation](/installation) - Detailed installation instructions
-- [Core Concepts](/core-concepts/content-types) - Learn about the fundamental concepts
-- [API Reference](/api/content-api) - Explore our API documentation
+- [Installation](/) - Detailed installation instructions
+- [Core Concepts](/) - Learn about the fundamental concepts
+- [API Reference](/) - Explore our API documentation
 
 ## Support
 
