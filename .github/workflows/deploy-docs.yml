@@ -12,13 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  ISARDSAT_NPM_TOKEN: ${{ secrets.ISARDSAT_NPM_TOKEN }}
-  GSAP_NPM_TOKEN: ${{ secrets.GSAP_NPM_TOKEN }}
   VOLTA_FEATURE_PNPM: 1
-  VERCEL_TELEMETRY_DISABLED: 1
-  NEXT_TELEMETRY_DISABLED: 1
 
 jobs:
   build:
@@ -31,6 +25,7 @@ jobs:
     defaults:
       run:
         working-directory: ./docs
+
     steps:
       - uses: actions/checkout@v4
 
@@ -57,7 +52,7 @@ jobs:
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: ./docs/build/
 
   deploy:
     name: Deploy to GitHub pages
