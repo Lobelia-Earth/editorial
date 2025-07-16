@@ -8,7 +8,7 @@ const config: Config = {
   favicon: "img/favicon.ico",
 
   url: "https://lobelia-earth.github.io/",
-  baseUrl: "",
+  baseUrl: "/editorial/",
 
   organizationName: "lobelia-earth",
   projectName: "editorial",
