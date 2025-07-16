@@ -4,7 +4,7 @@ run-name: Deploy documentation
 on:
   push:
     branches:
-      - develop
+      - main
   workflow_dispatch:
 
 concurrency:
