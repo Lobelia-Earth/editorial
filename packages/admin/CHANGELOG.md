@@ -1,5 +1,16 @@
 # @isardsat/editorial-admin
 
+## 6.2.0
+
+### Minor Changes
+
+- ab4aea4: Admin panel firebase rework
+
+### Patch Changes
+
+- Updated dependencies [ab4aea4]
+  - @isardsat/editorial-common@6.2.0
+
 ## 6.1.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.2.0
+
+### Minor Changes
+
+- ab4aea4: Admin panel firebase rework
+
 ## 6.1.2
 
 ### Patch Changes
