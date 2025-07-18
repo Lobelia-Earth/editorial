@@ -48,11 +48,11 @@ export default function ItemForm({
           Object.keys(fields).map((key) => [
             key,
             data?.[key] ?? (fields[key].type === "boolean" ? false : ""),
-          ])
+          ]),
         ),
       };
     },
-    [data, fields]
+    [data, fields],
   );
 
   const form = useForm<Record<string, string>>({
@@ -69,7 +69,7 @@ export default function ItemForm({
 
   const flagFields = useMemo(() => {
     return Object.entries(fields).filter(
-      ([, value]) => value.type === "boolean"
+      ([, value]) => value.type === "boolean",
     );
   }, [fields]);
 
@@ -118,7 +118,7 @@ export default function ItemForm({
                               checked={field.value === "true"}
                               onCheckedChange={(newCheckedState) => {
                                 field.onChange(
-                                  newCheckedState === true ? "true" : "false"
+                                  newCheckedState === true ? "true" : "false",
                                 );
                               }}
                             />

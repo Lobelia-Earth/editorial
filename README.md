@@ -4,7 +4,7 @@ Flexible, headless CMS based on simple architecture
 
 ## Getting Started
 
-The minimum version of Node.js is **18.x**, the recommended version if **20.x**.
+The minimum version of Node.js is **18.x**, the recommended version is **20.x**.
 
 **Getting started**: Read [the getting started guide](./docs/getting-started.md)
 

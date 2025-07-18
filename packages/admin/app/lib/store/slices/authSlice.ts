@@ -1,5 +1,4 @@
 import { auth, firebaseDb } from "@/lib/auth";
-import { clientEnv } from "@/lib/env";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import {
@@ -11,6 +10,7 @@ import {
 } from "firebase/auth";
 import { get, ref } from "firebase/database";
 import { createAppAsyncThunk } from "../hooks";
+import { editorialApi } from "./editorialApi";
 
 interface User {
   uid: string;
@@ -36,20 +36,23 @@ export const loginUser = createAppAsyncThunk(
       password,
       remember,
     }: { email: string; password: string; remember: boolean },
-    { rejectWithValue }
+    { rejectWithValue, dispatch },
   ) => {
     try {
       const userCredential = await setPersistence(
         auth,
-        remember ? browserLocalPersistence : inMemoryPersistence
+        remember ? browserLocalPersistence : inMemoryPersistence,
       ).then(() => {
         return signInWithEmailAndPassword(auth, email, password);
       });
 
+      const adminConfigResult = await dispatch(
+        editorialApi.endpoints.getConfig.initiate(undefined),
+      ).unwrap();
       const emailKey = userCredential.user.email?.replace(/[.@]/g, "_");
       const editorRef = ref(
         firebaseDb,
-        `${clientEnv.FIREBASE_DB_USERS_PATH}/${emailKey}`
+        `${adminConfigResult.firebase?.dbUsersPath}/${emailKey}`,
       );
       const editorSnapshot = await get(editorRef);
       const editorData = editorSnapshot.val();
@@ -68,7 +71,7 @@ export const loginUser = createAppAsyncThunk(
 
       return rejectWithValue("Unknown error occured");
     }
-  }
+  },
 );
 
 export const signOut = createAppAsyncThunk(
@@ -84,7 +87,7 @@ export const signOut = createAppAsyncThunk(
 
       return rejectWithValue("Unknown error occured");
     }
-  }
+  },
 );
 
 const authSlice = createSlice({

@@ -1,0 +1,67 @@
+import { initializeFirebase } from "@/lib/auth";
+import { useGetConfigQuery } from "@/lib/store/slices/editorialApi";
+import { useEffect, useState } from "react";
+
+interface FirebaseInitializerProps {
+  children: React.ReactNode;
+}
+
+export default function FirebaseInitializer({
+  children,
+}: FirebaseInitializerProps) {
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { data: config, error: queryError, isLoading } = useGetConfigQuery();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (queryError) {
+      console.error("Failed to fetch admin config:", queryError);
+      return;
+    }
+
+    if (config) {
+      console.log(config);
+      try {
+        if (!config.firebase) {
+          throw new Error("Firebase configuration not found in admin config");
+        }
+
+        initializeFirebase(config.firebase);
+        setIsInitialized(true);
+      } catch (err) {
+        console.error("Failed to initialize Firebase:", err);
+      }
+    }
+  }, [config, queryError, isLoading]);
+
+  if (queryError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">
+            Firebase Initialization Error
+          </h2>
+          <p className="text-gray-600">
+            {queryError instanceof Error
+              ? queryError.message
+              : "Failed to fetch admin config"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || !isInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Initializing Firebase...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}

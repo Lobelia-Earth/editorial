@@ -118,7 +118,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                       <Comp
                         className={clsx(
                           "mx-auto",
-                          props.getValue() ? "text-green-600" : "text-gray-300"
+                          props.getValue() ? "text-green-600" : "text-gray-300",
                         )}
                         size={14}
                       />
@@ -150,7 +150,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   return props.getValue();
               }
             },
-          })
+          }),
         ),
       actionColumn,
     ];
@@ -158,7 +158,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
 
   const schemaEntries = useMemo(
     () => (data ? Object.values(data[itemType]) : []),
-    [itemType, data]
+    [itemType, data],
   );
 
   const table = useReactTable({
@@ -187,7 +187,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                     ? null
                     : flexRender(
                         header.column.columnDef.header,
-                        header.getContext()
+                        header.getContext(),
                       )}
                 </TableHead>
               ))}

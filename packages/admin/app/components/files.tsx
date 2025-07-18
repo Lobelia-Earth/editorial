@@ -109,7 +109,7 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
             <button
               className={clsx(
                 `hover:text-yellow-500 p-1 hover:bg-muted rounded-clsx`,
-                isDirectory && "invisible"
+                isDirectory && "invisible",
               )}
               onClick={(event) => {
                 event.preventDefault();

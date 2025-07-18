@@ -2,6 +2,7 @@
 import "./app.css";
 
 import AuthListener from "@/components/AuthListener";
+import FirebaseInitializer from "@/components/FirebaseInitializer";
 import StoreProvider from "@/components/providers/StoreProvider";
 import {
   isRouteErrorResponse,
@@ -33,9 +34,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         className={`h-full min-h-screen bg-background font-sans antialiased`}
       >
         <StoreProvider>
-          <AuthListener />
-
-          {children}
+          <FirebaseInitializer>
+            <AuthListener />
+            {children}
+          </FirebaseInitializer>
         </StoreProvider>
 
         <ScrollRestoration />

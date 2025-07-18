@@ -16,6 +16,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "format": "prettier . --write",
     "prepublishOnly": "pnpm run build",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
@@ -93,6 +94,7 @@
     "@types/node": "^22",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "prettier": "catalog:",
     "tailwindcss": "^4.1.4",
     "typescript": "catalog:",
     "vite": "^6.3.3",

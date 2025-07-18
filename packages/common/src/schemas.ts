@@ -5,6 +5,17 @@ export const EditorialConfigSchema = z.object({
   publicUrl: z.string().url(),
   previewUrl: z.string().optional(),
   silent: z.boolean().optional(),
+  firebase: z
+    .object({
+      apiKey: z.string(),
+      authDomain: z.string(),
+      databaseURL: z.string(),
+      projectId: z.string(),
+      storageBucket: z.string(),
+      messagingSenderId: z.string(),
+      dbUsersPath: z.string(),
+    })
+    .optional(),
 });
 
 export const EditorialDataObjectWithTypeSchema = z

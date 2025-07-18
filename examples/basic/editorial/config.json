@@ -1,5 +1,14 @@
 {
   "name": "Editorial",
   "publicUrl": "http://localhost:3001/",
-  "previewUrl": "http://localhost:3001/preview/"
+  "previewUrl": "http://localhost:3001/preview/",
+  "firebase": {
+    "apiKey": "your-api-key",
+    "authDomain": "your-project.firebaseapp.com",
+    "databaseURL": "https://your-project-default-rtdb.firebaseio.com/",
+    "projectId": "your-project-id",
+    "storageBucket": "your-project-id.appspot.com",
+    "messagingSenderId": "123456789",
+    "dbUsersPath": "users"
+  }
 }

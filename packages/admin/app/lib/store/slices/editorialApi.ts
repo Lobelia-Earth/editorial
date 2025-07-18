@@ -1,3 +1,4 @@
+import { clientEnv } from "@/lib/env";
 import type {
   EditorialConfig,
   EditorialData,
@@ -11,7 +12,9 @@ import type {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "/api/v1",
+  baseUrl: clientEnv.EDITORIAL_API_URL
+    ? `${clientEnv.EDITORIAL_API_URL}/api/v1`
+    : "/api/v1",
 });
 
 export const editorialApi = createApi({
@@ -85,7 +88,7 @@ export const editorialApi = createApi({
           if (item.children && item.children.length > 0) {
             count += item.children.reduce(
               (acc, child) => acc + countFiles(child),
-              0
+              0,
             );
           }
 

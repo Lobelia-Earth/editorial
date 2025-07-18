@@ -44,7 +44,7 @@ export default function LoginForm() {
     ({ email, password, remember }: LoginFormSchema) => {
       dispatch(loginUser({ email, password, remember }));
     },
-    [dispatch]
+    [dispatch],
   );
 
   return (

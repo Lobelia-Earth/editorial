@@ -13,12 +13,12 @@ export default [
       route("dashboard", "routes/dashboard.tsx"),
       route(
         "dashboard/:collectionId/new",
-        "routes/dashboard.$collection.new.tsx"
+        "routes/dashboard.$collection.new.tsx",
       ),
       route("dashboard/:collectionId", "routes/dashboard.$collection.tsx"),
       route(
         "dashboard/:collectionId/:documentId",
-        "routes/dashboard.$collection.$document.tsx"
+        "routes/dashboard.$collection.$document.tsx",
       ),
       route("dashboard/files", "routes/dashboard.files.tsx"),
     ]),

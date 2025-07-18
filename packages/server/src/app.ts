@@ -41,7 +41,7 @@ export async function createEditorialServer({
   app.route("/api/v1", createDataRoutes(storage));
   app.route("/api/v1", createFilesRoutes());
   app.route("/api/v1", createActionRoutes(storage, hooks));
-  app.route("/", createAdminRoutes());
+  app.route("/", createAdminRoutes(config));
 
   app.doc("/doc", {
     openapi: "3.0.0",

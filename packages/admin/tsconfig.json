@@ -9,7 +9,7 @@
     ".react-router/types/**/*"
   ],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "types": ["@react-router/node", "vite/client"],
     "verbatimModuleSyntax": true,
     "esModuleInterop": true,
