@@ -1,5 +1,13 @@
 # @isardsat/editorial-admin
 
+## 6.3.1
+
+### Patch Changes
+
+- f6e9203: Fix admin error
+- Updated dependencies [f6e9203]
+  - @isardsat/editorial-common@6.3.1
+
 ## 6.3.0
 
 ### Minor Changes

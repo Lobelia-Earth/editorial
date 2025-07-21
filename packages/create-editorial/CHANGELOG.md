@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.3.1
+
+### Patch Changes
+
+- f6e9203: Fix admin error
+
 ## 6.3.0
 
 ### Minor Changes
