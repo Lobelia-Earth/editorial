@@ -21,7 +21,6 @@ export default function FirebaseInitializer({
     }
 
     if (config) {
-      console.log(config);
       try {
         if (!config.firebase) {
           throw new Error("Firebase configuration not found in admin config");

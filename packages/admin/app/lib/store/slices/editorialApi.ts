@@ -88,7 +88,7 @@ export const editorialApi = createApi({
           if (item.children && item.children.length > 0) {
             count += item.children.reduce(
               (acc, child) => acc + countFiles(child),
-              0,
+              0
             );
           }
 
