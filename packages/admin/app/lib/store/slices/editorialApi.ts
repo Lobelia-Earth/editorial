@@ -1,4 +1,3 @@
-import { clientEnv } from "@/lib/env";
 import type {
   EditorialConfig,
   EditorialData,
@@ -11,15 +10,19 @@ import type {
 } from "@isardsat/editorial-common";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: clientEnv.EDITORIAL_API_URL
-    ? `${clientEnv.EDITORIAL_API_URL}/api/v1`
-    : "/api/v1",
-});
+export const ssrAwareBaseQuery = async (args, api, extraOptions) => {
+  if (typeof window === "undefined") {
+    return { data: {} };
+  }
+
+  return fetchBaseQuery({
+    baseUrl: "/api/v1",
+  })(args, api, extraOptions);
+};
 
 export const editorialApi = createApi({
   reducerPath: "editorialApi",
-  baseQuery,
+  baseQuery: ssrAwareBaseQuery,
   tagTypes: ["schema", "data", "files", "config"],
   endpoints: (builder) => ({
     getConfig: builder.query<EditorialConfig, void>({
