@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.3.0
+
+### Minor Changes
+
+- 0e815f9: Fix admin panel auth
+
 ## 6.2.0
 
 ### Minor Changes

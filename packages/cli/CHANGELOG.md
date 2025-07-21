@@ -1,5 +1,16 @@
 # @isardsat/editorial-cli
 
+## 6.3.0
+
+### Minor Changes
+
+- 0e815f9: Fix admin panel auth
+
+### Patch Changes
+
+- Updated dependencies [0e815f9]
+  - @isardsat/editorial-server@6.3.0
+
 ## 6.2.0
 
 ### Minor Changes
