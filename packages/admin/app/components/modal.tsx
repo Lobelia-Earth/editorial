@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { clientEnv } from "@/lib/env";
 import { SiGithub, SiSwagger } from "@icons-pack/react-simple-icons";
 import { Heart } from "lucide-react";
 import { Link } from "react-router";
@@ -29,6 +28,13 @@ export function Modal({ isOpen, setOpen }: ModalProps) {
         </DialogHeader>
 
         <div className="flex gap-1">
+          <Button asChild variant="ghost">
+            <Link to="https://lobelia-earth.github.io/editorial/">
+              <SiSwagger size={14} />
+              Documentation
+            </Link>
+          </Button>
+
           <Button asChild variant="ghost">
             <Link to="/doc">
               <SiSwagger size={14} />
