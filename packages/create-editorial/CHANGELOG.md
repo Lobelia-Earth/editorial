@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.3.3
+
+### Patch Changes
+
+- 1c24053: Build fix
+
 ## 6.3.2
 
 ### Patch Changes

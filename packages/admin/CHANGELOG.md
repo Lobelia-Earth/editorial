@@ -1,5 +1,13 @@
 # @isardsat/editorial-admin
 
+## 6.3.3
+
+### Patch Changes
+
+- 1c24053: Build fix
+- Updated dependencies [1c24053]
+  - @isardsat/editorial-common@6.3.3
+
 ## 6.3.2
 
 ### Patch Changes
