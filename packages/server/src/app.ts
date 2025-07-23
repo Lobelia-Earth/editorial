@@ -2,6 +2,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import type { EditorialConfig } from "@isardsat/editorial-common";
+import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { createConfig } from "./lib/config.js";
 import { createHooks } from "./lib/hooks.js";
@@ -37,6 +38,13 @@ export async function createEditorialServer({
 
   app.use(logger());
 
+  // TODO: Formalize cors configuration
+  app.use(
+    "/api/v1/*",
+    cors({
+      origin: "*",
+    })
+  );
   app.route("/api/v1", createConfigRoutes(config));
   app.route("/api/v1", createDataRoutes(storage));
   app.route("/api/v1", createFilesRoutes());
