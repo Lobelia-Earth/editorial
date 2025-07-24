@@ -31,6 +31,8 @@ export function createFilesRoutes(config: EditorialConfig) {
       },
     }),
     async (c) => {
+      const origin = new URL(c.req.url).origin;
+
       function calculateTotalSize(files: EditorialFiles): number {
         return files.reduce((total, file) => {
           if (file.type === "file") {
@@ -55,7 +57,7 @@ export function createFilesRoutes(config: EditorialConfig) {
 
             return {
               name: basename(fileName),
-              path: relative(publicDirPath, filePath),
+              path: `${origin}/${relative(publicDirPath, filePath)}`,
               size: file.size,
               type: isDirectory ? "directory" : "file",
               children: isDirectory

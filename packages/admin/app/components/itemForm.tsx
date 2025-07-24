@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Form,
   FormControl,
@@ -10,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import UnsavedChangesGuard from "@/components/unsavedChangesGuard";
 import {
   useCreateObjectMutation,
   useUpdateObjectMutation,
@@ -20,11 +22,11 @@ import type {
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { Save } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import MarkdownEditor from "./markdownEditor";
-import UnsavedChangesGuard from "./unsavedChangesGuard";
+import { DatePicker } from "./ui/date-picker";
 import URLInput from "./URLInput";
 
 export interface SinglesPageProps {
@@ -85,13 +87,10 @@ export default function ItemForm({
           fieldSchema = z.string().url("Must be a valid URL");
           break;
         case "date":
+          fieldSchema = z.string();
+          break;
         case "datetime":
-          fieldSchema = z
-            .string()
-            .regex(
-              /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/,
-              "Must be a valid date",
-            );
+          fieldSchema = z.string();
           break;
         default:
           fieldSchema = z.string();
@@ -116,6 +115,20 @@ export default function ItemForm({
     resolver: zodResolver(validationSchema),
     defaultValues: getDefaultValues(fields),
   });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+        if (form.formState.isDirty || isNew) {
+          form.handleSubmit(onSubmit)();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [form, isNew, onSubmit]);
 
   async function onSubmit(values: object) {
     if (isNew) {
@@ -254,6 +267,32 @@ export default function ItemForm({
                           <URLInput
                             placeholder={value.placeholder ?? "https://"}
                             {...field}
+                          />
+                        ) : value.type === "date" ? (
+                          <DatePicker
+                            date={
+                              field.value ? new Date(field.value) : undefined
+                            }
+                            onDateChange={(date) => {
+                              field.onChange(
+                                date ? date.toISOString() : undefined,
+                              );
+                            }}
+                            placeholder={value.placeholder ?? "Select date"}
+                          />
+                        ) : value.type === "datetime" ? (
+                          <DateTimePicker
+                            date={
+                              field.value ? new Date(field.value) : undefined
+                            }
+                            onDateTimeChange={(date) => {
+                              field.onChange(
+                                date ? date.toISOString() : undefined,
+                              );
+                            }}
+                            placeholder={
+                              value.placeholder ?? "Select date and time"
+                            }
                           />
                         ) : (
                           <Input placeholder={value.placeholder} {...field} />
