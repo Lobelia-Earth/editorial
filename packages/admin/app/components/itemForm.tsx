@@ -24,6 +24,7 @@ import { useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import MarkdownEditor from "./markdownEditor";
+import UnsavedChangesGuard from "./unsavedChangesGuard";
 import URLInput from "./URLInput";
 
 export interface SinglesPageProps {
@@ -242,7 +243,11 @@ export default function ItemForm({
                           <MarkdownEditor
                             className="h-52"
                             markdown={field.value}
-                            onChange={field.onChange}
+                            onChange={(value, initialChange) => {
+                              if (initialChange) return;
+
+                              field.onChange(value);
+                            }}
                             placeholder={value.placeholder}
                           />
                         ) : value.type === "url" ? (
@@ -269,6 +274,8 @@ export default function ItemForm({
           <Save /> Save
         </Button>
       </form>
+
+      <UnsavedChangesGuard hasUnsavedChanges={form.formState.isDirty} />
     </Form>
   );
 }
