@@ -14,6 +14,7 @@ import {
   useCreateObjectMutation,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   EditorialDataItem,
   EditorialSchemaItem,
@@ -21,6 +22,7 @@ import type {
 import { Save } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import MarkdownEditor from "./markdownEditor";
 import URLInput from "./URLInput";
 
@@ -55,7 +57,62 @@ export default function ItemForm({
     [data, fields],
   );
 
+  const validationSchema = useMemo(() => {
+    const schemaShape: Record<string, z.ZodTypeAny> = {
+      id: z
+        .string()
+        .min(1, "ID is required")
+        .regex(
+          /^[a-z0-9-]+$/,
+          "ID can only include lowercase letters, numbers, and hyphens",
+        ),
+    };
+
+    Object.entries(fields).forEach(([key, field]) => {
+      let fieldSchema: z.ZodTypeAny;
+
+      switch (field.type) {
+        case "boolean":
+          fieldSchema = z.boolean();
+          break;
+        case "number":
+          fieldSchema = z
+            .string()
+            .refine((val) => !isNaN(Number(val)), "Must be a valid number");
+          break;
+        case "url":
+          fieldSchema = z.string().url("Must be a valid URL");
+          break;
+        case "date":
+        case "datetime":
+          fieldSchema = z
+            .string()
+            .regex(
+              /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/,
+              "Must be a valid date",
+            );
+          break;
+        default:
+          fieldSchema = z.string();
+      }
+
+      if (!field.isRequired) {
+        fieldSchema = fieldSchema.optional().or(z.literal(""));
+      } else if (field.type !== "boolean") {
+        fieldSchema = (fieldSchema as z.ZodString).min(
+          1,
+          `${field.displayName} is required`,
+        );
+      }
+
+      schemaShape[key] = fieldSchema;
+    });
+
+    return z.object(schemaShape);
+  }, [fields]);
+
   const form = useForm<Record<string, string>>({
+    resolver: zodResolver(validationSchema),
     defaultValues: getDefaultValues(fields),
   });
 
@@ -88,7 +145,25 @@ export default function ItemForm({
             <FormItem>
               <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
               <FormControl>
-                <Input placeholder="url-slug" {...field} />
+                <Input
+                  placeholder="url-slug"
+                  {...field}
+                  onChange={(e) => {
+                    const kebabValue = e.target.value
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/-+/g, "-");
+
+                    field.onChange(kebabValue);
+                  }}
+                  onBlur={(e) => {
+                    const trimmedValue = e.target.value
+                      .trim()
+                      .replace(/^-+|-+$/g, "");
+
+                    field.onChange(trimmedValue);
+                  }}
+                />
               </FormControl>
               {data?.id !== "default" && (
                 <FormDescription>
