@@ -1,11 +1,17 @@
 import { initializeFirebase } from "@/lib/auth";
 import { useGetConfigQuery } from "@/lib/store/slices/editorialApi";
 import { useEffect, useState } from "react";
+import { Spinner } from "./ui/spinner";
 
 interface FirebaseInitializerProps {
   children: React.ReactNode;
 }
 
+/**
+ * Currently the only method of authentication in Editorial, in theory we should
+ * provide different middlewares/providers and/or support people plugging their
+ * own in.
+ */
 export default function FirebaseInitializer({
   children,
 }: FirebaseInitializerProps) {
@@ -16,7 +22,7 @@ export default function FirebaseInitializer({
     if (isLoading) return;
 
     if (queryError) {
-      console.error("Failed to fetch admin config:", queryError);
+      console.error("Failed to fetch firebase config:", queryError);
       return;
     }
 
@@ -53,11 +59,9 @@ export default function FirebaseInitializer({
 
   if (isLoading || !isInitialized) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Initializing Firebase...</p>
-        </div>
+      <div className="flex gap-1 items-center justify-center min-h-screen">
+        <Spinner size="28px" />
+        <p className="text-gray-600">Loading Editorial...</p>
       </div>
     );
   }

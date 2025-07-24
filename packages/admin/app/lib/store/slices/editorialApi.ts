@@ -16,7 +16,9 @@ export const ssrAwareBaseQuery = async (args, api, extraOptions) => {
   }
 
   return fetchBaseQuery({
-    baseUrl: "/api/v1",
+    baseUrl: import.meta.env.PROD
+      ? "/api/v1"
+      : import.meta.env.VITE_EDITORIAL_BASE_URL,
   })(args, api, extraOptions);
 };
 
@@ -91,7 +93,7 @@ export const editorialApi = createApi({
           if (item.children && item.children.length > 0) {
             count += item.children.reduce(
               (acc, child) => acc + countFiles(child),
-              0
+              0,
             );
           }
 
