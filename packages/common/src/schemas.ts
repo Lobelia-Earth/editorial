@@ -3,6 +3,8 @@ import { z } from "@hono/zod-openapi";
 export const EditorialConfigSchema = z.object({
   name: z.string(),
   publicUrl: z.string().url(),
+  publicDir: z.string().default("public/files"),
+  publicDeletedDir: z.string().default("public/files/.deleted"),
   previewUrl: z.string().optional(),
   silent: z.boolean().optional(),
   firebase: z

@@ -1,18 +1,19 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   EditorialFilesResponseSchema,
+  type EditorialConfig,
   type EditorialFile,
   type EditorialFiles,
 } from "@isardsat/editorial-common";
 import { readdirSync, statSync } from "node:fs";
 import { access, constants, mkdir, rename } from "node:fs/promises";
-import { basename, join, normalize } from "node:path";
+import { basename, join, normalize, relative } from "node:path";
 
-export function createFilesRoutes() {
+export function createFilesRoutes(config: EditorialConfig) {
   const app = new OpenAPIHono();
 
-  const publicDirPath = "public";
-  const deletedDirPath = "public/.deleted";
+  const publicDirPath = config.publicDir;
+  const deletedDirPath = config.publicDeletedDir;
 
   app.openapi(
     createRoute({
@@ -42,17 +43,19 @@ export function createFilesRoutes() {
       }
 
       function readDirectoryChildren(path: string): EditorialFiles {
+        // TODO: Gracefully handle missing directory?
         const directory = readdirSync(path);
 
         return directory
           .filter((fileName) => !fileName.startsWith("."))
           .map((fileName) => {
             const file = statSync(join(path, fileName));
+            const filePath = join(path, fileName);
             const isDirectory = file.isDirectory();
 
             return {
               name: basename(fileName),
-              path: join(path, fileName),
+              path: relative(publicDirPath, filePath),
               size: file.size,
               type: isDirectory ? "directory" : "file",
               children: isDirectory

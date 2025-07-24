@@ -47,7 +47,7 @@ export async function createEditorialServer({
   );
   app.route("/api/v1", createConfigRoutes(config));
   app.route("/api/v1", createDataRoutes(storage));
-  app.route("/api/v1", createFilesRoutes());
+  app.route("/api/v1", createFilesRoutes(config));
   app.route("/api/v1", createActionRoutes(storage, hooks));
   app.route("/", createAdminRoutes(config));
 
@@ -61,9 +61,10 @@ export async function createEditorialServer({
   app.get("/doc/ui", swaggerUI({ url: "/doc" }));
 
   app.use(
-    "/public/*",
+    "/*",
     serveStatic({
-      root: "./",
+      root: config.publicDir,
+      rewriteRequestPath: (path) => path.replace(/^\/public/, ""),
     })
   );
 
