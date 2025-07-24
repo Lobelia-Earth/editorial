@@ -28,7 +28,7 @@ export default function UnsavedChangesGuard({
 }: UnsavedChangesGuardProps) {
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
   );
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
