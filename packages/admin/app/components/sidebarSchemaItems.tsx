@@ -37,12 +37,12 @@ export default function SidebarSchemaItems({
                 {({ isActive }) => (
                   <SidebarMenuSubButton isActive={isActive} asChild>
                     <div>
-                      <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap w-full">
+                      <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap">
                         {value.displayName}
                       </span>
 
                       {!singleton && data && (
-                        <span className="text-xs text-gray-500 ml-auto pr-1">
+                        <span className="text-xs text-gray-500 ml-auto pr-1 min-w-[25px] text-right">
                           {Object.keys(data[key]).length}
                         </span>
                       )}
