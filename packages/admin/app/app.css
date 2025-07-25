@@ -153,10 +153,6 @@ body {
   }
 }
 
-.mdxeditor-popup-container {
-  display: none !important;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
