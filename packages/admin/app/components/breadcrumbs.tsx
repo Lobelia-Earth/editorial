@@ -1,7 +1,7 @@
 import { useGetSchemaQuery } from "@/lib/store/slices/editorialApi";
 import { ChevronRight } from "lucide-react";
 import React from "react";
-import { useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router";
 
 export default function Breadcrumbs() {
   const { pathname } = useLocation();
@@ -25,7 +25,24 @@ export default function Breadcrumbs() {
               key={value}
               className="text-sm leading-none tracking-tight capitalize text-gray-500 last:text-foreground"
             >
-              {schema[value] ? schema[value].displayName : value}
+              {index < array.length - 1 &&
+                schema[value] &&
+                schema[value].singleton &&
+                (schema[value] ? schema[value].displayName : value)}
+              {index < array.length - 1 &&
+                schema[value] &&
+                !schema[value].singleton && (
+                  <NavLink
+                    to={`/admin/dashboard/${value}`}
+                    className={({ isActive, isPending }) =>
+                      isPending ? "pending" : isActive ? "active" : ""
+                    }
+                  >
+                    {schema[value] ? schema[value].displayName : value}
+                  </NavLink>
+                )}
+              {index === array.length - 1 &&
+                (schema[value] ? schema[value].displayName : value)}
             </p>
           </React.Fragment>
         );
