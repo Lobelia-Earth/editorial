@@ -118,6 +118,14 @@ export default function ItemForm({
   });
 
   useEffect(() => {
+    if (!form) return;
+    const hash = window.location.hash;
+    if (hash) {
+      form.setFocus(hash.substring(1));
+    }
+  }, [form]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault();
@@ -162,6 +170,7 @@ export default function ItemForm({
               <FormControl>
                 <Input
                   placeholder="url-slug"
+                  {...form.register("id")}
                   {...field}
                   onChange={(e) => {
                     const kebabValue = e.target.value
@@ -205,6 +214,7 @@ export default function ItemForm({
                         <div className="flex flex-row space-x-2">
                           <FormControl>
                             <Checkbox
+                              {...form.register(key)}
                               checked={field.value === "true"}
                               onCheckedChange={(newCheckedState) => {
                                 field.onChange(
@@ -235,7 +245,6 @@ export default function ItemForm({
         {Object.entries(fields)
           .filter(([, value]) => value.type !== "boolean")
           .map(([key, value]) => {
-            console.log({ value });
             return (
               <FormField
                 key={key}
@@ -256,6 +265,8 @@ export default function ItemForm({
                       <FormControl>
                         {value.type === "markdown" ? (
                           <MarkdownEditor
+                            name={key}
+                            register={form.register}
                             className="h-52"
                             markdown={field.value}
                             onChange={(value, initialChange) => {
@@ -267,16 +278,20 @@ export default function ItemForm({
                           />
                         ) : value.type === "url" ? (
                           <URLInput
+                            {...form.register(key)}
                             placeholder={value.placeholder ?? "https://"}
                             {...field}
                           />
                         ) : value.type === "string" && value.isUploadedFile ? (
                           <FilePicker
+                            name={key}
+                            register={form.register}
                             value={field.value}
                             onChange={field.onChange}
                           />
                         ) : value.type === "date" ? (
                           <DatePicker
+                            {...form.register(key)}
                             date={
                               field.value ? new Date(field.value) : undefined
                             }
@@ -289,6 +304,7 @@ export default function ItemForm({
                           />
                         ) : value.type === "datetime" ? (
                           <DateTimePicker
+                            {...form.register(key)}
                             date={
                               field.value ? new Date(field.value) : undefined
                             }
@@ -302,7 +318,11 @@ export default function ItemForm({
                             }
                           />
                         ) : (
-                          <Input placeholder={value.placeholder} {...field} />
+                          <Input
+                            {...form.register(key)}
+                            placeholder={value.placeholder}
+                            {...field}
+                          />
                         )}
                       </FormControl>
                       {value.displayExtra && (

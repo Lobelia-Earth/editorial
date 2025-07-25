@@ -1,14 +1,19 @@
 import { useGetFilesQuery } from "@/lib/store/slices/editorialApi";
 import { useState } from "react";
+import type { UseFormRegister } from "react-hook-form";
 import Files from "./files";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 export default function FilePicker({
   value,
+  name,
+  register,
   onChange,
 }: {
   value: string;
+  name: string;
+  register: UseFormRegister<Record<string, string>>;
   onChange: (value: string) => void;
 }) {
   const { data: files, isLoading } = useGetFilesQuery();
@@ -23,6 +28,7 @@ export default function FilePicker({
           type="text"
           value={value}
           readOnly
+          {...register(name)}
           onClick={() => {
             setFilesModalOpen(true);
           }}

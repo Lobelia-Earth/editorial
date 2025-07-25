@@ -25,10 +25,13 @@ import {
   useCodeBlockEditorContext,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
+import type { UseFormRegister } from "react-hook-form";
 import styles from "./markdownEditor.module.css";
 
 export interface MarkdownEditorProps extends MDXEditorProps {
   className?: string;
+  name: string;
+  register: UseFormRegister<Record<string, string>>;
 }
 
 const PlainTextCodeEditorDescriptor: CodeBlockEditorDescriptor = {
@@ -56,10 +59,13 @@ const PlainTextCodeEditorDescriptor: CodeBlockEditorDescriptor = {
 export default function MarkdownEditor({
   className,
   markdown,
+  name,
+  register,
   onChange,
 }: MarkdownEditorProps) {
   return (
     <MDXEditor
+      {...register(name)}
       className={cn(
         "flex flex-col w-full rounded-md border border-input bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         styles.mdxeditor,
