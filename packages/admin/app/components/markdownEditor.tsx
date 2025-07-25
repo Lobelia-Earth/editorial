@@ -7,12 +7,14 @@ import {
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
   codeBlockPlugin,
+  CreateLink,
   headingsPlugin,
   imagePlugin,
   InsertImage,
   linkDialogPlugin,
   linkPlugin,
   listsPlugin,
+  ListsToggle,
   markdownShortcutPlugin,
   MDXEditor,
   quotePlugin,
@@ -90,6 +92,9 @@ export default function MarkdownEditor({
                 <BlockTypeSelect />
                 <BoldItalicUnderlineToggles />
                 <Separator />
+                <ListsToggle options={["bullet", "number"]} />
+                <Separator />
+                <CreateLink />
                 <InsertImage />
 
                 <div className="ml-auto">
