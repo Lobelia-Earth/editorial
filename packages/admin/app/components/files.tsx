@@ -10,6 +10,7 @@ import clsx from "clsx";
 import {
   ChevronDown,
   Copy,
+  Ellipsis,
   File,
   FileImage,
   FileText,
@@ -44,9 +45,10 @@ export interface TreeNodeProps {
   node: EditorialFiles[number];
   level?: number;
   onDelete: (path: string) => void;
+  onChange?: (value: string) => void;
 }
 
-const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
+const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const role = useAppSelector(selectRole);
@@ -54,7 +56,7 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
   const fileType = fileTypes.find((type) => type.test(node)) ?? defaultFileType;
   const isDirectory = node.type === "directory";
 
-  const Comp = isDirectory ? "div" : Link;
+  const Comp = isDirectory || onChange ? "div" : Link;
 
   const toggleExpand = () => {
     if (isDirectory) {
@@ -69,7 +71,13 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
         target="_blank"
         className={`flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer`}
         style={{ paddingLeft: `calc(0.5rem + ${level * 20}px)` }}
-        onClick={toggleExpand}
+        onClick={
+          isDirectory
+            ? toggleExpand
+            : onChange
+              ? () => onChange(node.name)
+              : undefined
+        }
       >
         {isDirectory ? (
           <ChevronDown
@@ -145,6 +153,7 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
               node={childNode}
               level={level + 1}
               onDelete={onDelete}
+              onChange={onChange}
             />
           ))}
         </div>
@@ -153,13 +162,51 @@ const TreeNode = ({ node, level = 0, onDelete }: TreeNodeProps) => {
   );
 };
 
-export default function Files() {
+export default function Files({
+  onChange,
+}: {
+  onChange?: (value: string) => void;
+}) {
   const { data: files, isLoading } = useGetFilesQuery();
-  const [trigger] = useDeleteFileMutation();
+  const [triggerDelete] = useDeleteFileMutation();
 
-  if (!files || isLoading) return null;
+  let fileList;
+  if (!files || isLoading) {
+    fileList = null;
+  } else {
+    fileList = files
+      .toSorted((a) => (a.type === "directory" ? -1 : 1))
+      .map((file) => (
+        <TreeNode
+          key={file.name}
+          node={file}
+          onDelete={triggerDelete}
+          onChange={onChange}
+        />
+      ));
+  }
 
-  return files
-    .toSorted((a) => (a.type === "directory" ? -1 : 1))
-    .map((file) => <TreeNode key={file.name} node={file} onDelete={trigger} />);
+  return (
+    <div className="overflow-auto h-full max-w-[800px] rounded-xl border">
+      <div
+        className={`sticky top-0 bg-white flex items-center gap-2 py-1 px-2 border-b group`}
+      >
+        <div className="w-4" />
+        <div className="flex flex-grow items-center gap-2 ml-2">
+          <span className="text-sm font-semibold">Name</span>
+        </div>
+        <div className="flex w-24 items-center gap-2 ml-2">
+          <span className="text-sm font-semibold">Size</span>
+        </div>
+
+        <div className="flex items-center gap-1 invisible">
+          <Copy size={14} />
+          <Trash size={14} />
+          <Ellipsis size={14} />
+        </div>
+      </div>
+
+      {fileList}
+    </div>
+  );
 }

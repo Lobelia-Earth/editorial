@@ -21,6 +21,7 @@ import type {
 import { Save } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import FilePicker from "./FilePicker";
 import MarkdownEditor from "./markdownEditor";
 import URLInput from "./URLInput";
 
@@ -145,6 +146,7 @@ export default function ItemForm({
         {Object.entries(fields)
           .filter(([, value]) => value.type !== "boolean")
           .map(([key, value]) => {
+            console.log({ value });
             return (
               <FormField
                 key={key}
@@ -174,6 +176,11 @@ export default function ItemForm({
                           <URLInput
                             placeholder={value.placeholder ?? "https://"}
                             {...field}
+                          />
+                        ) : value.type === "string" && value.isUploadedFile ? (
+                          <FilePicker
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         ) : (
                           <Input placeholder={value.placeholder} {...field} />
