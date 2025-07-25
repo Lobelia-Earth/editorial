@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Form,
   FormControl,
@@ -10,19 +11,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import UnsavedChangesGuard from "@/components/unsavedChangesGuard";
 import {
   useCreateObjectMutation,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   EditorialDataItem,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { Save } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import FilePicker from "./FilePicker";
 import MarkdownEditor from "./markdownEditor";
+import { DatePicker } from "./ui/date-picker";
 import URLInput from "./URLInput";
 
 export interface SinglesPageProps {
@@ -56,9 +61,75 @@ export default function ItemForm({
     [data, fields],
   );
 
+  const validationSchema = useMemo(() => {
+    const schemaShape: Record<string, z.ZodTypeAny> = {
+      id: z
+        .string()
+        .min(1, "ID is required")
+        .regex(
+          /^[a-z0-9-]+$/,
+          "ID can only include lowercase letters, numbers, and hyphens",
+        ),
+    };
+
+    Object.entries(fields).forEach(([key, field]) => {
+      let fieldSchema: z.ZodTypeAny;
+
+      switch (field.type) {
+        case "boolean":
+          fieldSchema = z.boolean();
+          break;
+        case "number":
+          fieldSchema = z
+            .string()
+            .refine((val) => !isNaN(Number(val)), "Must be a valid number");
+          break;
+        case "url":
+          fieldSchema = z.string().url("Must be a valid URL");
+          break;
+        case "date":
+          fieldSchema = z.string();
+          break;
+        case "datetime":
+          fieldSchema = z.string();
+          break;
+        default:
+          fieldSchema = z.string();
+      }
+
+      if (!field.isRequired) {
+        fieldSchema = fieldSchema.optional().or(z.literal(""));
+      } else if (field.type !== "boolean") {
+        fieldSchema = (fieldSchema as z.ZodString).min(
+          1,
+          `${field.displayName} is required`,
+        );
+      }
+
+      schemaShape[key] = fieldSchema;
+    });
+
+    return z.object(schemaShape);
+  }, [fields]);
+
   const form = useForm<Record<string, string>>({
+    resolver: zodResolver(validationSchema),
     defaultValues: getDefaultValues(fields),
   });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+        if (form.formState.isDirty || isNew) {
+          form.handleSubmit(onSubmit)();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [form, isNew, onSubmit]);
 
   async function onSubmit(values: object) {
     if (isNew) {
@@ -89,7 +160,25 @@ export default function ItemForm({
             <FormItem>
               <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
               <FormControl>
-                <Input placeholder="url-slug" {...field} />
+                <Input
+                  placeholder="url-slug"
+                  {...field}
+                  onChange={(e) => {
+                    const kebabValue = e.target.value
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/-+/g, "-");
+
+                    field.onChange(kebabValue);
+                  }}
+                  onBlur={(e) => {
+                    const trimmedValue = e.target.value
+                      .trim()
+                      .replace(/^-+|-+$/g, "");
+
+                    field.onChange(trimmedValue);
+                  }}
+                />
               </FormControl>
               {data?.id !== "default" && (
                 <FormDescription>
@@ -169,7 +258,11 @@ export default function ItemForm({
                           <MarkdownEditor
                             className="h-52"
                             markdown={field.value}
-                            onChange={field.onChange}
+                            onChange={(value, initialChange) => {
+                              if (initialChange) return;
+
+                              field.onChange(value);
+                            }}
                             placeholder={value.placeholder}
                           />
                         ) : value.type === "url" ? (
@@ -181,6 +274,32 @@ export default function ItemForm({
                           <FilePicker
                             value={field.value}
                             onChange={field.onChange}
+                          />
+                        ) : value.type === "date" ? (
+                          <DatePicker
+                            date={
+                              field.value ? new Date(field.value) : undefined
+                            }
+                            onDateChange={(date) => {
+                              field.onChange(
+                                date ? date.toISOString() : undefined,
+                              );
+                            }}
+                            placeholder={value.placeholder ?? "Select date"}
+                          />
+                        ) : value.type === "datetime" ? (
+                          <DateTimePicker
+                            date={
+                              field.value ? new Date(field.value) : undefined
+                            }
+                            onDateTimeChange={(date) => {
+                              field.onChange(
+                                date ? date.toISOString() : undefined,
+                              );
+                            }}
+                            placeholder={
+                              value.placeholder ?? "Select date and time"
+                            }
                           />
                         ) : (
                           <Input placeholder={value.placeholder} {...field} />
@@ -201,6 +320,8 @@ export default function ItemForm({
           <Save /> Save
         </Button>
       </form>
+
+      <UnsavedChangesGuard hasUnsavedChanges={form.formState.isDirty} />
     </Form>
   );
 }

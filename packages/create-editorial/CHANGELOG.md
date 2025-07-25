@@ -1,5 +1,17 @@
 # @isardsat/create-editorial
 
+## 6.3.3
+
+### Patch Changes
+
+- 1c24053: Build fix
+
+## 6.3.2
+
+### Patch Changes
+
+- a34991f: Fix admin panel file picker url
+
 ## 6.3.1
 
 ### Patch Changes

@@ -12,6 +12,10 @@ The minimum version of Node.js is **18.x**, the recommended version is **20.x**.
 
 **Examples**: You can use the [examples](./examples/) to get an idea of how editorial works.
 
+## Development
+
+Running `pnpm -w compile:watch` for all packages apart from the admin panel. You can then run `pnpm dev` in the `packages/admin` directory and run `pnpm editorial` in one of the [examples](./examples/) for dummy data.
+
 ## Contributing
 
 We currently don't accept PRs from external collaborators but we plan to! If you have any problems with Editorial we [track issues on Github](https://github.com/Lobelia-Earth/editorial/issues)

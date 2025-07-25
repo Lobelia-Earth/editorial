@@ -1,5 +1,23 @@
 # @isardsat/editorial-server
 
+## 6.3.3
+
+### Patch Changes
+
+- 1c24053: Build fix
+- Updated dependencies [1c24053]
+  - @isardsat/editorial-admin@6.3.3
+  - @isardsat/editorial-common@6.3.3
+
+## 6.3.2
+
+### Patch Changes
+
+- a34991f: Fix admin panel file picker url
+- Updated dependencies [a34991f]
+  - @isardsat/editorial-admin@6.3.2
+  - @isardsat/editorial-common@6.3.2
+
 ## 6.3.1
 
 ### Patch Changes
