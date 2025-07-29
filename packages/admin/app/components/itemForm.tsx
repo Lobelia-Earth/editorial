@@ -67,7 +67,7 @@ export default function ItemForm({
         .min(1, "ID is required")
         .regex(
           /^[a-z0-9-]+$/,
-          "ID can only include lowercase letters, numbers, and hyphens",
+          "ID can only include lowercase letters and numbers",
         ),
     };
 
@@ -160,15 +160,16 @@ export default function ItemForm({
               <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="url-slug"
+                  placeholder="urlslug"
                   {...field}
                   onChange={(e) => {
-                    const kebabValue = e.target.value
+                    const alphanumericValue = e.target.value
                       .toLowerCase()
                       .replace(/\s+/g, "-")
-                      .replace(/-+/g, "-");
+                      .replace(/-+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "");
 
-                    field.onChange(kebabValue);
+                    field.onChange(alphanumericValue);
                   }}
                   onBlur={(e) => {
                     const trimmedValue = e.target.value
@@ -179,11 +180,7 @@ export default function ItemForm({
                   }}
                 />
               </FormControl>
-              {data?.id !== "default" && (
-                <FormDescription>
-                  Choose a descriptive ID, since it will be part of the URL
-                </FormDescription>
-              )}
+
               <FormMessage />
             </FormItem>
           )}
