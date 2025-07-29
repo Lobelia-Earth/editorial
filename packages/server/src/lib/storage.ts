@@ -60,6 +60,7 @@ export function createStorage(dataDirectory: string) {
 
   async function createItem(item: EditorialDataObjectWithType) {
     const content = await getContent();
+    content[item.type] = content[item.type] ?? {};
     content[item.type][item.id] = EditorialDataItemSchema.parse(item);
 
     // TODO: Use superjson to safely encode different types.

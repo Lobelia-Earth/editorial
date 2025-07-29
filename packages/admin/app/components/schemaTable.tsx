@@ -48,6 +48,17 @@ export const baseColumns = [
   }),
 ];
 
+export const baseLastColumns = [
+  columnHelper.accessor("updatedAt", {
+    header() {
+      return <span>Last updated</span>;
+    },
+    cell(props) {
+      return formatTime(new Date(props.getValue()));
+    },
+  }),
+];
+
 export interface SchemaTableProps {
   itemType: string;
 }
@@ -152,12 +163,13 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
             },
           }),
         ),
+      ...baseLastColumns,
       actionColumn,
     ];
   }, [actionColumn, schema]);
 
   const schemaEntries = useMemo(
-    () => (data ? Object.values(data[itemType]) : []),
+    () => (data?.[itemType] ? Object.values(data[itemType]) : []),
     [itemType, data],
   );
 

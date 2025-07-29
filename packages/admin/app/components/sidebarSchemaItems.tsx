@@ -2,6 +2,7 @@ import {
   useGetDataQuery,
   useGetSchemaQuery,
 } from "@/lib/store/slices/editorialApi";
+import { useMemo } from "react";
 import { NavLink } from "react-router";
 import { SidebarMenuSub, SidebarMenuSubButton } from "./ui/sidebar";
 
@@ -16,6 +17,14 @@ export default function SidebarSchemaItems({
   const { data } = useGetDataQuery();
 
   if (!schema) return null;
+
+  const items = useMemo(
+    () =>
+      Object.entries(schema).filter(([, value]) =>
+        singleton ? value.singleton : !value.singleton,
+      ),
+    [schema],
+  );
 
   return (
     <>
@@ -41,7 +50,7 @@ export default function SidebarSchemaItems({
                         {value.displayName}
                       </span>
 
-                      {!singleton && data && (
+                      {!singleton && data?.[key] && (
                         <span className="text-xs text-gray-500 ml-auto pr-1 min-w-[25px] text-right">
                           {Object.keys(data[key]).length}
                         </span>

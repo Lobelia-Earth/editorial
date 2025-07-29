@@ -83,6 +83,9 @@ export function createDataRoutes(storage: Storage) {
           },
           description: "Get objects by type",
         },
+        404: {
+          description: "Collection not found",
+        },
       },
     }),
     async (c) => {
@@ -91,12 +94,16 @@ export function createDataRoutes(storage: Storage) {
       const content = await storage.getContent();
       const collection = content[itemType];
 
+      if (!collection) {
+        return c.notFound();
+      }
+
       // TODO: Formalize this process.
       if (lang) {
         const messages = await storage.getLocalisationMessages(lang);
 
         for (const [key, message] of Object.entries(messages)) {
-          const [contentKey, typeKey, fieldKey, hash] = key.split(".");
+          const [contentKey, typeKey, fieldKey] = key.split(".");
 
           if (contentKey === itemType) {
             collection[typeKey][fieldKey] = (message as any).defaultMessage;
@@ -173,20 +180,33 @@ export function createDataRoutes(storage: Storage) {
           },
           description: "Get object data",
         },
+        404: {
+          description: "Collection or item not found",
+        },
       },
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
       const { lang } = c.req.valid("query");
       const content = await storage.getContent();
-      const item = content[itemType][id];
+      const collection = content[itemType];
+
+      if (!collection) {
+        return c.notFound();
+      }
+
+      const item = collection[id];
+
+      if (!item) {
+        return c.notFound();
+      }
 
       // TODO: Formalize this process.
       if (lang) {
         const messages = await storage.getLocalisationMessages(lang);
 
         for (const [key, message] of Object.entries(messages)) {
-          const [contentKey, typeKey, fieldKey, hash] = key.split(".");
+          const [, typeKey, fieldKey] = key.split(".");
 
           if (typeKey === id) {
             item[fieldKey] = (message as any).defaultMessage;
