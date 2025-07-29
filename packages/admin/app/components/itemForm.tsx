@@ -160,7 +160,7 @@ export default function ItemForm({
               <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="urlslug"
+                  placeholder="my-item-id"
                   {...field}
                   onChange={(e) => {
                     const alphanumericValue = e.target.value
