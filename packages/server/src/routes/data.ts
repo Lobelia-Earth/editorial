@@ -3,11 +3,14 @@ import {
   EditorialDataItemSchema,
   EditorialDataSchema,
   EditorialSchemaSchema,
+  type EditorialConfig,
 } from "@isardsat/editorial-common";
 import type { Storage } from "../lib/storage.js";
 
-export function createDataRoutes(storage: Storage) {
+export function createDataRoutes(config: EditorialConfig, storage: Storage) {
   const app = new OpenAPIHono();
+
+  const publicFilesUrl = config.filesUrl;
 
   app.openapi(
     createRoute({
@@ -72,6 +75,7 @@ export function createDataRoutes(storage: Storage) {
               param: { name: "lang", in: "query" },
               example: "es_ES",
             }),
+          preview: z.string().optional(),
         }),
       },
       responses: {
@@ -90,8 +94,11 @@ export function createDataRoutes(storage: Storage) {
     }),
     async (c) => {
       const { itemType } = c.req.valid("param");
-      const { lang } = c.req.valid("query");
+      const { lang, preview } = c.req.valid("query");
+
+      const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
       const content = await storage.getContent();
+      const schema = await storage.getSchema();
       const collection = content[itemType];
 
       if (!collection) {
@@ -108,6 +115,14 @@ export function createDataRoutes(storage: Storage) {
           if (contentKey === itemType) {
             collection[typeKey][fieldKey] = (message as any).defaultMessage;
           }
+        }
+      }
+
+      for (const [itemKey, itemValue] of Object.entries(collection)) {
+        for (const [key, value] of Object.entries(itemValue)) {
+          if (!schema[itemType].fields[key]?.isUploadedFile) continue;
+
+          collection[itemKey][key] = `${origin}/${value}`;
         }
       }
 
@@ -169,6 +184,7 @@ export function createDataRoutes(storage: Storage) {
               param: { name: "lang", in: "query" },
               example: "es_ES",
             }),
+          preview: z.string().optional(),
         }),
       },
       responses: {
@@ -187,8 +203,11 @@ export function createDataRoutes(storage: Storage) {
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
-      const { lang } = c.req.valid("query");
+      const { lang, preview } = c.req.valid("query");
+
+      const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
       const content = await storage.getContent();
+      const schema = await storage.getSchema();
       const collection = content[itemType];
 
       if (!collection) {
@@ -212,6 +231,12 @@ export function createDataRoutes(storage: Storage) {
             item[fieldKey] = (message as any).defaultMessage;
           }
         }
+      }
+
+      for (const [key, value] of Object.entries(item)) {
+        if (!schema[itemType].fields[key]?.isUploadedFile) continue;
+
+        item[key] = `${origin}/${value}`;
       }
 
       return c.json(item);
