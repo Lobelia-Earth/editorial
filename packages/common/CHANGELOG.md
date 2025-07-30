@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.4.0
+
+### Minor Changes
+
+- 34be523: Add large file handling
+
 ## 6.3.3
 
 ### Patch Changes
