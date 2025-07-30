@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.4.1
+
+### Patch Changes
+
+- 100d974: Fix build errors
+
 ## 6.4.0
 
 ### Minor Changes

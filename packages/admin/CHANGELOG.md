@@ -1,5 +1,13 @@
 # @isardsat/editorial-admin
 
+## 6.4.1
+
+### Patch Changes
+
+- 100d974: Fix build errors
+- Updated dependencies [100d974]
+  - @isardsat/editorial-common@6.4.1
+
 ## 6.4.0
 
 ### Minor Changes
