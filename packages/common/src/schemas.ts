@@ -91,6 +91,7 @@ export const BaseEditorialFileSchema = z.object({
   name: z.string(),
   type: z.enum(["file", "directory"]),
   path: z.string(),
+  relativePath: z.string(),
   size: z.number(),
 });
 

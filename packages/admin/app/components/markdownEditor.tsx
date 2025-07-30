@@ -1,4 +1,6 @@
+import { useGetFilesQuery } from "@/lib/store/slices/editorialApi";
 import { cn } from "@/lib/utils";
+import type { EditorialFiles } from "@isardsat/editorial-common";
 import type {
   CodeBlockEditorDescriptor,
   MDXEditorProps,
@@ -25,6 +27,7 @@ import {
   useCodeBlockEditorContext,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
+import { useMemo } from "react";
 import type { UseFormRegister } from "react-hook-form";
 import styles from "./markdownEditor.module.css";
 
@@ -56,6 +59,22 @@ const PlainTextCodeEditorDescriptor: CodeBlockEditorDescriptor = {
   },
 };
 
+function flattenFiles(files: EditorialFiles): EditorialFiles {
+  const flattened: EditorialFiles = [];
+
+  function traverse(items: EditorialFiles) {
+    for (const item of items) {
+      flattened.push(item);
+      if (item.children) {
+        traverse(item.children);
+      }
+    }
+  }
+
+  traverse(files);
+  return flattened;
+}
+
 export default function MarkdownEditor({
   className,
   markdown,
@@ -63,6 +82,12 @@ export default function MarkdownEditor({
   register,
   onChange,
 }: MarkdownEditorProps) {
+  const { data: filesTree } = useGetFilesQuery();
+
+  const files = useMemo(() => {
+    return filesTree ? flattenFiles(filesTree) : [];
+  }, [filesTree]);
+
   return (
     <MDXEditor
       {...register(name)}
@@ -81,8 +106,16 @@ export default function MarkdownEditor({
         linkDialogPlugin(),
         quotePlugin(),
         imagePlugin({
+          imageAutocompleteSuggestions: files
+            ?.filter((file) => file.type !== "directory")
+            .map((file) => file.relativePath),
+          imagePreviewHandler: (image) => {
+            return new Promise((resolve) => {
+              return resolve(`http://localhost:3001/${image}`);
+            });
+          },
           disableImageResize: true,
-          disableImageSettingsButton: true,
+          disableImageSettingsButton: false,
         }),
         thematicBreakPlugin(),
         markdownShortcutPlugin(),

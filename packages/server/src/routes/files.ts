@@ -68,6 +68,7 @@ export function createFilesRoutes(config: EditorialConfig) {
             return {
               name: basename(fileName),
               path: isDirectory ? relativePath : `${origin}/${relativePath}`,
+              relativePath: relativePath,
               size: file.size,
               type: isDirectory ? "directory" : "file",
               children: isDirectory
