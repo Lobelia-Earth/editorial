@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  base: "/admin/",
+  base: process.env.NODE_ENV === "development" ? "/admin/" : "/",
   plugins: [
     // babel({
     //   filter: /\.[jt]sx?$/,
