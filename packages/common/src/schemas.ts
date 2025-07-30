@@ -5,6 +5,8 @@ export const EditorialConfigSchema = z.object({
   publicUrl: z.string().url(),
   publicDir: z.string().default("public/files"),
   publicDeletedDir: z.string().default("public/files/.deleted"),
+  filesUrl: z.string().url(),
+  largeFilesUrl: z.string().url(),
   previewUrl: z.string().optional(),
   silent: z.boolean().optional(),
   firebase: z

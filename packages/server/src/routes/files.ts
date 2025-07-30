@@ -12,6 +12,8 @@ import { basename, join, normalize, relative } from "node:path";
 export function createFilesRoutes(config: EditorialConfig) {
   const app = new OpenAPIHono();
 
+  const publicFilesUrl = config.filesUrl;
+
   const publicDirPath = config.publicDir;
   const deletedDirPath = config.publicDeletedDir;
 
@@ -19,6 +21,11 @@ export function createFilesRoutes(config: EditorialConfig) {
     createRoute({
       method: "get",
       path: "/files",
+      request: {
+        query: z.object({
+          preview: z.string().optional(),
+        }),
+      },
       responses: {
         200: {
           content: {
@@ -30,8 +37,10 @@ export function createFilesRoutes(config: EditorialConfig) {
         },
       },
     }),
+    // TODO: Index large files from bucket.
     async (c) => {
-      const origin = new URL(c.req.url).origin;
+      const { preview } = c.req.valid("query");
+      const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
 
       function calculateTotalSize(files: EditorialFiles): number {
         return files.reduce((total, file) => {

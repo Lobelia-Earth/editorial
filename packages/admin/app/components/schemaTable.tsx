@@ -22,16 +22,41 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { Circle, CircleCheck, Trash } from "lucide-react";
-import { useMemo } from "react";
+import {
+  CalendarIcon,
+  Circle,
+  CircleCheck,
+  CircleCheckIcon,
+  CircleIcon,
+  ExternalLink,
+  FileImageIcon,
+  LetterTextIcon,
+  ListIcon,
+  Trash,
+} from "lucide-react";
+import React, { useMemo, type FunctionComponent } from "react";
 import { Link } from "react-router";
+
+const TypeIconMap: Record<string, FunctionComponent> = {
+  boolean: CircleCheckIcon,
+  date: CalendarIcon,
+  datetime: CalendarIcon,
+  markdown: LetterTextIcon,
+  select: ListIcon,
+  string: LetterTextIcon,
+  url: ExternalLink,
+};
 
 const columnHelper = createColumnHelper<EditorialDataItem>();
 
 export const baseColumns = [
   columnHelper.accessor("id", {
     header() {
-      return <span className="block w-48 max-w-48">ID</span>;
+      return (
+        <span className="flex items-center w-48 max-w-48">
+          <CircleIcon className="text-gray-500 h-4" /> ID
+        </span>
+      );
     },
     cell(props) {
       const content = props.getValue();
@@ -51,7 +76,11 @@ export const baseColumns = [
 export const baseLastColumns = [
   columnHelper.accessor("updatedAt", {
     header() {
-      return <span>Last updated</span>;
+      return (
+        <div className="flex items-center w-48 max-w-48">
+          <CalendarIcon className="text-gray-500 h-4" /> Last updated
+        </div>
+      );
     },
     cell(props) {
       return formatTime(new Date(props.getValue()));
@@ -118,8 +147,22 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
         .map(([key, value]) =>
           columnHelper.accessor((row) => row[key], {
             id: key,
-            header: value.displayName,
+            header() {
+              const Comp = value.isUploadedFile
+                ? FileImageIcon
+                : (TypeIconMap[value.type] ?? React.Fragment);
+
+              return (
+                <div className="flex items-center">
+                  <Comp className="text-gray-500 h-4" />
+
+                  {value.displayName}
+                </div>
+              );
+            },
             cell(props) {
+              const cellValue = props.getValue();
+
               switch (value.type) {
                 case "boolean":
                   const Comp = props.getValue() ? CircleCheck : Circle;
@@ -135,6 +178,18 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                       />
                     </span>
                   );
+                case "url":
+                  if (!cellValue) return "--";
+
+                  return (
+                    <Link
+                      to={cellValue}
+                      className="flex items-center hover:text-blue-500"
+                    >
+                      {cellValue as string}
+                    </Link>
+                  );
+                case "datetime":
                 case "date":
                   const value = props.getValue();
 
@@ -219,13 +274,8 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
                 }}
               >
-                {row.getVisibleCells().map((cell, index) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cn("h-10", {
-                      "w-full": index == columns.length - 1,
-                    })}
-                  >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className={cn("h-10")}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

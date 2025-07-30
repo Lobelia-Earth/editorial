@@ -18,7 +18,7 @@ import {
   FolderOpen,
   Trash,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 
 const textFileSuffixes = ["txt", "md", "html", "pdf"] as const;
@@ -46,6 +46,7 @@ export interface TreeNodeProps {
   level?: number;
   onDelete: (path: string) => void;
   onChange?: (value: string) => void;
+  disableActions?: boolean;
 }
 
 const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
@@ -162,29 +163,30 @@ const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
   );
 };
 
-export default function Files({
-  onChange,
-}: {
+export interface FilesProps {
+  disableActions?: boolean;
   onChange?: (value: string) => void;
-}) {
-  const { data: files, isLoading } = useGetFilesQuery();
+}
+
+export default function Files({ disableActions, onChange }: FilesProps) {
+  const { data: files } = useGetFilesQuery();
   const [triggerDelete] = useDeleteFileMutation();
 
-  let fileList;
-  if (!files || isLoading) {
-    fileList = null;
-  } else {
-    fileList = files
-      .toSorted((a) => (a.type === "directory" ? -1 : 1))
-      .map((file) => (
-        <TreeNode
-          key={file.name}
-          node={file}
-          onDelete={triggerDelete}
-          onChange={onChange}
-        />
-      ));
-  }
+  const fileList = useMemo(
+    () =>
+      files
+        ?.toSorted((a) => (a.type === "directory" ? -1 : 1))
+        .map((file) => (
+          <TreeNode
+            key={file.name}
+            node={file}
+            onDelete={triggerDelete}
+            onChange={onChange}
+            disableActions={disableActions}
+          />
+        )),
+    [files],
+  );
 
   return (
     <div className="overflow-auto h-full max-w-[800px] rounded-xl border">
