@@ -8,7 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBlocker } from "react-router";
 
 interface UnsavedChangesGuardProps {
@@ -34,22 +34,20 @@ export default function UnsavedChangesGuard({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleConfirmNavigation = () => {
-    setShowConfirmDialog(false);
     if (blocker.state === "blocked") {
       blocker.proceed();
     }
   };
 
   const handleCancelNavigation = () => {
-    setShowConfirmDialog(false);
     if (blocker.state === "blocked") {
       blocker.reset();
     }
   };
 
-  if (blocker.state === "blocked" && !showConfirmDialog) {
-    setShowConfirmDialog(true);
-  }
+  useEffect(() => {
+    setShowConfirmDialog(blocker.state === "blocked" ? true : false);
+  }, [blocker.state, showConfirmDialog]);
 
   return (
     <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
