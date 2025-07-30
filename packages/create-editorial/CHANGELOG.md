@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.4.2
+
+### Patch Changes
+
+- 31f3669: Fix base path in vite
+
 ## 6.4.1
 
 ### Patch Changes

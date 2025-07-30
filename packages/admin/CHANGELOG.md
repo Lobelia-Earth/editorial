@@ -1,5 +1,13 @@
 # @isardsat/editorial-admin
 
+## 6.4.2
+
+### Patch Changes
+
+- 31f3669: Fix base path in vite
+- Updated dependencies [31f3669]
+  - @isardsat/editorial-common@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes
