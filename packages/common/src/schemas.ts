@@ -93,6 +93,7 @@ export const BaseEditorialFileSchema = z.object({
   path: z.string(),
   relativePath: z.string(),
   size: z.number(),
+  isLarge: z.boolean().optional(),
 });
 
 export type BaseEditorialFile = z.infer<typeof BaseEditorialFileSchema> & {

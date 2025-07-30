@@ -4,16 +4,22 @@ import {
   type EditorialConfig,
   type EditorialFile,
   type EditorialFiles,
+  type LargeFileHandler,
 } from "@isardsat/editorial-common";
 import { readdirSync, statSync } from "node:fs";
 import { access, constants, mkdir, rename, writeFile } from "node:fs/promises";
 import { basename, join, normalize, relative } from "node:path";
 
-export function createFilesRoutes(config: EditorialConfig) {
+export async function createFilesRoutes(config: EditorialConfig) {
   const app = new OpenAPIHono();
 
-  const publicFilesUrl = config.filesUrl;
+  // Dynamically import the ES module and call its init function
+  const hookScript = join(process.cwd(), "editorial", "largeFileHandler");
+  const largeFilesHandler: LargeFileHandler = await import(
+    `${hookScript}.mjs`
+  ).then((mod) => mod.init());
 
+  const publicFilesUrl = config.filesUrl;
   const publicDirPath = config.publicDir;
   const deletedDirPath = config.publicDeletedDir;
 
@@ -76,13 +82,61 @@ export function createFilesRoutes(config: EditorialConfig) {
                 : undefined,
             } satisfies EditorialFile;
           })
-          .sort((a, b) => (a.type === "directory" ? -1 : 0));
+          .toSorted((a, b) => {
+            if (a.type === "directory" && b.type !== "directory") return -1;
+            if (a.type !== "directory" && b.type === "directory") return 1;
+
+            return a.name.localeCompare(b.name);
+          });
+      }
+
+      function mergeDirectoryTrees(
+        localFiles: EditorialFiles,
+        largeFiles: EditorialFiles
+      ): EditorialFiles {
+        const merged: EditorialFiles = [...localFiles];
+
+        for (const largeFile of largeFiles) {
+          const existingIndex = merged.findIndex(
+            (file) => file.name === largeFile.name && file.type === "directory"
+          );
+
+          if (
+            existingIndex !== -1 &&
+            merged[existingIndex].type === "directory"
+          ) {
+            // Merge directories with same name
+            const existingDir = merged[existingIndex];
+            merged[existingIndex] = {
+              ...existingDir,
+              children: mergeDirectoryTrees(
+                existingDir.children || [],
+                largeFile.children || []
+              ),
+            };
+          } else {
+            // Add new file/directory
+            merged.push(largeFile);
+          }
+        }
+
+        return merged.toSorted((a, b) => {
+          if (a.type === "directory" && b.type !== "directory") return -1;
+          if (a.type !== "directory" && b.type === "directory") return 1;
+
+          return a.name.localeCompare(b.name);
+        });
       }
 
       const files = readDirectoryChildren(publicDirPath);
-      const totalSize = calculateTotalSize(files);
+      const largeFiles = await largeFilesHandler.list();
+      const mergedFiles = mergeDirectoryTrees(
+        files,
+        largeFiles as EditorialFiles
+      );
+      const totalSize = calculateTotalSize(mergedFiles);
 
-      return c.json({ files, totalSize });
+      return c.json({ files: mergedFiles, totalSize });
     }
   );
 
@@ -234,7 +288,6 @@ export function createFilesRoutes(config: EditorialConfig) {
         const fileArray = Array.isArray(files) ? files : [files];
         const uploadedFiles: string[] = [];
 
-        console.log("targetPath", targetPath);
         const targetDir = join(publicDirPath, targetPath);
         const normalizedTargetDir = normalize(targetDir);
 
@@ -246,6 +299,10 @@ export function createFilesRoutes(config: EditorialConfig) {
 
         for (const file of fileArray) {
           if (file instanceof File) {
+            if (file.size >= 1e6) {
+              return c.json({ error: "File too large" }, 400);
+            }
+
             const fileName = file.name;
             const filePath = join(normalizedTargetDir, fileName);
             const buffer = await file.arrayBuffer();

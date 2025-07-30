@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
+import { Badge } from "./ui/badge";
 
 const textFileSuffixes = ["txt", "md", "html", "pdf"] as const;
 const imageFileSuffixes = ["svg", "webp", "png", "jpeg", "jpg"] as const;
@@ -96,7 +97,7 @@ const TreeNode = ({
   return (
     <div className="select-none">
       <Comp
-        to={`/${node.path}`}
+        to={`/${node.relativePath}`}
         target="_blank"
         className={`flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer`}
         style={{ paddingLeft: `calc(0.5rem + ${level * 20}px)` }}
@@ -129,7 +130,10 @@ const TreeNode = ({
           ) : (
             <fileType.Icon size={16} className=" text-gray-500" />
           )}
-          <span className="text-sm whitespace-nowrap text-ellipsis overflow-hidden w-full">
+          <span className="flex gap-2 items-center text-sm whitespace-nowrap text-ellipsis overflow-hidden w-full">
+            {!isDirectory && node.isLarge && (
+              <Badge variant="outline">Large</Badge>
+            )}
             {node.name}
           </span>
         </div>
@@ -291,7 +295,12 @@ export default function Files({ disableActions, onChange }: FilesProps) {
   const fileList = useMemo(
     () =>
       files
-        ?.toSorted((a) => (a.type === "directory" ? -1 : 1))
+        ?.toSorted((a, b) => {
+          if (a.type === "directory" && b.type !== "directory") return -1;
+          if (a.type !== "directory" && b.type === "directory") return 1;
+
+          return a.name.localeCompare(b.name);
+        })
         .map((file) => (
           <TreeNode
             key={file.name}

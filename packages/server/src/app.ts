@@ -47,7 +47,7 @@ export async function createEditorialServer({
   );
   app.route("/api/v1", createConfigRoutes(config));
   app.route("/api/v1", createDataRoutes(config, storage));
-  app.route("/api/v1", createFilesRoutes(config));
+  app.route("/api/v1", await createFilesRoutes(config));
   app.route("/api/v1", createActionRoutes(storage, hooks));
   app.route("/", createAdminRoutes(config));
 

@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z } from "zod";
 import type {
   EditorialConfigSchema,
   EditorialDataItemSchema,
@@ -8,7 +8,13 @@ import type {
   EditorialSchemaItemFieldSchema,
   EditorialSchemaItemSchema,
   EditorialSchemaSchema,
-} from './schemas.js';
+} from "./schemas.js";
+
+export interface LargeFileHandler {
+  list: () => Promise<object[]>;
+  delete: () => Promise<void>;
+  upload: () => Promise<void>;
+}
 
 export type EditorialConfig = z.infer<typeof EditorialConfigSchema>;
 export type EditorialData = z.infer<typeof EditorialDataSchema>;
