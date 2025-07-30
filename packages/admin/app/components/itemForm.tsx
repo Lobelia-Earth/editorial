@@ -147,11 +147,11 @@ export default function ItemForm({
     }
   }
 
-  const flagFields = useMemo(() => {
-    return Object.entries(fields).filter(
-      ([, value]) => value.type === "boolean",
-    );
-  }, [fields]);
+  const flagFields = useMemo(
+    () =>
+      Object.entries(fields).filter(([, value]) => value.type === "boolean"),
+    [fields],
+  );
 
   return (
     <Form {...form}>
@@ -164,36 +164,40 @@ export default function ItemForm({
           control={form.control}
           disabled={data?.id === "default"}
           rules={{ required: true }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="my-item-id"
-                  {...form.register("id")}
-                  {...field}
-                  onChange={(e) => {
-                    const alphanumericValue = e.target.value
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")
-                      .replace(/-+/g, "-")
-                      .replace(/[^a-z0-9-]/g, "");
+          render={({ field }) => {
+            if (data?.id === "default") return <></>;
 
-                    field.onChange(alphanumericValue);
-                  }}
-                  onBlur={(e) => {
-                    const trimmedValue = e.target.value
-                      .trim()
-                      .replace(/^-+|-+$/g, "");
+            return (
+              <FormItem>
+                <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="my-item-id"
+                    {...form.register("id")}
+                    {...field}
+                    onChange={(e) => {
+                      const alphanumericValue = e.target.value
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")
+                        .replace(/-+/g, "-")
+                        .replace(/[^a-z0-9-]/g, "");
 
-                    field.onChange(trimmedValue);
-                  }}
-                />
-              </FormControl>
+                      field.onChange(alphanumericValue);
+                    }}
+                    onBlur={(e) => {
+                      const trimmedValue = e.target.value
+                        .trim()
+                        .replace(/^-+|-+$/g, "");
 
-              <FormMessage />
-            </FormItem>
-          )}
+                      field.onChange(trimmedValue);
+                    }}
+                  />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
         {flagFields.length > 0 && (

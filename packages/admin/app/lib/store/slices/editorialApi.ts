@@ -122,6 +122,37 @@ export const editorialApi = createApi({
       }),
       invalidatesTags: () => [{ type: "files" }],
     }),
+    uploadFiles: builder.mutation<
+      string[],
+      { files: FileList; path?: string }
+    >({
+      query: ({ files, path }) => {
+        const formData = new FormData();
+        Array.from(files).forEach((file) => {
+          formData.append("files", file);
+        });
+        if (path) {
+          formData.append("path", path);
+        }
+        return {
+          url: `/files`,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: () => [{ type: "files" }],
+    }),
+    createDirectory: builder.mutation<
+      boolean,
+      { name: string; path?: string }
+    >({
+      query: ({ name, path }) => ({
+        url: `/files/directory`,
+        method: "POST",
+        body: { name, path },
+      }),
+      invalidatesTags: () => [{ type: "files" }],
+    }),
     updateObject: builder.mutation<
       EditorialDataItem,
       Partial<EditorialDataItem>
@@ -158,6 +189,7 @@ export const editorialApi = createApi({
 });
 
 export const {
+  useCreateDirectoryMutation,
   useCreateObjectMutation,
   useDeleteFileMutation,
   useDeleteObjectMutation,
@@ -174,4 +206,5 @@ export const {
   usePullMutation,
   usePushMutation,
   useUpdateObjectMutation,
+  useUploadFilesMutation,
 } = editorialApi;

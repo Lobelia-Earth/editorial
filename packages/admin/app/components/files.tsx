@@ -1,8 +1,10 @@
 import { useAppSelector } from "@/lib/store/hooks";
 import { selectRole } from "@/lib/store/slices/authSlice";
 import {
+  useCreateDirectoryMutation,
   useDeleteFileMutation,
   useGetFilesQuery,
+  useUploadFilesMutation,
 } from "@/lib/store/slices/editorialApi";
 import { cn, formatFileSize } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
@@ -10,13 +12,13 @@ import clsx from "clsx";
 import {
   ChevronDown,
   Copy,
-  Ellipsis,
   File,
   FileImage,
   FileText,
   Folder,
   FolderOpen,
   Trash,
+  Upload,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
@@ -47,9 +49,19 @@ export interface TreeNodeProps {
   onDelete: (path: string) => void;
   onChange?: (value: string) => void;
   disableActions?: boolean;
+  onUpload?: (path: string, files: FileList) => void;
+  onCreateFolder?: (path: string, folderName: string) => void;
 }
 
-const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
+const TreeNode = ({
+  node,
+  level = 0,
+  onDelete,
+  onChange,
+  disableActions,
+  onUpload,
+  onCreateFolder,
+}: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const role = useAppSelector(selectRole);
@@ -62,6 +74,22 @@ const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
   const toggleExpand = () => {
     if (isDirectory) {
       setIsExpanded(!isExpanded);
+    }
+  };
+
+  const handleDirectoryUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (files && onUpload) {
+      onUpload(node.path, files);
+    }
+  };
+
+  const handleDirectoryCreateFolder = () => {
+    const folderName = prompt("Enter folder name:");
+    if (folderName && onCreateFolder) {
+      onCreateFolder(node.path, folderName);
     }
   };
 
@@ -112,12 +140,48 @@ const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
           </span>
         </div>
 
-        {role === "developer" && (
-          <div className="flex items-center gap-1 ml-4 group-hover:visible invisible z-20">
+        {role === "developer" && !disableActions && (
+          <div className="flex items-center gap-1 ml-4 group-hover:visible invisible z-50">
+            {isDirectory && (
+              <>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleDirectoryUpload}
+                  className="hidden"
+                  id={`dir-upload-${node.name}-${level}`}
+                />
+                <label
+                  htmlFor={`dir-upload-${node.name}-${level}`}
+                  className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
+                  <Upload size={16} />
+                  <span className="sr-only">Upload files to this folder</span>
+                </label>
+
+                {/* <button
+                  className="hover:text-green-500 p-1 hover:bg-muted rounded-sm"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleDirectoryCreateFolder();
+                  }}
+                >
+                  <FolderPlus size={16} />
+                  <span className="sr-only">
+                    Create folder in this directory
+                  </span>
+                </button> */}
+              </>
+            )}
+
             <button
               className={clsx(
-                `hover:text-yellow-500 p-1 hover:bg-muted rounded-clsx`,
-                isDirectory && "invisible",
+                `hover:text-yellow-500 p-1 hover:bg-muted rounded-sm`,
+                isDirectory && "hidden",
               )}
               onClick={(event) => {
                 event.preventDefault();
@@ -138,7 +202,9 @@ const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
               }}
             >
               <Trash size={16} />
-              <span className="sr-only">Delete this file</span>
+              <span className="sr-only">
+                Delete this {isDirectory ? "folder" : "file"}
+              </span>
             </button>
 
             {/* <Ellipsis size={14} className="text-gray-400" /> */}
@@ -155,6 +221,9 @@ const TreeNode = ({ node, level = 0, onDelete, onChange }: TreeNodeProps) => {
               level={level + 1}
               onDelete={onDelete}
               onChange={onChange}
+              disableActions={disableActions}
+              onUpload={onUpload}
+              onCreateFolder={onCreateFolder}
             />
           ))}
         </div>
@@ -171,6 +240,53 @@ export interface FilesProps {
 export default function Files({ disableActions, onChange }: FilesProps) {
   const { data: files } = useGetFilesQuery();
   const [triggerDelete] = useDeleteFileMutation();
+  const [uploadFiles] = useUploadFilesMutation();
+  const [createDirectory] = useCreateDirectoryMutation();
+
+  const role = useAppSelector(selectRole);
+
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (files) {
+      try {
+        await uploadFiles({ files }).unwrap();
+      } catch (error) {
+        console.error("Upload failed:", error);
+      }
+    }
+  };
+
+  const handleCreateFolder = async () => {
+    const folderName = prompt("Enter folder name:");
+    if (folderName) {
+      try {
+        await createDirectory({ name: folderName }).unwrap();
+      } catch (error) {
+        console.error("Create folder failed:", error);
+      }
+    }
+  };
+
+  const handleDirectoryUpload = async (path: string, files: FileList) => {
+    try {
+      await uploadFiles({ files, path }).unwrap();
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
+
+  const handleDirectoryCreateFolder = async (
+    path: string,
+    folderName: string,
+  ) => {
+    try {
+      await createDirectory({ name: folderName, path }).unwrap();
+    } catch (error) {
+      console.error("Create folder failed:", error);
+    }
+  };
 
   const fileList = useMemo(
     () =>
@@ -183,9 +299,11 @@ export default function Files({ disableActions, onChange }: FilesProps) {
             onDelete={triggerDelete}
             onChange={onChange}
             disableActions={disableActions}
+            onUpload={handleDirectoryUpload}
+            onCreateFolder={handleDirectoryCreateFolder}
           />
         )),
-    [files],
+    [files, disableActions, onChange],
   );
 
   return (
@@ -201,11 +319,32 @@ export default function Files({ disableActions, onChange }: FilesProps) {
           <span className="text-sm font-semibold">Size</span>
         </div>
 
-        <div className="flex items-center gap-1 invisible">
-          <Copy size={14} />
-          <Trash size={14} />
-          <Ellipsis size={14} />
-        </div>
+        {role === "developer" && !disableActions && (
+          <div className="flex items-center gap-1">
+            <input
+              type="file"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+              id="file-upload"
+            />
+            <label
+              htmlFor="file-upload"
+              className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
+            >
+              <Upload size={16} />
+              <span className="sr-only">Upload files</span>
+            </label>
+
+            {/* <button
+              onClick={handleCreateFolder}
+              className="hover:text-green-500 p-1 hover:bg-muted rounded-sm"
+            >
+              <FolderPlus size={16} />
+              <span className="sr-only">Create folder</span>
+            </button> */}
+          </div>
+        )}
       </div>
 
       {fileList}
