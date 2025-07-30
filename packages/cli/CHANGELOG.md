@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.4.3
+
+### Patch Changes
+
+- 293ea77: Fix vite base path in production
+- Updated dependencies [293ea77]
+  - @isardsat/editorial-server@6.4.3
+
 ## 6.4.2
 
 ### Patch Changes
