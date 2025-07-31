@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.4.4
+
+### Patch Changes
+
+- bd3d115: Fix preview urls
+- Updated dependencies [bd3d115]
+  - @isardsat/editorial-admin@6.4.4
+  - @isardsat/editorial-common@6.4.4
+
 ## 6.4.3
 
 ### Patch Changes
