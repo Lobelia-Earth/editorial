@@ -111,7 +111,7 @@ export default function MarkdownEditor({
             .map((file) => file.relativePath),
           imagePreviewHandler: (image) => {
             return new Promise((resolve) => {
-              return resolve(`http://localhost:3001/${image}`);
+              return resolve(`/${image}`);
             });
           },
           disableImageResize: true,
