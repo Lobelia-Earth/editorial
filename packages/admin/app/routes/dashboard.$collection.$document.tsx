@@ -21,7 +21,7 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
   if (!schema || !item || isFetching) return null;
 
   return (
-    <div className="overflow-auto">
+    <div className="overflow-auto scrollbar-stable">
       <div className="flex p-4 gap-4">
         <ItemForm
           key={`${collectionId}-${documentId}`}

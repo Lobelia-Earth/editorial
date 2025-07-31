@@ -11,6 +11,7 @@
   height: 100%;
   max-width: 100%;
   overflow: auto;
+  scrollbar-gutter: stable;
 }
 
 .mdxeditor :global(.mdxeditor-root-contenteditable) ~ div {
