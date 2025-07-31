@@ -121,6 +121,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       for (const [itemKey, itemValue] of Object.entries(collection)) {
         for (const [key, value] of Object.entries(itemValue)) {
           if (!schema[itemType].fields[key]?.isUploadedFile) continue;
+          if ((value as string).startsWith("http")) continue;
 
           collection[itemKey][key] = `${origin}/${value}`;
         }
@@ -235,6 +236,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
 
       for (const [key, value] of Object.entries(item)) {
         if (!schema[itemType].fields[key]?.isUploadedFile) continue;
+        if ((value as string).startsWith("http")) continue;
 
         item[key] = `${origin}/${value}`;
       }
