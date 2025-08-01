@@ -54,11 +54,11 @@ export const editorialApi = createApi({
       ],
     }),
     getData: builder.query<EditorialData, void>({
-      query: () => "/data",
+      query: () => "/data?preview=true",
       providesTags: () => [{ type: "data" }],
     }),
     getDataCount: builder.query<number, void>({
-      query: () => "/data",
+      query: () => "/data?preview=true",
       transformResponse(response: EditorialData) {
         const items = Object.values(response).reduce((acc, item) => {
           return acc + Object.keys(item).length;
@@ -71,7 +71,7 @@ export const editorialApi = createApi({
       EditorialDataItem,
       { itemType: string; id: string }
     >({
-      query: () => "/data",
+      query: () => "/data?preview=true",
       transformResponse: (response: EditorialData, _, { itemType, id }) => {
         return response[itemType][id] || null;
       },
