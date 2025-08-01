@@ -47,6 +47,13 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
         return c.json(false);
       }
 
+      try {
+        await hooks.onPublish(content, schema);
+      } catch (error) {
+        console.error("Error executing script:", error);
+        return c.json(false);
+      }
+
       return c.json(true);
     }
   );
