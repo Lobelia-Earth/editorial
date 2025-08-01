@@ -30,8 +30,14 @@ export function createStorage(dataDirectory: string) {
   /**
    * TODO: This should ideally cache the result of reading the file until an update occurs.
    */
-  async function getContent(): Promise<EditorialData> {
-    return await readFile(dataPath, "utf-8").then((value) => JSON.parse(value));
+  async function getContent({
+    production,
+  }: {
+    production?: boolean;
+  }): Promise<EditorialData> {
+    return await readFile(production ? dataProdPath : dataPath, "utf-8").then(
+      (value) => JSON.parse(value)
+    );
   }
 
   async function getLocalisationMessages(langCode: string): Promise<any> {
@@ -42,7 +48,7 @@ export function createStorage(dataDirectory: string) {
   }
 
   async function saveContent({ production }: { production?: boolean }) {
-    const content = await getContent();
+    const content = await getContent({ production: false });
 
     await writeFileSafe(
       production ? dataProdPath : dataPath,
@@ -59,7 +65,7 @@ export function createStorage(dataDirectory: string) {
   }
 
   async function createItem(item: EditorialDataObjectWithType) {
-    const content = await getContent();
+    const content = await getContent({ production: false });
     content[item.type] = content[item.type] ?? {};
     content[item.type][item.id] = EditorialDataItemSchema.parse(item);
 
@@ -70,7 +76,7 @@ export function createStorage(dataDirectory: string) {
   }
 
   async function updateItem(item: EditorialDataObjectWithType) {
-    const content = await getContent();
+    const content = await getContent({ production: false });
     const oldItem = content[item.type][item.id];
 
     const newItem = EditorialDataItemSchema.parse({
@@ -87,7 +93,7 @@ export function createStorage(dataDirectory: string) {
   }
 
   async function deleteItem(item: EditorialDataObjectWithType) {
-    const content = await getContent();
+    const content = await getContent({ production: false });
     delete content[item.type][item.id];
     // TODO: Use superjson to safely encode different types.
     await writeFileSafe(dataPath, JSON.stringify(content, null, 2));

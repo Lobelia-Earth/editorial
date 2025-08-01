@@ -3,6 +3,7 @@ import { selectRole } from "@/lib/store/slices/authSlice";
 import {
   useCreateDirectoryMutation,
   useDeleteFileMutation,
+  useGetConfigQuery,
   useGetFilesQuery,
   useUploadFilesMutation,
 } from "@/lib/store/slices/editorialApi";
@@ -65,6 +66,7 @@ const TreeNode = ({
 }: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const { data: config } = useGetConfigQuery();
   const role = useAppSelector(selectRole);
 
   const fileType = fileTypes.find((type) => type.test(node)) ?? defaultFileType;
@@ -105,7 +107,12 @@ const TreeNode = ({
           isDirectory
             ? toggleExpand
             : onChange
-              ? () => onChange(node.name)
+              ? () =>
+                  onChange(
+                    node.isLarge
+                      ? `${config?.largeFilesUrl}/${node.relativePath}`
+                      : node.relativePath,
+                  )
               : undefined
         }
       >

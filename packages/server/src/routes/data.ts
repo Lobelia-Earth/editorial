@@ -38,6 +38,18 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "get",
       path: "/data",
+      request: {
+        query: z.object({
+          lang: z
+            .string()
+            .optional()
+            .openapi({
+              param: { name: "lang", in: "query" },
+              example: "es_ES",
+            }),
+          preview: z.string().optional(),
+        }),
+      },
       responses: {
         200: {
           content: {
@@ -50,7 +62,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       },
     }),
     async (c) => {
-      const content = await storage.getContent();
+      const { preview } = c.req.valid("query");
+      const content = await storage.getContent({ production: !preview });
 
       return c.json(content);
     }
@@ -97,7 +110,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { lang, preview } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
-      const content = await storage.getContent();
+      const content = await storage.getContent({ production: !preview });
       const schema = await storage.getSchema();
       const collection = content[itemType];
 
@@ -142,6 +155,9 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
             example: "newsItem",
           }),
         }),
+        query: z.object({
+          preview: z.string().optional(),
+        }),
       },
       responses: {
         200: {
@@ -156,7 +172,9 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     }),
     async (c) => {
       const { itemType } = c.req.valid("param");
-      const content = await storage.getContent();
+      const { preview } = c.req.valid("query");
+
+      const content = await storage.getContent({ production: !preview });
 
       return c.json(Object.keys(content[itemType]));
     }
@@ -207,7 +225,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { lang, preview } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
-      const content = await storage.getContent();
+      const content = await storage.getContent({ production: !preview });
       const schema = await storage.getSchema();
       const collection = content[itemType];
 

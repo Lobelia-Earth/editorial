@@ -35,9 +35,8 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
     }),
     // TODO: Don't async, let the promises run in the background.
     async (c) => {
-      await storage.saveContent({ production: false });
-
-      const content = await storage.getContent();
+      await storage.saveContent({ production: true });
+      const content = await storage.getContent({ production: true });
       const schema = await storage.getSchema();
 
       try {
