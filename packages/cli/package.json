@@ -26,6 +26,9 @@
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "volta": {
     "extends": "../../package.json"
   }
