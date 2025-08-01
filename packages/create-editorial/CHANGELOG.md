@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.5.0
+
+### Minor Changes
+
+- ce5bda1: Fix preview data
+
 ## 6.4.4
 
 ### Patch Changes

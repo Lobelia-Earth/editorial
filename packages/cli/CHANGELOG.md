@@ -1,5 +1,16 @@
 # @isardsat/editorial-cli
 
+## 6.5.0
+
+### Minor Changes
+
+- ce5bda1: Fix preview data
+
+### Patch Changes
+
+- Updated dependencies [ce5bda1]
+  - @isardsat/editorial-server@6.5.0
+
 ## 6.4.4
 
 ### Patch Changes
