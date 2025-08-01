@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.5.1
+
+### Patch Changes
+
+- b1fd4db: onPublish hook fix
+- Updated dependencies [b1fd4db]
+  - @isardsat/editorial-server@6.5.1
+
 ## 6.5.0
 
 ### Minor Changes

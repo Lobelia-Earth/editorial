@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.5.1
+
+### Patch Changes
+
+- b1fd4db: onPublish hook fix
+
 ## 6.5.0
 
 ### Minor Changes
