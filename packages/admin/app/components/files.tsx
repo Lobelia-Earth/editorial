@@ -151,7 +151,7 @@ const TreeNode = ({
           </span>
         </div>
 
-        {role === "developer" && !disableActions && (
+        {!disableActions && (
           <div className="flex items-center gap-1 ml-4 group-hover:visible invisible z-50">
             {isDirectory && (
               <>
@@ -335,7 +335,7 @@ export default function Files({ disableActions, onChange }: FilesProps) {
           <span className="text-sm font-semibold">Size</span>
         </div>
 
-        {role === "developer" && !disableActions && (
+        {!disableActions && (
           <div className="flex items-center gap-1">
             <input
               type="file"
