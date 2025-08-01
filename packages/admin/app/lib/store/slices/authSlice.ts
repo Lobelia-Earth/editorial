@@ -57,6 +57,10 @@ export const loginUser = createAppAsyncThunk(
       const editorSnapshot = await get(editorRef);
       const editorData = editorSnapshot.val();
 
+      if (!editorData) {
+        throw new Error("Not authenticated");
+      }
+
       return {
         user: {
           uid: userCredential.user.uid,
@@ -65,6 +69,8 @@ export const loginUser = createAppAsyncThunk(
         role: editorData,
       };
     } catch (error) {
+      await firebaseSignOut(auth);
+
       if (error instanceof Error) {
         return rejectWithValue(error.message as string);
       }
