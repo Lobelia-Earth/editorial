@@ -36,7 +36,7 @@ export function Modal({ isOpen, setOpen }: ModalProps) {
           </Button>
 
           <Button asChild variant="ghost">
-            <Link to="/doc">
+            <Link to="/doc/ui">
               <SiSwagger size={14} />
               Swagger API UI
             </Link>
