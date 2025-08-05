@@ -3,8 +3,8 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import {
   browserLocalPersistence,
+  browserSessionPersistence,
   signOut as firebaseSignOut,
-  inMemoryPersistence,
   setPersistence,
   signInWithEmailAndPassword,
 } from "firebase/auth";
@@ -41,7 +41,7 @@ export const loginUser = createAppAsyncThunk(
     try {
       const userCredential = await setPersistence(
         auth,
-        remember ? browserLocalPersistence : inMemoryPersistence,
+        remember ? browserLocalPersistence : browserSessionPersistence,
       ).then(() => {
         return signInWithEmailAndPassword(auth, email, password);
       });
