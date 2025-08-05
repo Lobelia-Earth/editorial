@@ -115,7 +115,6 @@ export default function MarkdownEditor({
             });
           },
           disableImageResize: true,
-          disableImageSettingsButton: false,
         }),
         thematicBreakPlugin(),
         markdownShortcutPlugin(),
