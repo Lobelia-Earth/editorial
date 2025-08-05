@@ -1,3 +1,4 @@
+import Loading from "@/components/Loading";
 import LoginForm from "@/components/LoginForm";
 import { useAppSelector } from "@/lib/store/hooks";
 import { useEffect } from "react";
@@ -15,7 +16,7 @@ export default function Login() {
     }
   }, [navigate, user]);
 
-  if (isLoading || user) return null;
+  if (isLoading || user) return <Loading message="Logging in..." />;
 
   return (
     <div className="flex w-full h-full">

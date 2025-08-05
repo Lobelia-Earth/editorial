@@ -1,7 +1,7 @@
 import { initializeFirebase } from "@/lib/auth";
 import { useGetConfigQuery } from "@/lib/store/slices/editorialApi";
 import { useEffect, useState } from "react";
-import { Spinner } from "./ui/spinner";
+import Loading from "./Loading";
 
 interface FirebaseInitializerProps {
   children: React.ReactNode;
@@ -57,14 +57,7 @@ export default function FirebaseInitializer({
     );
   }
 
-  if (isLoading || !isInitialized) {
-    return (
-      <div className="flex gap-1 items-center justify-center min-h-screen">
-        <Spinner size="28px" />
-        <p className="text-gray-600">Loading Editorial...</p>
-      </div>
-    );
-  }
+  if (isLoading || !isInitialized) return <Loading />;
 
   return <>{children}</>;
 }

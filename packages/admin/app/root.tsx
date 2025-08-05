@@ -36,6 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <StoreProvider>
           <FirebaseInitializer>
             <AuthListener />
+
             {children}
           </FirebaseInitializer>
         </StoreProvider>

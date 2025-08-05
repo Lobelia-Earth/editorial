@@ -1,6 +1,7 @@
 import { useAppSelector } from "@/lib/store/hooks";
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router";
+import Loading from "./Loading";
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
     }
   }, [isLoading, navigate, user]);
 
-  if (isLoading || !user) return null;
+  if (isLoading || !user) return <Loading />;
 
   return children;
 }
