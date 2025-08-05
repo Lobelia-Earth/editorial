@@ -8,9 +8,9 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import * as React from "react";
 
 interface DatePickerProps {
+  id?: string;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   placeholder?: string;
@@ -19,6 +19,7 @@ interface DatePickerProps {
 }
 
 export function DatePicker({
+  id,
   date,
   onDateChange,
   placeholder = "Pick a date",
@@ -43,6 +44,7 @@ export function DatePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar
+          id={id}
           mode="single"
           selected={date}
           onSelect={onDateChange}

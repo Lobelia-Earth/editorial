@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 export interface FilePickerProps {
+  id?: string;
   value: string;
   name: string;
   register: UseFormRegister<Record<string, string>>;
@@ -15,6 +16,7 @@ export interface FilePickerProps {
 }
 
 export default function FilePicker({
+  id,
   value,
   name,
   register,
@@ -30,6 +32,7 @@ export default function FilePicker({
       <div className="flex items-center gap-2">
         <div className="relative flex items-center flex-1">
           <Input
+            id={id}
             {...register(name)}
             type="text"
             value={value}

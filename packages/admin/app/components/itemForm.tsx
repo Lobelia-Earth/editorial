@@ -172,6 +172,7 @@ export default function ItemForm({
                 <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
                 <FormControl>
                   <Input
+                    id="id"
                     placeholder="my-item-id"
                     {...form.register("id")}
                     {...field}
@@ -215,6 +216,7 @@ export default function ItemForm({
                         <div className="flex flex-row space-x-2">
                           <FormControl>
                             <Checkbox
+                              id={key}
                               {...form.register(key)}
                               checked={field.value === "true"}
                               onCheckedChange={(newCheckedState) => {
@@ -263,7 +265,7 @@ export default function ItemForm({
                           <span className="text-gray-400">(optional)</span>
                         )}
                       </FormLabel>
-                      <FormControl>
+                      <FormControl id={key}>
                         {value.type === "markdown" ? (
                           <MarkdownEditor
                             name={key}
@@ -279,12 +281,14 @@ export default function ItemForm({
                           />
                         ) : value.type === "url" ? (
                           <URLInput
+                            id={key}
                             {...form.register(key)}
                             placeholder={value.placeholder ?? "https://"}
                             {...field}
                           />
                         ) : value.type === "string" && value.isUploadedFile ? (
                           <FilePicker
+                            id={key}
                             name={key}
                             register={form.register}
                             value={field.value}
@@ -292,6 +296,7 @@ export default function ItemForm({
                           />
                         ) : value.type === "date" ? (
                           <DatePicker
+                            id={key}
                             {...form.register(key)}
                             date={
                               field.value ? new Date(field.value) : undefined
@@ -305,6 +310,7 @@ export default function ItemForm({
                           />
                         ) : value.type === "datetime" ? (
                           <DateTimePicker
+                            id={key}
                             {...form.register(key)}
                             date={
                               field.value ? new Date(field.value) : undefined
@@ -320,6 +326,7 @@ export default function ItemForm({
                           />
                         ) : (
                           <Input
+                            id={key}
                             {...form.register(key)}
                             placeholder={value.placeholder}
                             {...field}

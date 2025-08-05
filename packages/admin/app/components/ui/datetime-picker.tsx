@@ -12,6 +12,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 
 interface DateTimePickerProps {
+  id?: string;
   date?: Date;
   onDateTimeChange?: (date: Date | undefined) => void;
   placeholder?: string;
@@ -20,6 +21,7 @@ interface DateTimePickerProps {
 }
 
 export function DateTimePicker({
+  id,
   date,
   onDateTimeChange,
   placeholder = "Pick a date and time",
@@ -104,6 +106,7 @@ export function DateTimePicker({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar
+            id={id}
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
