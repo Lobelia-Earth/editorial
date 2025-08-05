@@ -17,7 +17,7 @@ import type { Route } from "./+types/root";
 export const links: Route.LinksFunction = () => [];
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "Editorial Admin" }];
+  return [{ title: "Editorial Admin" }, { name: "robots", content: "noindex" }];
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
