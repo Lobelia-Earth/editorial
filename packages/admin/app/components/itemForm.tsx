@@ -16,6 +16,7 @@ import {
   useCreateObjectMutation,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   EditorialDataItem,
@@ -162,13 +163,10 @@ export default function ItemForm({
         <FormField
           name="id"
           control={form.control}
-          disabled={data?.id === "default"}
           rules={{ required: true }}
           render={({ field }) => {
-            if (data?.id === "default") return <></>;
-
             return (
-              <FormItem>
+              <FormItem className={cn(data?.id === "default" && "hidden")}>
                 <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
                 <FormControl>
                   <Input
