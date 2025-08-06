@@ -1,5 +1,3 @@
-"use client";
-
 import { auth, firebaseDb } from "@/lib/auth";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setLoading, setRole, setUser } from "@/lib/store/slices/authSlice";

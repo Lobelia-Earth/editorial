@@ -1,5 +1,3 @@
-"use client";
-
 import { createStore } from "@/lib/store/createStore";
 import { editorialApi } from "@/lib/store/slices/editorialApi";
 import type { AppStore } from "@/lib/store/types";

@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Form,
   FormControl,
@@ -23,13 +22,15 @@ import type {
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { Save } from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import FilePicker from "./FilePicker";
-import MarkdownEditor from "./markdownEditor";
-import { DatePicker } from "./ui/date-picker";
-import URLInput from "./URLInput";
+
+const FilePicker = React.lazy(() => import("./FilePicker"));
+const MarkdownEditor = React.lazy(() => import("./markdownEditor"));
+const DatePicker = React.lazy(() => import("./ui/date-picker"));
+const DateTimePicker = React.lazy(() => import("./ui/datetime-picker"));
+const URLInput = React.lazy(() => import("./URLInput"));
 
 export interface SinglesPageProps {
   itemType: string;

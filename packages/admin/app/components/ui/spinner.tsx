@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import type { LucideProps } from "lucide-react";
 import { Loader, LoaderCircle } from "lucide-react";

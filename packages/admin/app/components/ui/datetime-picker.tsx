@@ -20,7 +20,7 @@ interface DateTimePickerProps {
   className?: string;
 }
 
-export function DateTimePicker({
+export default function DateTimePicker({
   id,
   date,
   onDateTimeChange,

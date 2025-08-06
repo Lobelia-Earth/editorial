@@ -18,7 +18,7 @@ interface DatePickerProps {
   className?: string;
 }
 
-export function DatePicker({
+export default function DatePicker({
   id,
   date,
   onDateChange,
