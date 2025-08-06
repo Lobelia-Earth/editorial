@@ -1,5 +1,16 @@
 # @isardsat/editorial-cli
 
+## 6.6.0
+
+### Minor Changes
+
+- 86b73ad: Improved UI
+
+### Patch Changes
+
+- Updated dependencies [86b73ad]
+  - @isardsat/editorial-server@6.6.0
+
 ## 6.5.1
 
 ### Patch Changes

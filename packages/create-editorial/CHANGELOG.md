@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.6.0
+
+### Minor Changes
+
+- 86b73ad: Improved UI
+
 ## 6.5.1
 
 ### Patch Changes
