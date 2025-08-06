@@ -1,3 +1,4 @@
+import { useAppSelector } from "@/lib/store/hooks";
 import { useGetFilesQuery } from "@/lib/store/slices/editorialApi";
 import { cn } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
@@ -10,6 +11,8 @@ import {
   BoldItalicUnderlineToggles,
   codeBlockPlugin,
   CreateLink,
+  diffSourcePlugin,
+  DiffSourceToggleWrapper,
   headingsPlugin,
   imagePlugin,
   InsertImage,
@@ -27,7 +30,9 @@ import {
   useCodeBlockEditorContext,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
-import { useMemo } from "react";
+import { Expand, Shrink } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { UseFormRegister } from "react-hook-form";
 import styles from "./markdownEditor.module.css";
 
@@ -35,8 +40,14 @@ export interface MarkdownEditorProps extends MDXEditorProps {
   className?: string;
   name: string;
   register: UseFormRegister<Record<string, string>>;
+  fieldDisplayName?: string;
+  fullscreenable?: boolean;
 }
 
+/**
+ * Custom components can be implement as directives with a custom editor.
+ * Needs a method of getting custom component fields/validators from the schema.
+ */
 const PlainTextCodeEditorDescriptor: CodeBlockEditorDescriptor = {
   match: (language, meta) => true,
   priority: 0,
@@ -81,20 +92,94 @@ export default function MarkdownEditor({
   name,
   register,
   onChange,
+  fieldDisplayName,
+  fullscreenable = true,
 }: MarkdownEditorProps) {
   const { data: filesTree } = useGetFilesQuery();
+  const initialMarkdown = useRef(markdown);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const files = useMemo(() => {
-    return filesTree ? flattenFiles(filesTree) : [];
-  }, [filesTree]);
+  const role = useAppSelector((state) => state.auth.role);
 
-  return (
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    if (isFullscreen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isFullscreen]);
+
+  const files = useMemo(
+    () => (filesTree ? flattenFiles(filesTree) : []),
+    [filesTree],
+  );
+
+  const ToolbarContents = () => (
+    <>
+      <div className="flex items-center flex-1 gap-1">
+        {isFullscreen && (
+          <>
+            <span className="text-sm font-medium text-gray-600">
+              {fieldDisplayName}
+            </span>
+            <Separator />
+          </>
+        )}
+
+        <BlockTypeSelect />
+        <BoldItalicUnderlineToggles />
+        <Separator />
+        <ListsToggle options={["bullet", "number"]} />
+        <Separator />
+        <CreateLink />
+        <InsertImage />
+
+        <div className="flex items-center ml-auto gap-1">
+          {role === "developer" ? (
+            <DiffSourceToggleWrapper>
+              <UndoRedo />
+            </DiffSourceToggleWrapper>
+          ) : (
+            <UndoRedo />
+          )}
+          {fullscreenable && (
+            <>
+              <Separator />
+              <button
+                type="button"
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                aria-label={
+                  isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                }
+              >
+                {isFullscreen ? <Shrink size={16} /> : <Expand size={16} />}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
+  const renderEditor = () => (
     <MDXEditor
       {...register(name)}
       className={cn(
         "flex flex-col w-full rounded-md border border-input bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         styles.mdxeditor,
-        className,
+        isFullscreen ? styles.fullscreen : className,
       )}
       suppressHtmlProcessing={true}
       markdown={markdown}
@@ -121,28 +206,36 @@ export default function MarkdownEditor({
         codeBlockPlugin({
           codeBlockEditorDescriptors: [PlainTextCodeEditorDescriptor],
         }),
+        diffSourcePlugin({
+          viewMode: "rich-text",
+          diffMarkdown: initialMarkdown.current,
+        }),
         toolbarPlugin({
-          toolbarClassName:
+          toolbarClassName: cn(
             "flex flex-row overflow-hidden shrink-0 h-10 border-b bg-white rounded-none",
-          toolbarContents: () => (
-            <>
-              <div className="flex items-center flex-1 gap-1">
-                <BlockTypeSelect />
-                <BoldItalicUnderlineToggles />
-                <Separator />
-                <ListsToggle options={["bullet", "number"]} />
-                <Separator />
-                <CreateLink />
-                <InsertImage />
-
-                <div className="ml-auto">
-                  <UndoRedo />
-                </div>
-              </div>
-            </>
+            isFullscreen && "border-gray-200",
           ),
+          toolbarContents: ToolbarContents,
         }),
       ]}
     />
   );
+
+  if (isFullscreen) {
+    return createPortal(
+      <div className={cn("fixed inset-0 z-50", styles.fullscreenBackdrop)}>
+        <div
+          className={cn(
+            "m-8 h-[calc(100vh-4rem)] flex flex-col bg-white rounded-lg shadow-2xl",
+            styles.fullscreenContainer,
+          )}
+        >
+          {renderEditor()}
+        </div>
+      </div>,
+      document.body,
+    );
+  }
+
+  return renderEditor();
 }

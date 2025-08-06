@@ -38,6 +38,10 @@
   width: 10rem;
 }
 
+.mdxeditor :global(.mdxeditor-diff-source-wrapper) {
+  overflow: auto;
+}
+
 .mdxeditor :global(.mdxeditor-toolbar) {
   @apply gap-2 p-2;
 
@@ -66,4 +70,104 @@ html :global(.mdxeditor-popup-container) {
   position: fixed;
   top: 0;
   width: 0;
+}
+
+.mdxeditor
+  :global(.mdxeditor-root-contenteditable [data-editor-block-type="image"]) {
+  width: 100%;
+  height: auto;
+}
+
+.mdxeditor
+  :global(
+    .mdxeditor-root-contenteditable [data-editor-block-type="image"] > div
+  ) {
+  width: auto;
+}
+
+.mdxeditor
+  :global(
+    .mdxeditor-root-contenteditable [data-editor-block-type="image"] img
+  ) {
+  margin: 0 auto;
+  height: 100%;
+  width: auto;
+}
+
+.mdxeditor
+  :global(
+    .mdxeditor-root-contenteditable
+      [data-editor-block-type="image"]
+      > div:last-child
+  ) {
+  height: auto;
+}
+
+/* Fullscreen styles */
+.fullscreenBackdrop {
+  @apply bg-black/20 backdrop-blur-sm;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.fullscreenContainer {
+  animation: slideIn 0.2s ease-out;
+}
+
+.fullscreen {
+  height: 100% !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+
+.fullscreen :global(.mdxeditor-root-contenteditable) {
+  @apply prose-lg;
+
+  padding: 2rem;
+  max-width: 65ch;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-size: 1.1rem;
+}
+
+.fullscreen :global(.mdxeditor-toolbar) {
+  @apply px-6 py-3 border-b-2;
+
+  height: auto;
+  background-color: #fafafa;
+  border-color: #e5e7eb;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.fullscreen :global(.mdxeditor-toolbar) button {
+  @apply p-2;
+
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.fullscreen :global(.mdxeditor-toolbar) button:hover {
+  @apply bg-white shadow-sm;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
