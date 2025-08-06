@@ -3,7 +3,8 @@ import {
   useGetDataCountQuery,
   useGetFileCountQuery,
 } from "@/lib/store/slices/editorialApi";
-import RecentActivity from "./recentActivity";
+import DraftsSection from "./drafts";
+import RecentActivitySection from "./recentActivity";
 
 export default function Dashboard() {
   const { data: dataCount, isLoading: dataCountLoading } =
@@ -29,13 +30,8 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="flex flex-col gap-4 last:mb-20">
-          <h2 className="scroll-mt-[4.5rem] text-xl font-semibold leading-none capitalize">
-            Recently Updated
-          </h2>
-
-          <RecentActivity />
-        </div>
+        <RecentActivitySection />
+        <DraftsSection />
       </div>
     </div>
   );

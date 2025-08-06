@@ -32,6 +32,7 @@ export const EditorialDataObjectWithTypeSchema = z
 export const EditorialDataItemSchema = z
   .object({
     id: z.string(),
+    isDraft: z.boolean().default(false),
     createdAt: z
       .string()
       .datetime()

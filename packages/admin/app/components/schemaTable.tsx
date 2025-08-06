@@ -161,18 +161,18 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               );
             },
             cell(props) {
-              const cellValue = props.getValue();
+              const cellValue = props.getValue() as string;
 
               switch (value.type) {
                 case "boolean":
-                  const Comp = props.getValue() ? CircleCheck : Circle;
+                  const Comp = cellValue ? CircleCheck : Circle;
 
                   return (
                     <span className="flex justify-center items-center h-full text-nowrap">
                       <Comp
                         className={clsx(
                           "mx-auto",
-                          props.getValue() ? "text-green-600" : "text-gray-300",
+                          cellValue ? "text-green-600" : "text-gray-300",
                         )}
                         size={14}
                       />
@@ -184,36 +184,44 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   return (
                     <Link
                       to={cellValue}
-                      className="flex items-center hover:text-blue-500"
+                      className="flex items-center w-48 hover:text-blue-500 overflow-hidden text-ellipsis whitespace-nowrap"
+                      title={cellValue}
                     >
-                      {cellValue as string}
+                      {cellValue}
                     </Link>
                   );
                 case "datetime":
                 case "date":
-                  const value = props.getValue();
-
-                  if (!value) return "--";
+                  if (!cellValue) return "--";
 
                   return (
-                    <span className="text-nowrap">
-                      {formatTime(new Date(value as string))}
+                    <span className="text-nowrap" title={cellValue}>
+                      {formatTime(new Date(cellValue))}
                     </span>
                   );
                 case "markdown":
                 case "string":
-                  const content = props.getValue() as string;
+                  if (value.isUploadedFile) {
+                    return (
+                      <span
+                        title={cellValue}
+                        className="flex items-center w-48 overflow-hidden text-ellipsis whitespace-nowrap"
+                      >
+                        <ExternalLink className="h-4 shrink-0" /> {cellValue}
+                      </span>
+                    );
+                  }
 
                   return (
                     <span
-                      title={content}
+                      title={cellValue}
                       className="block w-48 overflow-hidden text-ellipsis whitespace-nowrap"
                     >
-                      {content}
+                      {cellValue}
                     </span>
                   );
                 default:
-                  return props.getValue();
+                  return cellValue;
               }
             },
           }),
@@ -269,7 +277,10 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               key={row.id}
             >
               <TableRow
-                className="grid"
+                className={cn(
+                  "grid",
+                  row.original.isDraft && "bg-orange-50 hover:bg-orange-100",
+                )}
                 style={{
                   gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
                 }}

@@ -10,7 +10,7 @@ import type {
 } from "@isardsat/editorial-common";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const ssrAwareBaseQuery = async (args, api, extraOptions) => {
+export const ssrAwareBaseQuery = async (args: any, api: any, extraOptions: any) => {
   if (typeof window === "undefined") {
     return { data: {} };
   }

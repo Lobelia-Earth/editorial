@@ -59,18 +59,20 @@ export const columns = [
   }),
 ];
 
-export default function RecentActivitySection() {
+export default function DraftsSection() {
   const { data } = useGetDataQuery();
   const { data: schema } = useGetSchemaQuery();
 
   const flatData = useMemo(() => {
     if (!data || !schema) return [];
 
-    const items = Object.entries(data)
-      .filter(([type]) => type in schema)
-      .reduce((acc, [type, item]) => {
-        return acc.concat(Object.values(item).map((i) => ({ ...i, type })));
-      }, [] as RecentDataObject[]);
+    const items = Object.entries(data).reduce((acc, [type, item]) => {
+      return acc.concat(
+        Object.values(item)
+          .filter((item) => item.isDraft)
+          .map((i) => ({ ...i, type })),
+      );
+    }, [] as RecentDataObject[]);
 
     const sortedItems = items.toSorted((a, b) => {
       return a.updatedAt > b.updatedAt ? -1 : 1;
@@ -92,8 +94,9 @@ export default function RecentActivitySection() {
   return (
     <div className="flex flex-col gap-4 last:mb-20">
       <h2 className="scroll-mt-[4.5rem] text-xl font-semibold leading-none capitalize">
-        Recently Updated
+        Drafts
       </h2>
+
       <div className="rounded-sm border overflow-auto">
         <Table>
           <TableHeader>

@@ -51,6 +51,7 @@ export default function ItemForm({
     (fields: EditorialSchemaItem["fields"]) => {
       return {
         id: data?.id ?? "",
+        isDraft: String(isNew ? true : (data?.isDraft ?? false)),
         ...Object.fromEntries(
           Object.keys(fields).map((key) => [
             key,
@@ -71,6 +72,7 @@ export default function ItemForm({
           /^[a-z0-9-]+$/,
           "ID can only include lowercase letters and numbers",
         ),
+      isDraft: z.string(),
     };
 
     Object.entries(fields).forEach(([key, field]) => {
@@ -140,11 +142,18 @@ export default function ItemForm({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [form, isNew, onSubmit]);
 
-  async function onSubmit(values: object) {
+  async function onSubmit(values: Record<string, string>) {
+    // Convert isDraft from string back to boolean
+    const processedValues = {
+      ...values,
+      isDraft: values.isDraft === "true",
+      type: itemType,
+    };
+
     if (isNew) {
-      createItem({ ...values, type: itemType });
+      createItem(processedValues);
     } else {
-      updateItem({ ...values, type: itemType });
+      updateItem(processedValues);
     }
   }
 
@@ -166,12 +175,14 @@ export default function ItemForm({
           rules={{ required: true }}
           render={({ field }) => {
             return (
-              <FormItem className={cn(data?.id === "default" && "hidden")}>
+              <FormItem
+                id="id"
+                className={cn(data?.id === "default" && "hidden")}
+              >
                 <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
                 <FormControl>
                   <Input
-                    id="id"
-                    placeholder="my-item-id"
+                    placeholder="item-id"
                     {...form.register("id")}
                     {...field}
                     onChange={(e) => {
@@ -197,6 +208,42 @@ export default function ItemForm({
               </FormItem>
             );
           }}
+        />
+
+        <FormField
+          name="isDraft"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem
+              id="isDraft"
+              className={cn(
+                "flex flex-col items-start",
+                data?.id === "default" && "hidden",
+              )}
+            >
+              <div className="flex flex-row space-x-2">
+                <FormControl>
+                  <Checkbox
+                    id="isDraft"
+                    {...form.register("isDraft")}
+                    checked={field.value === "true"}
+                    onCheckedChange={(newCheckedState) => {
+                      field.onChange(
+                        newCheckedState === true ? "true" : "false",
+                      );
+                    }}
+                  />
+                </FormControl>
+                <FormLabel className="flex gap-1 items-baseline">
+                  Draft
+                </FormLabel>
+              </div>
+              <FormDescription>
+                Draft items are not visible on the published site
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
 
         {flagFields.length > 0 && (
@@ -256,14 +303,14 @@ export default function ItemForm({
                 }}
                 render={({ field }) => {
                   return (
-                    <FormItem>
+                    <FormItem id={key}>
                       <FormLabel className="flex gap-1 items-baseline">
                         {value.displayName}
                         {!value.isRequired && (
                           <span className="text-gray-400">(optional)</span>
                         )}
                       </FormLabel>
-                      <FormControl id={key}>
+                      <FormControl>
                         {value.type === "markdown" ? (
                           <MarkdownEditor
                             name={key}
@@ -276,12 +323,15 @@ export default function ItemForm({
                               field.onChange(value);
                             }}
                             placeholder={value.placeholder}
+                            fieldDisplayName={value.displayName}
                           />
                         ) : value.type === "url" ? (
                           <URLInput
                             id={key}
                             {...form.register(key)}
-                            placeholder={value.placeholder ?? "https://"}
+                            placeholder={
+                              value.placeholder ?? "https://example.website/"
+                            }
                             {...field}
                           />
                         ) : value.type === "string" && value.isUploadedFile ? (
@@ -294,7 +344,6 @@ export default function ItemForm({
                           />
                         ) : value.type === "date" ? (
                           <DatePicker
-                            id={key}
                             {...form.register(key)}
                             date={
                               field.value ? new Date(field.value) : undefined
@@ -324,7 +373,6 @@ export default function ItemForm({
                           />
                         ) : (
                           <Input
-                            id={key}
                             {...form.register(key)}
                             placeholder={value.placeholder}
                             {...field}
@@ -343,7 +391,7 @@ export default function ItemForm({
           })}
 
         <Button disabled={!form.formState.isDirty && !isNew} type="submit">
-          <Save /> Save
+          <Save /> {form.watch("isDraft") === "true" ? "Save Draft" : "Save"}
         </Button>
       </form>
 

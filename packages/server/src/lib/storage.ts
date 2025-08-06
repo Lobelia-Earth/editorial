@@ -1,5 +1,6 @@
 import type {
   EditorialData,
+  EditorialDataItem,
   EditorialDataObjectWithType,
 } from "@isardsat/editorial-common";
 import {
@@ -35,9 +36,12 @@ export function createStorage(dataDirectory: string) {
   }: {
     production?: boolean;
   }): Promise<EditorialData> {
-    return await readFile(production ? dataProdPath : dataPath, "utf-8").then(
-      (value) => JSON.parse(value)
-    );
+    const content = await readFile(
+      production ? dataProdPath : dataPath,
+      "utf-8"
+    ).then((value) => EditorialDataSchema.parse(JSON.parse(value)));
+
+    return content;
   }
 
   async function getLocalisationMessages(langCode: string): Promise<any> {
@@ -50,8 +54,31 @@ export function createStorage(dataDirectory: string) {
   async function saveContent({ production }: { production?: boolean }) {
     const content = await getContent({ production: false });
 
+    /** Do not save any items that have `isDraft` */
+    if (production) {
+      const filteredContent: EditorialData = {};
+
+      for (const [itemType, items] of Object.entries(content)) {
+        filteredContent[itemType] = {};
+        const typedItems = items as Record<string, EditorialDataItem>;
+
+        for (const [itemId, item] of Object.entries(typedItems)) {
+          if (!item.isDraft) {
+            filteredContent[itemType][itemId] = item;
+          }
+        }
+      }
+
+      await writeFileSafe(
+        dataProdPath,
+        JSON.stringify(EditorialDataSchema.parse(filteredContent), null, 2)
+      );
+
+      return true;
+    }
+
     await writeFileSafe(
-      production ? dataProdPath : dataPath,
+      dataPath,
       JSON.stringify(EditorialDataSchema.parse(content), null, 2)
     );
 
@@ -67,12 +94,14 @@ export function createStorage(dataDirectory: string) {
   async function createItem(item: EditorialDataObjectWithType) {
     const content = await getContent({ production: false });
     content[item.type] = content[item.type] ?? {};
-    content[item.type][item.id] = EditorialDataItemSchema.parse(item);
+
+    const parsedItem = EditorialDataItemSchema.parse(item);
+    content[item.type][item.id] = parsedItem;
 
     // TODO: Use superjson to safely encode different types.
     await writeFileSafe(dataPath, JSON.stringify(content, null, 2));
 
-    return item;
+    return parsedItem;
   }
 
   async function updateItem(item: EditorialDataObjectWithType) {
@@ -86,6 +115,7 @@ export function createStorage(dataDirectory: string) {
     });
 
     content[item.type][item.id] = newItem;
+
     // TODO: Use superjson to safely encode different types.
     await writeFileSafe(dataPath, JSON.stringify(content, null, 2));
 
@@ -95,6 +125,7 @@ export function createStorage(dataDirectory: string) {
   async function deleteItem(item: EditorialDataObjectWithType) {
     const content = await getContent({ production: false });
     delete content[item.type][item.id];
+
     // TODO: Use superjson to safely encode different types.
     await writeFileSafe(dataPath, JSON.stringify(content, null, 2));
 
