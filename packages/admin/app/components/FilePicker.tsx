@@ -25,8 +25,6 @@ export default function FilePicker({
   const { isLoading } = useGetFilesQuery();
   const [isFilesModalOpen, setFilesModalOpen] = useState(false);
 
-  if (isLoading) return <div>Loading...</div>;
-
   return (
     <>
       <div className="flex items-center gap-2">
@@ -35,13 +33,14 @@ export default function FilePicker({
             id={id}
             {...register(name)}
             type="text"
-            value={value}
+            value={isLoading ? "Loading..." : value}
             readOnly
             onClick={() => {
               setFilesModalOpen(true);
             }}
             onChange={(e) => onChange(e.target.value)}
             className="border p-2 rounded"
+            disabled={isLoading}
           />
 
           <Link to={`/${value}`} className="absolute right-2" target="_blank">
@@ -53,6 +52,7 @@ export default function FilePicker({
           type="button"
           onClick={() => onChange("")}
           className="text-white px-4 py-2 rounded"
+          disabled={isLoading}
         >
           Clear
         </Button>
