@@ -40,24 +40,35 @@ const msPerYear = msPerDay * 365;
 
 export function formatTime(date: Date, currentDate = new Date()) {
   const elapsed = currentDate.getTime() - date.getTime();
+  const isInFuture = elapsed < 0;
+  const absElapsed = Math.abs(elapsed);
 
-  if (elapsed < msPerMinute) {
-    const seconds = Math.round(elapsed / 1000);
-    return seconds === 1 ? "1 second ago" : `${seconds} seconds ago`;
-  } else if (elapsed < msPerHour) {
-    const minutes = Math.round(elapsed / msPerMinute);
-    return minutes === 1 ? "1 minute ago" : `${minutes} minutes ago`;
-  } else if (elapsed < msPerDay) {
-    const hours = Math.round(elapsed / msPerHour);
-    return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
-  } else if (elapsed < msPerMonth) {
-    const days = Math.round(elapsed / msPerDay);
-    return days === 1 ? "1 day ago" : `${days} days ago`;
-  } else if (elapsed < msPerYear) {
-    const months = Math.round(elapsed / msPerMonth);
-    return months === 1 ? "1 month ago" : `${months} months ago`;
+  let timeValue: number;
+  let unit: string;
+
+  if (absElapsed < msPerMinute) {
+    timeValue = Math.round(absElapsed / 1000);
+    unit = timeValue === 1 ? "second" : "seconds";
+  } else if (absElapsed < msPerHour) {
+    timeValue = Math.round(absElapsed / msPerMinute);
+    unit = timeValue === 1 ? "minute" : "minutes";
+  } else if (absElapsed < msPerDay) {
+    timeValue = Math.round(absElapsed / msPerHour);
+    unit = timeValue === 1 ? "hour" : "hours";
+  } else if (absElapsed < msPerMonth) {
+    timeValue = Math.round(absElapsed / msPerDay);
+    unit = timeValue === 1 ? "day" : "days";
+  } else if (absElapsed < msPerYear) {
+    timeValue = Math.round(absElapsed / msPerMonth);
+    unit = timeValue === 1 ? "month" : "months";
   } else {
-    const years = Math.round(elapsed / msPerYear);
-    return years === 1 ? "1 year ago" : `${years} years ago`;
+    timeValue = Math.round(absElapsed / msPerYear);
+    unit = timeValue === 1 ? "year" : "years";
+  }
+
+  if (isInFuture) {
+    return `in ${timeValue} ${unit}`;
+  } else {
+    return `${timeValue} ${unit} ago`;
   }
 }
