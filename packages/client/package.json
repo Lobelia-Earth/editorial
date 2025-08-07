@@ -1,0 +1,30 @@
+{
+  "name": "@isardsat/editorial-client",
+  "version": "6.6.0",
+  "description": "JavaScript client for the Editorial CMS API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "prepublishOnly": "pnpm run compile",
+    "compile": "tsc",
+    "compile:watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@isardsat/editorial-common": "workspace:*"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "catalog:",
+    "typescript": "catalog:"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  },
+  "keywords": [
+    "editorial",
+    "cms",
+    "api",
+    "client",
+    "typescript"
+  ]
+}
