@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.6.1
+
+### Patch Changes
+
+- a09a4ba: Initial JS client version
+
 ## 6.6.0
 
 ### Minor Changes
