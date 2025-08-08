@@ -20,48 +20,46 @@ export default function SidebarSchemaItems({
 
   const items = useMemo(
     () =>
-      Object.entries(schema).filter(([, value]) =>
-        singleton ? value.singleton : !value.singleton,
-      ),
-    [schema],
+      Object.entries(schema)
+        .filter(([, value]) => (singleton ? value.singleton : !value.singleton))
+        .toSorted(([a], [b]) => a.localeCompare(b)),
+    [schema, singleton],
   );
 
   return (
     <>
-      {Object.entries(schema)
-        .filter(([, value]) => (singleton ? value.singleton : !value.singleton))
-        .map(([key, value]) => {
-          return (
-            <SidebarMenuSub key={value.displayName}>
-              <NavLink
-                to={
-                  singleton
-                    ? `/admin/dashboard/${key}/default`
-                    : `/admin/dashboard/${key}`
-                }
-                className={({ isActive, isPending }) =>
-                  isPending ? "pending" : isActive ? "active" : ""
-                }
-              >
-                {({ isActive }) => (
-                  <SidebarMenuSubButton isActive={isActive} asChild>
-                    <div>
-                      <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap">
-                        {value.displayName}
-                      </span>
+      {items.map(([key, value]) => {
+        return (
+          <SidebarMenuSub key={value.displayName}>
+            <NavLink
+              to={
+                singleton
+                  ? `/admin/dashboard/${key}/default`
+                  : `/admin/dashboard/${key}`
+              }
+              className={({ isActive, isPending }) =>
+                isPending ? "pending" : isActive ? "active" : ""
+              }
+            >
+              {({ isActive }) => (
+                <SidebarMenuSubButton isActive={isActive} asChild>
+                  <div>
+                    <span className="inline-block overflow-hidden whitespace-nowrap text-ellipsis text-nowrap">
+                      {value.displayName}
+                    </span>
 
-                      {!singleton && data?.[key] && (
-                        <span className="text-xs text-gray-500 ml-auto pr-1 min-w-[25px] text-right">
-                          {Object.keys(data[key]).length}
-                        </span>
-                      )}
-                    </div>
-                  </SidebarMenuSubButton>
-                )}
-              </NavLink>
-            </SidebarMenuSub>
-          );
-        })}
+                    {!singleton && data?.[key] && (
+                      <span className="text-xs text-gray-500 ml-auto pr-1 min-w-[25px] text-right">
+                        {Object.keys(data[key]).length}
+                      </span>
+                    )}
+                  </div>
+                </SidebarMenuSubButton>
+              )}
+            </NavLink>
+          </SidebarMenuSub>
+        );
+      })}
     </>
   );
 }
