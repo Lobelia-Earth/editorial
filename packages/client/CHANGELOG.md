@@ -1,5 +1,13 @@
 # @isardsat/editorial-client
 
+## 6.6.3
+
+### Patch Changes
+
+- 2b5c123: Simple caching solution for data routes
+- Updated dependencies [2b5c123]
+  - @isardsat/editorial-common@6.6.3
+
 ## 6.6.2
 
 ### Patch Changes
