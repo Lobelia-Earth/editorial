@@ -4,11 +4,65 @@ import {
   EditorialDataSchema,
   EditorialSchemaSchema,
   type EditorialConfig,
+  type EditorialData,
+  type EditorialSchema,
 } from "@isardsat/editorial-common";
 import type { Storage } from "../lib/storage.js";
 
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+function createCache() {
+  let schemaCache: CacheEntry<EditorialSchema> | null = null;
+  const contentCache = new Map<string, CacheEntry<EditorialData>>();
+  const ttl = 5 * 60 * 1000; // 5 minutes TTL
+
+  function isExpired(entry: CacheEntry<any>): boolean {
+    return Date.now() - entry.timestamp > ttl;
+  }
+
+  return {
+    async getSchema(storage: Storage): Promise<EditorialSchema> {
+      if (schemaCache && !isExpired(schemaCache)) {
+        return schemaCache.data;
+      }
+
+      const schema = await storage.getSchema();
+      schemaCache = { data: schema, timestamp: Date.now() };
+      return schema;
+    },
+
+    async getContent(
+      storage: Storage,
+      options: { production?: boolean } = {}
+    ): Promise<EditorialData> {
+      const cacheKey = options.production ? "production" : "preview";
+      const cachedEntry = contentCache.get(cacheKey);
+
+      if (cachedEntry && !isExpired(cachedEntry)) {
+        return cachedEntry.data;
+      }
+
+      const content = await storage.getContent(options);
+      contentCache.set(cacheKey, { data: content, timestamp: Date.now() });
+      return content;
+    },
+
+    invalidateSchema(): void {
+      schemaCache = null;
+    },
+
+    invalidateContent(): void {
+      contentCache.clear();
+    },
+  };
+}
+
 export function createDataRoutes(config: EditorialConfig, storage: Storage) {
   const app = new OpenAPIHono();
+  const cache = createCache();
 
   const publicFilesUrl = config.filesUrl;
 
@@ -28,7 +82,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       },
     }),
     async (c) => {
-      const schema = await storage.getSchema();
+      const schema = await cache.getSchema(storage);
 
       return c.json(schema);
     }
@@ -63,7 +117,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     }),
     async (c) => {
       const { preview } = c.req.valid("query");
-      const content = await storage.getContent({ production: !preview });
+      const content = await cache.getContent(storage, { production: !preview });
 
       return c.json(content);
     }
@@ -110,8 +164,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { lang, preview } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
-      const content = await storage.getContent({ production: !preview });
-      const schema = await storage.getSchema();
+      const content = await cache.getContent(storage, { production: !preview });
+      const schema = await cache.getSchema(storage);
       const collection = content[itemType];
 
       if (!collection) {
@@ -174,7 +228,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { itemType } = c.req.valid("param");
       const { preview } = c.req.valid("query");
 
-      const content = await storage.getContent({ production: !preview });
+      const content = await cache.getContent(storage, { production: !preview });
 
       return c.json(Object.keys(content[itemType]));
     }
@@ -225,8 +279,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { lang, preview } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
-      const content = await storage.getContent({ production: !preview });
-      const schema = await storage.getSchema();
+      const content = await cache.getContent(storage, { production: !preview });
+      const schema = await cache.getSchema(storage);
       const collection = content[itemType];
 
       if (!collection) {
@@ -302,6 +356,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const itemAtts = await c.req.json();
       const newItem = await storage.createItem(itemAtts);
 
+      cache.invalidateContent();
+
       return c.json(newItem);
     }
   );
@@ -345,6 +401,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const itemAtts = await c.req.json();
       const newItem = await storage.updateItem(itemAtts);
 
+      cache.invalidateContent();
+
       return c.json(newItem);
     }
   );
@@ -379,6 +437,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     async (c) => {
       const { itemType, id } = c.req.valid("param");
       await storage.deleteItem({ type: itemType, id });
+
+      cache.invalidateContent();
 
       return c.json(true, 200);
     }
