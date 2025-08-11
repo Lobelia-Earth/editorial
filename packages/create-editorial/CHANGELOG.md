@@ -1,5 +1,12 @@
 # @isardsat/create-editorial
 
+## 6.6.2
+
+### Patch Changes
+
+- 0166adc: Fix loadHook errors
+- e2aa063: Add author email handling to onPush
+
 ## 6.6.1
 
 ### Patch Changes
