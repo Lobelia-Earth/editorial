@@ -4,13 +4,17 @@ export async function createHooks(configDirectory: string) {
   const hooksDirPath = join(configDirectory, "hooks");
 
   async function loadHook(name: string): Promise<Function | null> {
-    const hookScript = join(process.cwd(), hooksDirPath, name);
-    const module = await import(`${hookScript}.mjs`);
+    try {
+      const hookScript = join(process.cwd(), hooksDirPath, name);
+      const module = await import(`${hookScript}.mjs`);
 
-    const hookFunction =
-      typeof module.default === "function" ? module.default : null;
+      const hookFunction =
+        typeof module.default === "function" ? module.default : null;
 
-    return hookFunction;
+      return hookFunction;
+    } catch {
+      return null;
+    }
   }
 
   async function executeHook<T = any, Args extends any[] = any[]>(
@@ -19,6 +23,7 @@ export async function createHooks(configDirectory: string) {
   ): Promise<T | undefined> {
     const hook = await loadHook(hookName);
     if (!hook) return;
+
     return hook(...args);
   }
 

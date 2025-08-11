@@ -35,22 +35,32 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
     }),
     // TODO: Don't async, let the promises run in the background.
     async (c) => {
+      const { author } = c.req.valid("json");
       await storage.saveContent({ production: true });
       const content = await storage.getContent({ production: true });
       const schema = await storage.getSchema();
 
       try {
         const scriptResult = await hooks.onLocalize(content, schema);
-        await storage.saveLocalisationMessages(scriptResult);
+        if (scriptResult) {
+          await storage.saveLocalisationMessages(scriptResult);
+        }
       } catch (error) {
-        console.error("Error executing script:", error);
+        console.error("Error executing onLocalize script:", error);
         return c.json(false);
       }
 
       try {
         await hooks.onPublish(content, schema);
       } catch (error) {
-        console.error("Error executing script:", error);
+        console.error("Error executing onPublish script:", error);
+        return c.json(false);
+      }
+
+      try {
+        await hooks.onPush(author);
+      } catch (error) {
+        console.error("Error executing onPush script:", error);
         return c.json(false);
       }
 
