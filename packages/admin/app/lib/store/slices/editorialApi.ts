@@ -38,8 +38,8 @@ export const editorialApi = createApi({
     pull: builder.mutation<boolean, void>({
       query: () => ({ url: "/pull", method: "POST" }),
     }),
-    push: builder.mutation<boolean, void>({
-      query: () => ({ url: "/push", method: "POST" }),
+    push: builder.mutation<boolean, { author: string }>({
+      query: ({ author }) => ({ url: "/push", method: "POST", body: { author } }),
     }),
     publish: builder.mutation<boolean, void>({
       query: () => ({ url: "/publish", method: "POST" }),

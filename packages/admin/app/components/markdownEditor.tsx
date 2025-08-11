@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/lib/store/hooks";
+import { selectUser } from "@/lib/store/slices/authSlice";
 import { useGetFilesQuery } from "@/lib/store/slices/editorialApi";
 import { cn } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
@@ -99,7 +100,7 @@ export default function MarkdownEditor({
   const initialMarkdown = useRef(markdown);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const role = useAppSelector((state) => state.auth.role);
+  const user = useAppSelector(selectUser);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -145,7 +146,7 @@ export default function MarkdownEditor({
         <InsertImage />
 
         <div className="flex items-center ml-auto gap-1">
-          {role === "developer" ? (
+          {user?.role === "developer" ? (
             <DiffSourceToggleWrapper>
               <UndoRedo />
             </DiffSourceToggleWrapper>

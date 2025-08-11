@@ -1,6 +1,6 @@
 import { auth, firebaseDb } from "@/lib/auth";
 import { useAppDispatch } from "@/lib/store/hooks";
-import { setLoading, setRole, setUser } from "@/lib/store/slices/authSlice";
+import { setLoading, setUser } from "@/lib/store/slices/authSlice";
 import { useGetConfigQuery } from "@/lib/store/slices/editorialApi";
 import { onAuthStateChanged } from "firebase/auth";
 import { get, ref } from "firebase/database";
@@ -25,9 +25,9 @@ export default function AuthListener() {
           setUser({
             uid: user.uid,
             email: user.email!,
+            role: editorData,
           }),
         );
-        dispatch(setRole(editorData));
       } else {
         dispatch(setUser(undefined));
       }

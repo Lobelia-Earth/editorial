@@ -15,11 +15,11 @@ import { editorialApi } from "./editorialApi";
 interface User {
   uid: string;
   email: string;
+  role: string;
 }
 
 export interface AuthState {
   user?: User;
-  role?: string;
   isLoading: boolean;
   error?: string;
 }
@@ -65,8 +65,8 @@ export const loginUser = createAppAsyncThunk(
         user: {
           uid: userCredential.user.uid,
           email: userCredential.user.email ?? email,
+          role: editorData,
         },
-        role: editorData,
       };
     } catch (error) {
       await firebaseSignOut(auth);
@@ -104,9 +104,6 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.user = action.payload;
     },
-    setRole: (state, action: PayloadAction<string>) => {
-      state.role = action.payload;
-    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
@@ -123,7 +120,6 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user;
-        state.role = action.payload.role;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -135,7 +131,6 @@ const authSlice = createSlice({
       .addCase(signOut.fulfilled, (state) => {
         state.isLoading = false;
         state.user = undefined;
-        state.role = undefined;
       })
       .addCase(signOut.rejected, (state, action) => {
         state.isLoading = false;
@@ -144,10 +139,9 @@ const authSlice = createSlice({
   },
   selectors: {
     selectUser: (state) => state.user,
-    selectRole: (state) => state.role,
   },
 });
 
-export const { setUser, setRole, setLoading, clearError } = authSlice.actions;
-export const { selectUser, selectRole } = authSlice.selectors;
+export const { setUser, setLoading, clearError } = authSlice.actions;
+export const { selectUser } = authSlice.selectors;
 export default authSlice.reducer;

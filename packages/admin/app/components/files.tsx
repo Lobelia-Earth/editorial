@@ -1,5 +1,3 @@
-import { useAppSelector } from "@/lib/store/hooks";
-import { selectRole } from "@/lib/store/slices/authSlice";
 import {
   useCreateDirectoryMutation,
   useDeleteFileMutation,
@@ -67,7 +65,6 @@ const TreeNode = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: config } = useGetConfigQuery();
-  const role = useAppSelector(selectRole);
 
   const fileType = fileTypes.find((type) => type.test(node)) ?? defaultFileType;
   const isDirectory = node.type === "directory";
@@ -253,8 +250,6 @@ export default function Files({ disableActions, onChange }: FilesProps) {
   const [triggerDelete] = useDeleteFileMutation();
   const [uploadFiles] = useUploadFilesMutation();
   const [createDirectory] = useCreateDirectoryMutation();
-
-  const role = useAppSelector(selectRole);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,

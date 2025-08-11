@@ -50,7 +50,7 @@ export default function AppSidebar() {
 
   const { data: config } = useGetConfigQuery();
   const { data: filesTotalSize } = useGetFilesTotalSizeQuery();
-  const role = useAppSelector((state) => state.auth.role);
+  const user = useAppSelector((state) => state.auth.user);
 
   return (
     <Sidebar className="z-50">
@@ -127,7 +127,7 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {role === "developer" && (
+              {user?.role === "developer" && (
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton
@@ -141,7 +141,7 @@ export default function AppSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       className="cursor-pointer"
-                      onClick={() => push()}
+                      onClick={() => push({ author: user.email })}
                     >
                       <ArrowUp />
                       <span>Push to repo</span>
