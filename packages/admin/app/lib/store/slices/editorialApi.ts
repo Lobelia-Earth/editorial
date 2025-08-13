@@ -39,10 +39,18 @@ export const editorialApi = createApi({
       query: () => ({ url: "/pull", method: "POST" }),
     }),
     push: builder.mutation<boolean, { author: string }>({
-      query: ({ author }) => ({ url: "/push", method: "POST", body: { author } }),
+      query: ({ author }) => ({
+        url: "/push",
+        method: "POST",
+        body: { author },
+      }),
     }),
-    publish: builder.mutation<boolean, void>({
-      query: () => ({ url: "/publish", method: "POST" }),
+    publish: builder.mutation<boolean, { author: string }>({
+      query: ({ author }) => ({
+        url: "/publish",
+        method: "POST",
+        body: { author },
+      }),
     }),
     getSchema: builder.query<EditorialSchema, void>({
       query: () => "/schema",

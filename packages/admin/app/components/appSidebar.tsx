@@ -2,7 +2,6 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { signOut } from "@/lib/store/slices/authSlice";
 import {
   useGetConfigQuery,
-  useGetFilesTotalSizeQuery,
   usePublishMutation,
   usePullMutation,
   usePushMutation,
@@ -49,7 +48,7 @@ export default function AppSidebar() {
   const [push] = usePushMutation();
 
   const { data: config } = useGetConfigQuery();
-  const { data: filesTotalSize } = useGetFilesTotalSizeQuery();
+  // const { data: filesTotalSize } = useGetFilesTotalSizeQuery();
   const user = useAppSelector((state) => state.auth.user);
 
   return (
@@ -150,15 +149,17 @@ export default function AppSidebar() {
                 </>
               )}
 
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="cursor-pointer"
-                  onClick={() => publish()}
-                >
-                  <Upload />
-                  <span>Publish</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {user && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="cursor-pointer"
+                    onClick={() => publish({ author: user.email })}
+                  >
+                    <Upload />
+                    <span>Publish</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
