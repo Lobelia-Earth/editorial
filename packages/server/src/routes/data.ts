@@ -36,9 +36,11 @@ function createCache() {
 
     async getContent(
       storage: Storage,
-      options: { production?: boolean } = {}
+      options: { production?: boolean; lang?: string } = {}
     ): Promise<EditorialData> {
-      const cacheKey = options.production ? "production" : "preview";
+      const mode = options.production ? "production" : "preview";
+      const langSuffix = options.lang ? `-${options.lang}` : "";
+      const cacheKey = `${mode}${langSuffix}`;
       const cachedEntry = contentCache.get(cacheKey);
 
       if (cachedEntry && !isExpired(cachedEntry)) {
@@ -164,7 +166,10 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { lang, preview } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
-      const content = await cache.getContent(storage, { production: !preview });
+      const content = await cache.getContent(storage, {
+        production: !preview,
+        lang,
+      });
       const schema = await cache.getSchema(storage);
       const collection = content[itemType];
 
@@ -279,7 +284,10 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { lang, preview } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
-      const content = await cache.getContent(storage, { production: !preview });
+      const content = await cache.getContent(storage, {
+        production: !preview,
+        lang,
+      });
       const schema = await cache.getSchema(storage);
       const collection = content[itemType];
 
