@@ -1,5 +1,13 @@
 # @isardsat/editorial-admin
 
+## 6.6.4
+
+### Patch Changes
+
+- 2bcdf70: Hotfix language caching
+- Updated dependencies [2bcdf70]
+  - @isardsat/editorial-common@6.6.4
+
 ## 6.6.3
 
 ### Patch Changes

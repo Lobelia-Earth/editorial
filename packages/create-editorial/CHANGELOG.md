@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.6.4
+
+### Patch Changes
+
+- 2bcdf70: Hotfix language caching
+
 ## 6.6.3
 
 ### Patch Changes

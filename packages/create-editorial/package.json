@@ -1,6 +1,6 @@
 {
   "name": "@isardsat/create-editorial",
-  "version": "6.6.3",
+  "version": "6.6.4",
   "description": "Create a new editorial project",
   "main": "dist/index.js",
   "bin": "bin/index.js",
