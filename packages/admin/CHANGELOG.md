@@ -1,5 +1,16 @@
 # @isardsat/editorial-admin
 
+## 6.7.0
+
+### Minor Changes
+
+- 170aed9: Return empty object for valid empty collections
+
+### Patch Changes
+
+- Updated dependencies [170aed9]
+  - @isardsat/editorial-common@6.7.0
+
 ## 6.6.4
 
 ### Patch Changes

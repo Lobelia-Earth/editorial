@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.7.0
+
+### Minor Changes
+
+- 170aed9: Return empty object for valid empty collections
+
 ## 6.6.4
 
 ### Patch Changes
