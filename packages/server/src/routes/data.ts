@@ -173,6 +173,10 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const schema = await cache.getSchema(storage);
       const collection = content[itemType];
 
+      if (!collection && schema[itemType]) {
+        return c.json({});
+      }
+
       if (!collection) {
         return c.notFound();
       }
@@ -227,6 +231,9 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           },
           description: "Get object ids by type",
         },
+        404: {
+          description: "Item not found",
+        },
       },
     }),
     async (c) => {
@@ -234,6 +241,10 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const { preview } = c.req.valid("query");
 
       const content = await cache.getContent(storage, { production: !preview });
+
+      if (!content[itemType]) {
+        return c.notFound();
+      }
 
       return c.json(Object.keys(content[itemType]));
     }
