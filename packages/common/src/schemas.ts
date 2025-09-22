@@ -2,11 +2,11 @@ import { z } from "@hono/zod-openapi";
 
 export const EditorialConfigSchema = z.object({
   name: z.string(),
-  publicUrl: z.string().url(),
+  publicUrl: z.url(),
   publicDir: z.string().default("public/files"),
   publicDeletedDir: z.string().default("public/files/.deleted"),
-  filesUrl: z.string().url(),
-  largeFilesUrl: z.string().url(),
+  filesUrl: z.url(),
+  largeFilesUrl: z.url(),
   previewUrl: z.string().optional(),
   silent: z.boolean().optional(),
   firebase: z
@@ -22,27 +22,17 @@ export const EditorialConfigSchema = z.object({
     .optional(),
 });
 
-export const EditorialDataObjectWithTypeSchema = z
-  .object({
-    id: z.string(),
-    type: z.string(),
-  })
-  .passthrough();
+export const EditorialDataObjectWithTypeSchema = z.looseObject({
+  id: z.string(),
+  type: z.string(),
+});
 
-export const EditorialDataItemSchema = z
-  .object({
-    id: z.string(),
-    isDraft: z.boolean().default(false),
-    createdAt: z
-      .string()
-      .datetime()
-      .default(() => new Date().toISOString()),
-    updatedAt: z
-      .string()
-      .datetime()
-      .default(() => new Date().toISOString()),
-  })
-  .passthrough();
+export const EditorialDataItemSchema = z.looseObject({
+  id: z.string(),
+  isDraft: z.boolean().default(false),
+  createdAt: z.iso.datetime().default(() => new Date().toISOString()),
+  updatedAt: z.iso.datetime().default(() => new Date().toISOString()),
+});
 
 export const EditorialDataTypeSchema = z.record(
   z.string(),
@@ -66,16 +56,14 @@ export const EditorialSchemaItemFieldType = z.enum([
   "url",
 ]);
 
-export const EditorialSchemaItemFieldSchema = z
-  .object({
-    type: EditorialSchemaItemFieldType,
-    displayName: z.string(),
-    displayExtra: z.string().optional(),
-    placeholder: z.string().optional(),
-    isRequired: z.boolean().optional(),
-    showInSummary: z.boolean().optional(),
-  })
-  .passthrough();
+export const EditorialSchemaItemFieldSchema = z.looseObject({
+  type: EditorialSchemaItemFieldType,
+  displayName: z.string(),
+  displayExtra: z.string().optional(),
+  placeholder: z.string().optional(),
+  isRequired: z.boolean().optional(),
+  showInSummary: z.boolean().optional(),
+});
 
 export const EditorialSchemaItemSchema = z.object({
   displayName: z.string(),

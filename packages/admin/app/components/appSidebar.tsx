@@ -2,6 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { signOut } from "@/lib/store/slices/authSlice";
 import {
   useGetConfigQuery,
+  useGetSchemaQuery,
   usePublishMutation,
   usePullMutation,
   usePushMutation,
@@ -18,7 +19,7 @@ import {
   Square,
   Upload,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Modal } from "./modal";
 import SidebarSchemaItems from "./sidebarSchemaItems";
@@ -48,7 +49,18 @@ export default function AppSidebar() {
   const [push] = usePushMutation();
 
   const { data: config } = useGetConfigQuery();
+  const { data: schema } = useGetSchemaQuery();
   // const { data: filesTotalSize } = useGetFilesTotalSizeQuery();
+
+  const hasCollections = useMemo(
+    () => schema && !!Object.values(schema).find((entry) => !entry.singleton),
+    [schema],
+  );
+  const hasSingles = useMemo(
+    () => schema && !!Object.values(schema).find((entry) => entry.singleton),
+    [schema],
+  );
+
   const user = useAppSelector((state) => state.auth.user);
 
   return (
@@ -71,7 +83,10 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Content</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <Collapsible className="group/collapsible">
+              <Collapsible
+                className="group/collapsible"
+                disabled={!hasCollections}
+              >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">
@@ -87,7 +102,7 @@ export default function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
-              <Collapsible className="group/collapsible">
+              <Collapsible className="group/collapsible" disabled={!hasSingles}>
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">

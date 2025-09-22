@@ -9,8 +9,8 @@
     "compile:watch": "tsc --watch"
   },
   "dependencies": {
-    "@hono/zod-openapi": "^0.18.4",
-    "zod": "^3.24.1"
+    "@hono/zod-openapi": "^1.1.3",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@tsconfig/node22": "catalog:",

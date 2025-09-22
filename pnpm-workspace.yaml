@@ -4,6 +4,7 @@ packages:
   - "docs"
 
 catalog:
+  zod: "^4.1.11"
   prettier: "^3.4.2"
   typescript: "5.7.3"
   "@types/node": "22.13.1"

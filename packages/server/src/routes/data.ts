@@ -409,7 +409,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         200: {
           content: {
             "application/json": {
-              schema: EditorialDataSchema,
+              schema: EditorialDataItemSchema,
             },
           },
           description: "Update object",
