@@ -101,7 +101,7 @@ export default function ItemForm({
           fieldSchema = z.string();
       }
 
-      if (!field.isRequired) {
+      if (field.optional) {
         fieldSchema = fieldSchema.optional().or(z.literal(""));
       } else if (field.type !== "boolean") {
         fieldSchema = (fieldSchema as z.ZodString).min(
@@ -300,14 +300,14 @@ export default function ItemForm({
                 name={key}
                 control={form.control}
                 rules={{
-                  required: value.isRequired,
+                  required: !value.optional,
                 }}
                 render={({ field }) => {
                   return (
                     <FormItem id={key}>
                       <FormLabel className="flex gap-1 items-baseline">
                         {value.displayName}
-                        {!value.isRequired && (
+                        {value.optional && (
                           <span className="text-gray-400">(optional)</span>
                         )}
                       </FormLabel>

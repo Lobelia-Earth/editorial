@@ -61,7 +61,7 @@ export const EditorialSchemaItemFieldSchema = z.looseObject({
   displayName: z.string(),
   displayExtra: z.string().optional(),
   placeholder: z.string().optional(),
-  isRequired: z.boolean().optional(),
+  optional: z.boolean().default(false),
   showInSummary: z.boolean().optional(),
 });
 
