@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.8.0
+
+### Minor Changes
+
+- 57be6b3: UI updates
+
 ## 6.7.0
 
 ### Minor Changes
