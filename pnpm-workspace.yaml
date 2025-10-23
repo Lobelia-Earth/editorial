@@ -1,11 +1,14 @@
 packages:
-  - "packages/*"
-  - "examples/*"
-  - "docs"
+  - packages/*
+  - examples/*
+  - docs
 
 catalog:
-  zod: "^4.1.11"
-  prettier: "^3.4.2"
-  typescript: "5.7.3"
-  "@types/node": "22.13.1"
-  "@tsconfig/node22": "^22.0.0"
+  '@tsconfig/node22': ^22.0.0
+  '@types/node': 22.13.1
+  prettier: ^3.4.2
+  typescript: 5.7.3
+  zod: ^4.1.11
+
+onlyBuiltDependencies:
+  - esbuild
