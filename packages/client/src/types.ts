@@ -14,7 +14,9 @@ export interface ClientOptions {
 }
 
 export interface GetContentOptions {
+  /** Filter content by locale/language code */
   locale?: string;
+  /** Include preview/draft content in the response */
   preview?: boolean;
 }
 
