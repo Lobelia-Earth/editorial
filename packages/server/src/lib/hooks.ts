@@ -12,7 +12,14 @@ export async function createHooks(configDirectory: string) {
         typeof module.default === "function" ? module.default : null;
 
       return hookFunction;
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(
+          `Failed to load hook (${name}) with error: ${error.message}`
+        );
+      }
+
+      console.error(`Failed to load hook (${name})`);
       return null;
     }
   }
