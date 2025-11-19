@@ -106,6 +106,7 @@ export function createStorage(dataDirectory: string) {
 
   async function updateItem(item: EditorialDataObjectWithType) {
     const content = await getContent({ production: false });
+    content[item.type] = content[item.type] ?? {};
     const oldItem = content[item.type][item.id];
 
     const newItem = EditorialDataItemSchema.parse({

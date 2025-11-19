@@ -85,7 +85,7 @@ export const editorialApi = createApi({
     >({
       query: () => "/data?preview=true",
       transformResponse: (response: EditorialData, _, { itemType, id }) => {
-        return response[itemType][id] || null;
+        return response[itemType]?.[id] || null;
       },
       providesTags: (_result, _error, { itemType, id }) => [
         { type: "data", id: `${itemType}-${id}` },

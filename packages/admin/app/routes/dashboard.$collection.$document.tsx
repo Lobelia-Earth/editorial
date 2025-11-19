@@ -18,7 +18,7 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
 
   const isFetching = isSchemaFetching || isDataObjectFetching;
 
-  if (!schema || !item || isFetching) return null;
+  if (!schema || isFetching) return null;
 
   return (
     <div className="overflow-auto scrollbar-stable">
@@ -27,7 +27,7 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
           key={`${collectionId}-${documentId}`}
           itemType={collectionId}
           fields={schema.fields}
-          data={item}
+          data={item ?? undefined}
         />
       </div>
     </div>
