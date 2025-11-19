@@ -22,8 +22,9 @@ import type {
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { Save } from "lucide-react";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import { z } from "zod";
 
 const FilePicker = React.lazy(() => import("./FilePicker"));
@@ -45,24 +46,34 @@ export default function ItemForm({
   data,
   isNew,
 }: SinglesPageProps) {
+  const navigate = useNavigate();
+
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
 
-  const getDefaultValues = useCallback(
-    (fields: EditorialSchemaItem["fields"]) => {
-      return {
-        id: data?.id ?? "",
-        isDraft: String(isNew ? true : (data?.isDraft ?? false)),
-        ...Object.fromEntries(
-          Object.keys(fields).map((key) => [
-            key,
-            data?.[key] ?? (fields[key].type === "boolean" ? false : ""),
-          ]),
-        ),
-      };
-    },
-    [data, fields],
-  );
+  const defaultValues = useMemo(() => {
+    return {
+      id: data?.id ?? "",
+      isDraft: String(data?.isDraft ?? false),
+      ...Object.fromEntries(
+        Object.keys(fields).map((key) => {
+          const fieldType = fields[key].type;
+          const value = data?.[key];
+
+          if (value !== undefined && value !== null) {
+            // Convert existing data to string format
+            if (fieldType === "boolean") {
+              return [key, String(value)];
+            }
+            return [key, String(value)];
+          }
+
+          // Default values for new items
+          return [key, fieldType === "boolean" ? "false" : ""];
+        }),
+      ),
+    };
+  }, [data, fields]);
 
   const validationSchema = useMemo(() => {
     const schemaShape: Record<string, z.ZodTypeAny> = {
@@ -81,7 +92,8 @@ export default function ItemForm({
 
       switch (field.type) {
         case "boolean":
-          fieldSchema = z.boolean();
+          // Boolean fields are stored as string "true" or "false"
+          fieldSchema = z.enum(["true", "false"]);
           break;
         case "number":
           fieldSchema = z
@@ -118,8 +130,12 @@ export default function ItemForm({
 
   const form = useForm<Record<string, string>>({
     resolver: zodResolver(validationSchema),
-    defaultValues: getDefaultValues(fields),
+    defaultValues: defaultValues,
   });
+
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [defaultValues, form]);
 
   useEffect(() => {
     if (!form) return;
@@ -152,9 +168,14 @@ export default function ItemForm({
     };
 
     if (isNew) {
-      createItem(processedValues);
+      const payload = await createItem(processedValues);
+
+      if (!("error" in payload)) {
+        navigate(`/admin/dashboard/${itemType}/${payload.data.id}`);
+      }
     } else {
-      updateItem(processedValues);
+      await updateItem(processedValues);
+      form.reset(values);
     }
   }
 
@@ -396,7 +417,11 @@ export default function ItemForm({
         </Button>
       </form>
 
-      <UnsavedChangesGuard hasUnsavedChanges={form.formState.isDirty} />
+      <UnsavedChangesGuard
+        hasUnsavedChanges={
+          !form.formState.isSubmitting && form.formState.isDirty
+        }
+      />
     </Form>
   );
 }
