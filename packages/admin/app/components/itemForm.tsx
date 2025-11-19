@@ -92,7 +92,6 @@ export default function ItemForm({
 
       switch (field.type) {
         case "boolean":
-          // Boolean fields are stored as string "true" or "false"
           fieldSchema = z.enum(["true", "false"]);
           break;
         case "number":
@@ -101,7 +100,7 @@ export default function ItemForm({
             .refine((val) => !isNaN(Number(val)), "Must be a valid number");
           break;
         case "url":
-          fieldSchema = z.string().url("Must be a valid URL");
+          fieldSchema = z.url("Must be a valid URL");
           break;
         case "date":
           fieldSchema = z.string();
