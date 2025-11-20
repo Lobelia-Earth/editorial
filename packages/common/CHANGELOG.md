@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.8.1
+
+### Patch Changes
+
+- 5d48cdb: Fix validation issues
+
 ## 6.8.0
 
 ### Minor Changes

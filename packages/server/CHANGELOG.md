@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.8.1
+
+### Patch Changes
+
+- 5d48cdb: Fix validation issues
+- Updated dependencies [5d48cdb]
+  - @isardsat/editorial-admin@6.8.1
+  - @isardsat/editorial-common@6.8.1
+
 ## 6.8.0
 
 ### Minor Changes
