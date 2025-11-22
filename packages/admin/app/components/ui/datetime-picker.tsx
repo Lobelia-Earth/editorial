@@ -77,14 +77,6 @@ export default function DateTimePicker({
 
   return (
     <div className="flex gap-2">
-      <Input
-        type="time"
-        value={timeValue}
-        onChange={handleTimeChange}
-        disabled={disabled || !selectedDate}
-        className="w-32"
-      />
-
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -114,6 +106,14 @@ export default function DateTimePicker({
           />
         </PopoverContent>
       </Popover>
+
+      <Input
+        type="time"
+        value={timeValue}
+        onChange={handleTimeChange}
+        disabled={disabled || !selectedDate}
+        className="w-32"
+      />
     </div>
   );
 }
