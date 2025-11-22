@@ -159,12 +159,21 @@ export default function ItemForm({
   }, [form, isNew, onSubmit]);
 
   async function onSubmit(values: Record<string, string>) {
-    // Convert isDraft from string back to boolean
-    const processedValues = {
+    // Convert field values to their proper types
+    const processedValues: Record<string, any> = {
       ...values,
       isDraft: values.isDraft === "true",
       type: itemType,
     };
+
+    // Convert number fields from strings to numbers
+    Object.entries(fields).forEach(([key, field]) => {
+      if (field.type === "number" && values[key]) {
+        processedValues[key] = Number(values[key]);
+      } else if (field.type === "boolean") {
+        processedValues[key] = values[key] === "true";
+      }
+    });
 
     if (isNew) {
       const payload = await createItem(processedValues);
