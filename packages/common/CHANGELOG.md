@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.9.0
+
+### Minor Changes
+
+- 1a359f9: Fixes
+
 ## 6.8.1
 
 ### Patch Changes
