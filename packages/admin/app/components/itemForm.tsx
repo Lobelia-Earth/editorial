@@ -171,9 +171,7 @@ export default function ItemForm({
 
     // Convert number fields from strings to numbers
     Object.entries(fields).forEach(([key, field]) => {
-      if (field.type === "number" && values[key]) {
-        processedValues[key] = Number(values[key]);
-      } else if (field.type === "boolean") {
+      if (field.type === "boolean") {
         processedValues[key] = values[key] === "true";
       }
     });
