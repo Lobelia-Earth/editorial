@@ -4,7 +4,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "strictNullChecks": true,
-    "declaration": true
+    "declaration": true,
+    "module": "NodeNext",
+    "verbatimModuleSyntax": true
   },
   "include": ["src/**/*"]
 }
