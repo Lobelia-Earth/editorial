@@ -97,9 +97,7 @@ export default function ItemForm({
           fieldSchema = z.enum(["true", "false"]);
           break;
         case "number":
-          fieldSchema = z
-            .string()
-            .refine((val) => !isNaN(Number(val)), "Must be a valid number");
+          fieldSchema = z.number();
           break;
         case "url":
           fieldSchema = z.url("Must be a valid URL");
@@ -408,6 +406,14 @@ export default function ItemForm({
                           />
                         ) : value.type === "color" ? (
                           <ColorPicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder={value.placeholder}
+                          />
+                        ) : value.type === "number" ? (
+                          <Input
+                            {...form.register(key, { valueAsNumber: true })}
+                            type="number"
                             value={field.value}
                             onChange={field.onChange}
                             placeholder={value.placeholder}
