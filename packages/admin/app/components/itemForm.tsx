@@ -21,6 +21,7 @@ import type {
   EditorialDataItem,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
+import { RGBColorSchema } from "@isardsat/editorial-common";
 import { Save } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -32,6 +33,7 @@ const MarkdownEditor = React.lazy(() => import("./markdownEditor"));
 const DatePicker = React.lazy(() => import("./ui/date-picker"));
 const DateTimePicker = React.lazy(() => import("./ui/datetime-picker"));
 const URLInput = React.lazy(() => import("./URLInput"));
+const ColorPicker = React.lazy(() => import("./ColorPicker"));
 
 export interface SinglesPageProps {
   itemType: string;
@@ -108,6 +110,9 @@ export default function ItemForm({
         case "datetime":
           fieldSchema = z.string();
           break;
+        case "color":
+          fieldSchema = RGBColorSchema;
+          break;
         default:
           fieldSchema = z.string();
       }
@@ -128,7 +133,7 @@ export default function ItemForm({
   }, [fields]);
 
   const form = useForm<Record<string, string>>({
-    resolver: zodResolver(validationSchema),
+    resolver: zodResolver(validationSchema) as any,
     defaultValues: defaultValues,
   });
 
@@ -400,6 +405,12 @@ export default function ItemForm({
                             placeholder={
                               value.placeholder ?? "Select date and time"
                             }
+                          />
+                        ) : value.type === "color" ? (
+                          <ColorPicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder={value.placeholder}
                           />
                         ) : (
                           <Input

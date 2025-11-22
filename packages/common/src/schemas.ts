@@ -56,6 +56,26 @@ export const EditorialSchemaItemFieldType = z.enum([
   "url",
 ]);
 
+export const RGBColorSchema = z
+  .string()
+  .regex(
+    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/,
+    "Must be a valid RGB color format: rgb(r, g, b)"
+  )
+  .refine((value) => {
+    const match = value.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/);
+    if (!match) return false;
+    const [, r, g, b] = match;
+    return (
+      Number(r) >= 0 &&
+      Number(r) <= 255 &&
+      Number(g) >= 0 &&
+      Number(g) <= 255 &&
+      Number(b) >= 0 &&
+      Number(b) <= 255
+    );
+  }, "RGB values must be between 0 and 255");
+
 export const EditorialSchemaItemFieldSchema = z.looseObject({
   type: EditorialSchemaItemFieldType,
   displayName: z.string(),
