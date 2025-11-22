@@ -230,7 +230,13 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
   }, [actionColumn, schema]);
 
   const schemaEntries = useMemo(
-    () => (data?.[itemType] ? Object.values(data[itemType]) : []),
+    () =>
+      data?.[itemType]
+        ? Object.values(data[itemType]).sort(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          )
+        : [],
     [itemType, data],
   );
 
