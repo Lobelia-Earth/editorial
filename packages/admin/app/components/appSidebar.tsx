@@ -15,12 +15,14 @@ import {
   ExternalLink,
   Files,
   Grid,
+  Loader2,
   LogOut,
   Square,
   Upload,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 import { Modal } from "./modal";
 import SidebarSchemaItems from "./sidebarSchemaItems";
 import {
@@ -47,6 +49,7 @@ export default function AppSidebar() {
   const [publish] = usePublishMutation();
   const [pull] = usePullMutation();
   const [push] = usePushMutation();
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const { data: config } = useGetConfigQuery();
   const { data: schema } = useGetSchemaQuery();
@@ -62,6 +65,24 @@ export default function AppSidebar() {
   );
 
   const user = useAppSelector((state) => state.auth.user);
+
+  const handlePublish = async (author: string) => {
+    setIsPublishing(true);
+
+    try {
+      const result = await publish({ author }).unwrap();
+      if (result) {
+        toast.success("Content published successfully.");
+      } else {
+        toast.error("Publishing failed.");
+      }
+    } catch (err) {
+      toast.error("Publishing failed.");
+      console.error(err);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   return (
     <Sidebar className="z-50">
@@ -163,14 +184,19 @@ export default function AppSidebar() {
                   </SidebarMenuItem>
                 </>
               )}
-
               {user && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="cursor-pointer"
-                    onClick={() => publish({ author: user.email })}
+                    onClick={() => {
+                      handlePublish(user.email);
+                    }}
                   >
-                    <Upload />
+                    {isPublishing ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Upload />
+                    )}
                     <span>Publish</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
