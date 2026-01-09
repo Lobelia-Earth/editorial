@@ -22,7 +22,7 @@ import type {
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { RGBColorSchema } from "@isardsat/editorial-common";
-import { Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
@@ -436,7 +436,12 @@ export default function ItemForm({
           })}
 
         <Button disabled={!form.formState.isDirty && !isNew} type="submit">
-          <Save /> {form.watch("isDraft") === "true" ? "Save Draft" : "Save"}
+          {form.formState.isSubmitting ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <Save />
+          )}
+          {form.watch("isDraft") === "true" ? "Save Draft" : "Save"}
         </Button>
       </form>
 
