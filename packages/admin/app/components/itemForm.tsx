@@ -380,28 +380,28 @@ export default function ItemForm({
                               field.value ? new Date(field.value) : undefined
                             }
                             onDateChange={(date) => {
-                              field.onChange(
-                                date ? date.toISOString() : undefined,
-                              );
+                              field.onChange(date ? date.toISOString() : "");
                             }}
                             placeholder={value.placeholder ?? "Select date"}
+                            allowClear={value.optional}
                           />
                         ) : value.type === "datetime" ? (
-                          <DateTimePicker
-                            id={key}
-                            {...form.register(key)}
-                            date={
-                              field.value ? new Date(field.value) : undefined
-                            }
-                            onDateTimeChange={(date) => {
-                              field.onChange(
-                                date ? date.toISOString() : undefined,
-                              );
-                            }}
-                            placeholder={
-                              value.placeholder ?? "Select date and time"
-                            }
-                          />
+                          <div className="relative">
+                            <DateTimePicker
+                              id={key}
+                              {...form.register(key)}
+                              date={
+                                field.value ? new Date(field.value) : undefined
+                              }
+                              onDateTimeChange={(date) => {
+                                field.onChange(date ? date.toISOString() : "");
+                              }}
+                              placeholder={
+                                value.placeholder ?? "Select date and time"
+                              }
+                              allowClear={value.optional}
+                            />
+                          </div>
                         ) : value.type === "color" ? (
                           <ColorPicker
                             value={field.value}

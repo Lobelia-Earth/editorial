@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
+import ClearButton from "./clear-button";
 
 interface DateTimePickerProps {
   id?: string;
@@ -18,6 +19,7 @@ interface DateTimePickerProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  allowClear?: boolean;
 }
 
 export default function DateTimePicker({
@@ -27,6 +29,7 @@ export default function DateTimePicker({
   placeholder = "Pick a date and time",
   disabled = false,
   className,
+  allowClear = false,
 }: DateTimePickerProps) {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
     date,
@@ -82,18 +85,27 @@ export default function DateTimePicker({
           <Button
             variant={"outline"}
             className={cn(
-              "flex-1 justify-start text-left font-normal",
+              "flex-1 justify-start text-left font-normal relative",
               !selectedDate && "text-muted-foreground",
               className,
             )}
             disabled={disabled}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {selectedDate ? (
-              format(selectedDate, "PPP")
-            ) : (
-              <span>{placeholder}</span>
-            )}
+            <>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {selectedDate ? (
+                format(selectedDate, "PPP")
+              ) : (
+                <span>{placeholder}</span>
+              )}
+              <ClearButton
+                onClear={() => {
+                  setSelectedDate(undefined);
+                  onDateTimeChange?.(undefined);
+                }}
+                visible={allowClear && !!date}
+              />
+            </>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
