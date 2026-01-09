@@ -435,13 +435,22 @@ export default function ItemForm({
             );
           })}
 
-        <Button disabled={!form.formState.isDirty && !isNew} type="submit">
+        <Button
+          disabled={
+            (!form.formState.isDirty && !isNew) || form.formState.isSubmitting
+          }
+          type="submit"
+        >
           {form.formState.isSubmitting ? (
             <Loader2 className="animate-spin" />
           ) : (
             <Save />
           )}
-          {form.watch("isDraft") === "true" ? "Save Draft" : "Save"}
+          {form.formState.isSubmitting
+            ? "Saving"
+            : form.watch("isDraft") === "true"
+              ? "Save Draft"
+              : "Save"}
         </Button>
       </form>
 
