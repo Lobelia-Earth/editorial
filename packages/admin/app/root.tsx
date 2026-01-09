@@ -1,5 +1,6 @@
 // Imported first to ensure cascading rules work properly.
 import "./app.css";
+import { Toaster } from "./components/ui/sonner";
 
 import AuthListener from "@/components/AuthListener";
 import FirebaseInitializer from "@/components/FirebaseInitializer";
@@ -36,11 +37,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <StoreProvider>
           <FirebaseInitializer>
             <AuthListener />
-
             {children}
           </FirebaseInitializer>
         </StoreProvider>
-
+        <Toaster position="bottom-right" richColors />
         <ScrollRestoration />
         <Scripts />
       </body>
