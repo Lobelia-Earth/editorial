@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.10.0
+
+### Minor Changes
+
+- 7383e37: Ui changes and vulnerability fix
+
 ## 6.9.0
 
 ### Minor Changes

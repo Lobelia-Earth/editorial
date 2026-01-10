@@ -1,5 +1,16 @@
 # @isardsat/editorial-cli
 
+## 6.10.0
+
+### Minor Changes
+
+- 7383e37: Ui changes and vulnerability fix
+
+### Patch Changes
+
+- Updated dependencies [7383e37]
+  - @isardsat/editorial-server@6.10.0
+
 ## 6.9.0
 
 ### Minor Changes
