@@ -317,9 +317,9 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         const messages = await storage.getLocalisationMessages(lang);
 
         for (const [key, message] of Object.entries(messages)) {
-          const [, typeKey, fieldKey] = key.split(".");
+          const [contentKey, typeKey, fieldKey] = key.split(".");
 
-          if (typeKey === id) {
+          if (contentKey === itemType && typeKey === id) {
             item[fieldKey] = (message as any).defaultMessage;
           }
         }
