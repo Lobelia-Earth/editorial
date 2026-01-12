@@ -189,6 +189,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           const [contentKey, typeKey, fieldKey] = key.split(".");
 
           if (contentKey === itemType) {
+            if (!collection[typeKey]) continue;
             collection[typeKey][fieldKey] = (message as any).defaultMessage;
           }
         }
