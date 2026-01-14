@@ -18,6 +18,10 @@ Running `pnpm -w compile:watch` for all packages apart from the admin panel. You
 
 Alternatively, if you need to develop alongside a project implementing Editorial, you can simply "link" your local repo of editorial to the project and run the same `pnpm -w compile:watch` command as above.
 
+## Publishing
+
+Run `pnpm login` to authenticate with npm repository. Afterward running `pnpm changeset`, `pnpm changeset version`, and `pnpm changeset publish` in that order.
+
 ## Contributing
 
 We currently don't accept PRs from external collaborators but we plan to! If you have any problems with Editorial we [track issues on Github](https://github.com/Lobelia-Earth/editorial/issues)
