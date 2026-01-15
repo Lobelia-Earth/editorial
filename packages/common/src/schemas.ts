@@ -87,6 +87,7 @@ export const EditorialSchemaItemFieldSchema = z.looseObject({
 
 export const EditorialSchemaItemSchema = z.object({
   displayName: z.string(),
+  filterBy: z.string().optional(),
   singleton: z.boolean().optional(),
   fields: z.record(z.string(), EditorialSchemaItemFieldSchema),
 });
