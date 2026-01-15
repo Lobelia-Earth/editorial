@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -17,7 +18,9 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   useReactTable,
+  type ColumnFiltersState,
 } from "@tanstack/react-table";
 import clsx from "clsx";
 import {
@@ -32,7 +35,8 @@ import {
   ListIcon,
   Trash,
 } from "lucide-react";
-import React, { useMemo, type FunctionComponent } from "react";
+
+import React, { useMemo, useState, type FunctionComponent } from "react";
 import { Link } from "react-router";
 
 const TypeIconMap: Record<string, FunctionComponent> = {
@@ -93,6 +97,7 @@ export interface SchemaTableProps {
 export default function SchemaTable({ itemType }: SchemaTableProps) {
   const { data: schema } = useGetSchemaTypeQuery(itemType);
   const { data } = useGetDataQuery();
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const [trigger] = useDeleteObjectMutation();
 
@@ -244,12 +249,39 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
     data: schemaEntries,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      columnFilters,
+    },
   });
 
   if (!schema || !data) return null;
 
   return (
     <div className="rounded-sm border overflow-auto">
+      {schema.filterBy &&
+        Object.entries(schema.fields).find(
+          ([key]) => key === schema.filterBy,
+        ) && (
+          <div className="flex items-center py-2 pl-2 ">
+            <Input
+              placeholder={`Filter ${schema.filterBy}...`}
+              value={
+                (table
+                  .getColumn(schema.filterBy)
+                  ?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table
+                  .getColumn(schema.filterBy || "")
+                  ?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm rounded-sm"
+            />
+          </div>
+        )}
+
       <Table>
         <TableHeader className="sticky top-0 z-50">
           {table.getHeaderGroups().map((headerGroup) => (
