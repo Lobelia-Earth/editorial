@@ -194,6 +194,13 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                     </Link>
                   );
                 case "datetime":
+                  if (!cellValue) return "--";
+
+                  return (
+                    <span className="text-nowrap" title={cellValue}>
+                      {new Date(cellValue).toLocaleString()}
+                    </span>
+                  );
                 case "date":
                   if (!cellValue) return "--";
 
