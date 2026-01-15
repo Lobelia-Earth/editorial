@@ -198,7 +198,14 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
 
                   return (
                     <span className="text-nowrap" title={cellValue}>
-                      {new Date(cellValue).toLocaleString()}
+                      {new Date(cellValue).toLocaleString(undefined, {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: undefined,
+                      })}
                     </span>
                   );
                 case "date":
