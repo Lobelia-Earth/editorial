@@ -14,16 +14,22 @@ import {
 } from "@/lib/store/slices/editorialApi";
 import { cn, formatTime } from "@/lib/utils";
 import type { EditorialDataItem } from "@isardsat/editorial-common";
+import type { SortingFn } from "@tanstack/react-table";
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
   useReactTable,
   type ColumnFiltersState,
+  type SortingState,
 } from "@tanstack/react-table";
 import clsx from "clsx";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CalendarIcon,
   Circle,
   CircleCheck,
@@ -51,11 +57,22 @@ const TypeIconMap: Record<string, FunctionComponent> = {
 
 const columnHelper = createColumnHelper<EditorialDataItem>();
 
+const dateSortingFn: SortingFn<any> = (rowA, rowB, columnId) => {
+  const a = rowA.getValue(columnId);
+  const b = rowB.getValue(columnId);
+
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+
+  return new Date(a as string).getTime() - new Date(b as string).getTime();
+};
+
 export const baseColumns = [
   columnHelper.accessor("id", {
     header() {
       return (
-        <span className="flex items-center w-48 max-w-48">
+        <span className="flex items-center max-w-48">
           <CircleIcon className="text-gray-500 h-4" /> ID
         </span>
       );
@@ -79,11 +96,13 @@ export const baseLastColumns = [
   columnHelper.accessor("updatedAt", {
     header() {
       return (
-        <div className="flex items-center w-48 max-w-48">
+        <div className="flex items-center max-w-48">
           <CalendarIcon className="text-gray-500 h-4" /> Last updated
         </div>
       );
     },
+    sortingFn: dateSortingFn,
+
     cell(props) {
       return formatTime(new Date(props.getValue()));
     },
@@ -98,7 +117,9 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
   const { data: schema } = useGetSchemaTypeQuery(itemType);
   const { data } = useGetDataQuery();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "updatedAt", desc: true },
+  ]);
   const [trigger] = useDeleteObjectMutation();
 
   const actionColumn = useMemo(() => {
@@ -122,19 +143,10 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               <Trash size={16} className="group-hover:text-red-400" />
               <span className="sr-only">Delete entry</span>
             </button>
-
-            {/* <button
-              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <Ellipsis className="group-hover:text-red-400" />
-              <span className="sr-only">Delete entry</span>
-            </button> */}
           </div>
         );
       },
+      enableSorting: false,
     });
   }, [itemType, trigger]);
 
@@ -150,14 +162,19 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
         .map(([key, value]) =>
           columnHelper.accessor((row) => row[key], {
             id: key,
+            sortingFn:
+              value.type === "date" || value.type === "datetime"
+                ? dateSortingFn
+                : "alphanumeric",
+
             header() {
               const Comp = value.isUploadedFile
                 ? FileImageIcon
                 : (TypeIconMap[value.type] ?? React.Fragment);
 
               return (
-                <div className="flex items-center">
-                  <Comp className="text-gray-500 h-4" />
+                <div className="flex items-center ">
+                  <Comp className="text-gray-500 h-4 flex-shrink-0" />
 
                   {value.displayName}
                 </div>
@@ -197,7 +214,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   if (!cellValue) return "--";
 
                   return (
-                    <span className="text-nowrap" title={cellValue}>
+                    <span className=" text-nowrap" title={cellValue}>
                       {new Date(cellValue).toLocaleString(undefined, {
                         year: "numeric",
                         month: "2-digit",
@@ -249,13 +266,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
   }, [actionColumn, schema]);
 
   const schemaEntries = useMemo(
-    () =>
-      data?.[itemType]
-        ? Object.values(data[itemType]).sort(
-            (a, b) =>
-              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-          )
-        : [],
+    () => (data?.[itemType] ? Object.values(data[itemType]) : []),
     [itemType, data],
   );
 
@@ -265,7 +276,10 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
     state: {
+      sorting,
       columnFilters,
     },
   });
@@ -307,13 +321,41 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               key={headerGroup.id}
             >
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="bg-background">
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                <TableHead
+                  key={header.id}
+                  className={clsx(
+                    "bg-background transition-colors",
+                    header.column.getCanSort() &&
+                      "hover:bg-gray-100 cursor-default",
+                  )}
+                  onClick={() => {
+                    console.log("sorting", header.column.getIsSorted());
+                    header.column.toggleSorting(
+                      header.column.getIsSorted() === "asc",
+                    );
+                  }}
+                >
+                  <div className="flex items-center w-full overflow-hidden">
+                    <span
+                      className="block overflow-hidden text-ellipsis whitespace-nowrap"
+                      title={header.column.columnDef.header?.toString?.() ?? ""}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </span>
+                    {header.column.getCanSort() &&
+                      (header.column.getIsSorted() === "asc" ? (
+                        <ArrowUp className="ml-2 h-4 w-4 text-foreground" />
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDown className="ml-2 h-4 w-4 text-foreground" />
+                      ) : (
+                        <ArrowUpDown className="ml-2 h-4 w-4 text-gray-400" />
+                      ))}
+                  </div>
                 </TableHead>
               ))}
             </TableRow>
