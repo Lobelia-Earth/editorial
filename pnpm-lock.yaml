@@ -4,24 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-catalogs:
-  default:
-    '@tsconfig/node22':
-      specifier: ^22.0.0
-      version: 22.0.2
-    '@types/node':
-      specifier: 22.13.1
-      version: 22.13.1
-    prettier:
-      specifier: ^3.4.2
-      version: 3.6.2
-    typescript:
-      specifier: 5.7.3
-      version: 5.7.3
-    zod:
-      specifier: ^4.1.11
-      version: 4.1.11
-
 importers:
 
   .:
@@ -377,9 +359,6 @@ importers:
 
   packages/react-adapter:
     dependencies:
-      '@mantine/hooks':
-        specifier: ^8.3.12
-        version: 8.3.12(react@18.3.1)
       sass:
         specifier: ^1.97.2
         version: 1.97.2
@@ -2833,11 +2812,6 @@ packages:
 
   '@lezer/yaml@1.0.3':
     resolution: {integrity: sha512-GuBLekbw9jDBDhGur82nuwkxKQ+a3W5H0GfaAthDXcAu+XdpS43VlnxA9E9hllkpSP5ellRDKjLLj7Lu9Wr6xA==}
-
-  '@mantine/hooks@8.3.12':
-    resolution: {integrity: sha512-lMMDzDewd3lUNtJCAHDj3g8On9X5aBl4q6EBwgOixKQSby9RG9ASEpK8oYHundHTm9tzo3MDeXWV/z32oSQWuw==}
-    peerDependencies:
-      react: ^18.x || ^19.x
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -12712,10 +12686,6 @@ snapshots:
       '@lezer/common': 1.2.3
       '@lezer/highlight': 1.2.1
       '@lezer/lr': 1.4.2
-
-  '@mantine/hooks@8.3.12(react@18.3.1)':
-    dependencies:
-      react: 18.3.1
 
   '@manypkg/find-root@1.1.0':
     dependencies:

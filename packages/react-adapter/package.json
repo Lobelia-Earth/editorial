@@ -26,7 +26,6 @@
     "react-dom": "^18"
   },
   "dependencies": {
-    "@mantine/hooks": "^8.3.12",
     "sass": "^1.97.2"
   },
   "devDependencies": {

@@ -1,4 +1,3 @@
-import { useLocalStorage } from "@mantine/hooks";
 import type { RefObject } from "react";
 import {
   cloneElement,
@@ -7,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useLocalStorage } from "../hooks/use-local-storage/use-local-storage";
 import styles from "./EditorialContent.module.scss";
 import { useEditorialReactConfig } from "./providers/EditorialReactConfigContext";
 
