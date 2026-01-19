@@ -38,6 +38,7 @@ import type { UseFormRegister } from "react-hook-form";
 import styles from "./markdownEditor.module.css";
 
 export interface MarkdownEditorProps extends MDXEditorProps {
+  id: string;
   className?: string;
   name: string;
   register: UseFormRegister<Record<string, string>>;
@@ -88,6 +89,7 @@ function flattenFiles(files: EditorialFiles): EditorialFiles {
 }
 
 export default function MarkdownEditor({
+  id,
   className,
   markdown,
   name,
@@ -96,6 +98,7 @@ export default function MarkdownEditor({
   fieldDisplayName,
   fullscreenable = true,
 }: MarkdownEditorProps) {
+  console.log("🚀 ~ MarkdownEditor ~ id:", id);
   const { data: filesTree } = useGetFilesQuery();
   const initialMarkdown = useRef(markdown);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -175,51 +178,53 @@ export default function MarkdownEditor({
   );
 
   const renderEditor = () => (
-    <MDXEditor
-      {...register(name)}
-      className={cn(
-        "flex flex-col w-full rounded-md border border-input bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        styles.mdxeditor,
-        isFullscreen ? styles.fullscreen : className,
-      )}
-      suppressHtmlProcessing={true}
-      markdown={markdown}
-      onChange={onChange}
-      plugins={[
-        headingsPlugin(),
-        listsPlugin(),
-        linkPlugin(),
-        linkDialogPlugin(),
-        quotePlugin(),
-        imagePlugin({
-          imageAutocompleteSuggestions: files
-            ?.filter((file) => file.type !== "directory")
-            .map((file) => file.relativePath),
-          imagePreviewHandler: (image) => {
-            return new Promise((resolve) => {
-              return resolve(`/${image}`);
-            });
-          },
-          disableImageResize: true,
-        }),
-        thematicBreakPlugin(),
-        markdownShortcutPlugin(),
-        codeBlockPlugin({
-          codeBlockEditorDescriptors: [PlainTextCodeEditorDescriptor],
-        }),
-        diffSourcePlugin({
-          viewMode: "rich-text",
-          diffMarkdown: initialMarkdown.current,
-        }),
-        toolbarPlugin({
-          toolbarClassName: cn(
-            "flex flex-row overflow-hidden shrink-0 h-10 border-b bg-white rounded-none",
-            isFullscreen && "border-gray-200",
-          ),
-          toolbarContents: ToolbarContents,
-        }),
-      ]}
-    />
+    <div id={id}>
+      <MDXEditor
+        {...register(name)}
+        className={cn(
+          "flex flex-col w-full rounded-md border border-input bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          styles.mdxeditor,
+          isFullscreen ? styles.fullscreen : className,
+        )}
+        suppressHtmlProcessing={true}
+        markdown={markdown}
+        onChange={onChange}
+        plugins={[
+          headingsPlugin(),
+          listsPlugin(),
+          linkPlugin(),
+          linkDialogPlugin(),
+          quotePlugin(),
+          imagePlugin({
+            imageAutocompleteSuggestions: files
+              ?.filter((file) => file.type !== "directory")
+              .map((file) => file.relativePath),
+            imagePreviewHandler: (image) => {
+              return new Promise((resolve) => {
+                return resolve(`/${image}`);
+              });
+            },
+            disableImageResize: true,
+          }),
+          thematicBreakPlugin(),
+          markdownShortcutPlugin(),
+          codeBlockPlugin({
+            codeBlockEditorDescriptors: [PlainTextCodeEditorDescriptor],
+          }),
+          diffSourcePlugin({
+            viewMode: "rich-text",
+            diffMarkdown: initialMarkdown.current,
+          }),
+          toolbarPlugin({
+            toolbarClassName: cn(
+              "flex flex-row overflow-hidden shrink-0 h-10 border-b bg-white rounded-none",
+              isFullscreen && "border-gray-200",
+            ),
+            toolbarContents: ToolbarContents,
+          }),
+        ]}
+      />
+    </div>
   );
 
   if (isFullscreen) {
