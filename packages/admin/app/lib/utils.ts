@@ -38,7 +38,8 @@ const msPerDay = msPerHour * 24;
 const msPerMonth = msPerDay * 30;
 const msPerYear = msPerDay * 365;
 
-export function formatTime(date: Date, currentDate = new Date()) {
+export function formatTime(date: Date, smartFormat = false) {
+  const currentDate = new Date();
   const elapsed = currentDate.getTime() - date.getTime();
   const isInFuture = elapsed < 0;
   const absElapsed = Math.abs(elapsed);
@@ -55,15 +56,20 @@ export function formatTime(date: Date, currentDate = new Date()) {
   } else if (absElapsed < msPerDay) {
     timeValue = Math.round(absElapsed / msPerHour);
     unit = timeValue === 1 ? "hour" : "hours";
-  } else if (absElapsed < msPerMonth) {
+  } else if (absElapsed < msPerMonth && smartFormat) {
     timeValue = Math.round(absElapsed / msPerDay);
     unit = timeValue === 1 ? "day" : "days";
-  } else if (absElapsed < msPerYear) {
+  } else if (absElapsed < msPerYear && smartFormat) {
     timeValue = Math.round(absElapsed / msPerMonth);
     unit = timeValue === 1 ? "month" : "months";
-  } else {
+  } else if (smartFormat) {
     timeValue = Math.round(absElapsed / msPerYear);
     unit = timeValue === 1 ? "year" : "years";
+  } else {
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
   }
 
   if (isInFuture) {
