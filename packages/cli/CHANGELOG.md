@@ -1,5 +1,15 @@
 # @isardsat/editorial-cli
 
+## 6.11.1
+
+### Patch Changes
+
+- fe2f6df: Fix sidebar footer action to stay visible on overflow
+  Fix hiding id and set default value when creating a new singleton
+  Fix missing collections entries error and clean up deleted editorial item messages on publish
+- Updated dependencies [fe2f6df]
+  - @isardsat/editorial-server@6.11.1
+
 ## 6.11.0
 
 ### Minor Changes
