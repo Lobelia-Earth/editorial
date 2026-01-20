@@ -41,6 +41,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "./ui/sidebar";
 
 export default function AppSidebar() {
@@ -157,57 +158,54 @@ export default function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Actions</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {user?.role === "developer" && (
-                <>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      className="cursor-pointer"
-                      onClick={() => pull()}
-                    >
-                      <ArrowDown />
-                      <span>Pull from repo</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      className="cursor-pointer"
-                      onClick={() => push({ author: user.email })}
-                    >
-                      <ArrowUp />
-                      <span>Push to repo</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </>
-              )}
-              {user && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => {
-                      handlePublish(user.email);
-                    }}
-                  >
-                    {isPublishing ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <Upload />
-                    )}
-                    <span>Publish</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup></SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
+        <SidebarGroupLabel>Actions</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {user?.role === "developer" && (
+              <>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="cursor-pointer"
+                    onClick={() => pull()}
+                  >
+                    <ArrowDown />
+                    <span>Pull from repo</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="cursor-pointer"
+                    onClick={() => push({ author: user.email })}
+                  >
+                    <ArrowUp />
+                    <span>Push to repo</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </>
+            )}
+            {user && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="cursor-pointer"
+                  onClick={() => {
+                    handlePublish(user.email);
+                  }}
+                >
+                  {isPublishing ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Upload />
+                  )}
+                  <span>Publish</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+          </SidebarMenu>
+        </SidebarGroupContent>
+        <SidebarSeparator />
         <SidebarMenuButton asChild>
           <Link to={config?.previewUrl as string}>
             Preview
