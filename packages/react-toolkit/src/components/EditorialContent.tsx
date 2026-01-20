@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { useLocalStorage } from "../hooks/use-local-storage/use-local-storage";
-import styles from "./EditorialContent.module.scss";
+import styles from "./EditorialContent.module.css";
 import { useEditorialReactConfig } from "./providers/EditorialReactConfigContext";
 
 type OverlayProps = {

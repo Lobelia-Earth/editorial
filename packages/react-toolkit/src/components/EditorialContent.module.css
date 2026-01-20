@@ -19,13 +19,13 @@
   font-weight: normal;
   text-transform: none;
   font-family: var(--font-studio-fiexen-sans);
+}
 
-  &:hover {
-    text-decoration: none;
-    opacity: 1;
-  }
+.label:hover {
+  text-decoration: none;
+  opacity: 1;
+}
 
-  svg {
-    margin-left: 8px;
-  }
+.label svg {
+  margin-left: 8px;
 }
