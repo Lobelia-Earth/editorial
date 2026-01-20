@@ -8,7 +8,7 @@ import {
   EditorialDataSchema,
   EditorialSchemaSchema,
 } from "@isardsat/editorial-common";
-import { readFile } from "fs/promises";
+import { readFile, readdir } from "fs/promises";
 import { join } from "path";
 import { parse } from "yaml";
 import { writeFileSafe } from "./utils/fs.js";
@@ -18,6 +18,7 @@ export function createStorage(dataDirectory: string) {
   const dataPath = join(dataDirectory, "data.json");
   const dataProdPath = join(dataDirectory, "data.prod.json");
   const dataExtractedPath = join(dataDirectory, "data.messages.json");
+  const localesPath = join(dataDirectory, "locales", "messages");
 
   async function getSchema() {
     const schemaFile = await readFile(schemaPath, "utf-8").then((value) =>
@@ -85,8 +86,68 @@ export function createStorage(dataDirectory: string) {
     return true;
   }
 
-  async function saveLocalisationMessages(messages: any) {
-    await writeFileSafe(dataExtractedPath, JSON.stringify(messages, null, 2));
+  async function getAllLocalesMessages(dir: string) {
+    const files = await readdir(dir);
+
+    return Promise.all(
+      files.map(async (file) => ({
+        file,
+        path: join(dir, file),
+        messages: JSON.parse(await readFile(join(dir, file), "utf-8")),
+      }))
+    );
+  }
+
+  function pruneMessages(
+    messages: Record<string, any>,
+    deletedItemKeys: string[]
+  ) {
+    const pruned = { ...messages };
+
+    deletedItemKeys.forEach((key) => {
+      if (pruned.hasOwnProperty(key)) {
+        delete pruned[key];
+      }
+    });
+
+    return pruned;
+  }
+
+  async function saveLocalisationMessages(newMessages: any) {
+    const productionMessages = await readFile(dataExtractedPath, "utf-8").then(
+      (value) => JSON.parse(value)
+    );
+
+    await writeFileSafe(
+      dataExtractedPath,
+      JSON.stringify(newMessages, null, 2)
+    );
+
+    /**
+     * Get deleted items by checking
+     * keys that are in productionMessages but not in newMessages
+     */
+    const deletedItemKeys: string[] = [];
+    for (const itemType of Object.keys(productionMessages)) {
+      if (!newMessages[itemType]) {
+        /**
+         * We need to store both the full itemType with hash and the shortItemType without hash
+         * The itemType is used for locale files starting with underscore _
+         * The shortItemType is used for normal locale files
+         */
+        deletedItemKeys.push(itemType);
+        const shortItemType = itemType.split(".").slice(0, -1).join(".");
+        deletedItemKeys.push(shortItemType);
+      }
+    }
+
+    if (deletedItemKeys.length === 0) return true;
+
+    const locales = await getAllLocalesMessages(localesPath);
+    for (const locale of locales) {
+      const pruned = pruneMessages(locale.messages, deletedItemKeys);
+      await writeFileSafe(locale.path, JSON.stringify(pruned, null, 2));
+    }
 
     return true;
   }
