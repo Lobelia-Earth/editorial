@@ -26,6 +26,7 @@ import { Loader2, Save } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
 import { z } from "zod";
 
 const FilePicker = React.lazy(() => import("./FilePicker"));
@@ -51,9 +52,22 @@ export default function ItemForm({
   isNew,
 }: SinglesPageProps) {
   const navigate = useNavigate();
+  const { hash } = useLocation();
 
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
+
+  useEffect(() => {
+    if (!hash) return;
+
+    const id = hash.slice(1);
+
+    const element = document.getElementById(id);
+    if (element) {
+      window.scrollTo({ top: window.scrollY, behavior: "smooth" });
+      element.focus();
+    }
+  }, [hash]);
 
   const defaultValues = useMemo(() => {
     return {
@@ -348,6 +362,7 @@ export default function ItemForm({
                       <FormControl>
                         {value.type === "markdown" ? (
                           <MarkdownEditor
+                            id={key}
                             name={key}
                             register={form.register}
                             className="h-52"
@@ -379,6 +394,7 @@ export default function ItemForm({
                           />
                         ) : value.type === "date" ? (
                           <DatePicker
+                            id={key}
                             {...form.register(key)}
                             date={
                               field.value ? new Date(field.value) : undefined
@@ -408,12 +424,14 @@ export default function ItemForm({
                           </div>
                         ) : value.type === "color" ? (
                           <ColorPicker
+                            id={key}
                             value={field.value}
                             onChange={field.onChange}
                             placeholder={value.placeholder}
                           />
                         ) : value.type === "number" ? (
                           <Input
+                            id={key}
                             {...form.register(key, { valueAsNumber: true })}
                             type="number"
                             value={field.value}
@@ -422,6 +440,7 @@ export default function ItemForm({
                           />
                         ) : (
                           <Input
+                            id={key}
                             {...form.register(key)}
                             placeholder={value.placeholder}
                             {...field}

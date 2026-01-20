@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 interface ColorPickerProps {
+  id: string;
   value?: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -8,17 +9,24 @@ interface ColorPickerProps {
 
 // Convert RGB to Hex
 function rgbToHex(rgb: string): string {
-  const match = rgb.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/);
+  const match = rgb.match(
+    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/,
+  );
   if (!match) return "#000000";
 
   const r = Number(match[1]);
   const g = Number(match[2]);
   const b = Number(match[3]);
 
-  return "#" + [r, g, b].map(x => {
-    const hex = x.toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
-  }).join("");
+  return (
+    "#" +
+    [r, g, b]
+      .map((x) => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      })
+      .join("")
+  );
 }
 
 // Convert Hex to RGB
@@ -34,6 +42,7 @@ function hexToRgb(hex: string): string {
 }
 
 export default function ColorPicker({
+  id,
   value,
   onChange,
   placeholder,
@@ -55,6 +64,7 @@ export default function ColorPicker({
   return (
     <div className="flex gap-2 items-center">
       <input
+        id={id}
         type="color"
         value={hexValue}
         onChange={handleColorChange}
