@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.12.2
+
+### Patch Changes
+
+- 53c1b5d: Fix css export
+- Updated dependencies [53c1b5d]
+  - @isardsat/editorial-admin@6.12.2
+  - @isardsat/editorial-common@6.12.2
+
 ## 6.12.1
 
 ### Patch Changes

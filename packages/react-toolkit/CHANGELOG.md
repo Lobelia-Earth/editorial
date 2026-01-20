@@ -1,5 +1,11 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.12.2
+
+### Patch Changes
+
+- 53c1b5d: Fix css export
+
 ## 6.12.1
 
 ### Patch Changes
