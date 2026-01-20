@@ -98,7 +98,6 @@ export default function MarkdownEditor({
   fieldDisplayName,
   fullscreenable = true,
 }: MarkdownEditorProps) {
-  console.log("🚀 ~ MarkdownEditor ~ id:", id);
   const { data: filesTree } = useGetFilesQuery();
   const initialMarkdown = useRef(markdown);
   const [isFullscreen, setIsFullscreen] = useState(false);
