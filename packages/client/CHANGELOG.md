@@ -1,5 +1,13 @@
 # @isardsat/editorial-client
 
+## 6.12.1
+
+### Patch Changes
+
+- 27ffefe: Fix react-toolkit exports
+- Updated dependencies [27ffefe]
+  - @isardsat/editorial-common@6.12.1
+
 ## 6.12.0
 
 ### Minor Changes
