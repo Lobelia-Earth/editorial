@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.12.0
+
+### Minor Changes
+
+- 63c528e: Add react-toolkit package to export useful react components
+
 ## 6.11.1
 
 ### Patch Changes
