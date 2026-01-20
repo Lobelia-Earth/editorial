@@ -28,6 +28,7 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
           itemType={collectionId}
           fields={schema.fields}
           data={item ?? undefined}
+          isSingleton={schema.singleton}
         />
       </div>
     </div>

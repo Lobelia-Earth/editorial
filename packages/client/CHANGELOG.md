@@ -1,5 +1,20 @@
 # @isardsat/editorial-client
 
+## 6.11.0
+
+### Minor Changes
+
+- 144ab5c: Added a favicon and displayed the Editorial version in the sidebar.
+
+  Introduced table filtering by a specific element defined in the schema.filterBy.
+
+  Added column sorting support for tables.
+
+### Patch Changes
+
+- Updated dependencies [144ab5c]
+  - @isardsat/editorial-common@6.11.0
+
 ## 6.10.0
 
 ### Minor Changes
