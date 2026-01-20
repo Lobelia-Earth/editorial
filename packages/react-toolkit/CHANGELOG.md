@@ -1,6 +1,6 @@
 # @isardsat/editorial-react-toolkit
 
-## 6.11.0
+## 6.12.0
 
 ### Minor Changes
 
