@@ -38,6 +38,7 @@ const ColorPicker = React.lazy(() => import("./ColorPicker"));
 export interface SinglesPageProps {
   itemType: string;
   fields: EditorialSchemaItem["fields"];
+  isSingleton?: boolean;
   data?: EditorialDataItem;
   isNew?: boolean;
 }
@@ -45,6 +46,7 @@ export interface SinglesPageProps {
 export default function ItemForm({
   itemType,
   fields,
+  isSingleton,
   data,
   isNew,
 }: SinglesPageProps) {
@@ -55,7 +57,7 @@ export default function ItemForm({
 
   const defaultValues = useMemo(() => {
     return {
-      id: data?.id ?? "",
+      id: isSingleton ? "default" : (data?.id ?? ""),
       isDraft: String(data?.isDraft ?? false),
       ...Object.fromEntries(
         Object.keys(fields).map((key) => {
@@ -208,7 +210,9 @@ export default function ItemForm({
             return (
               <FormItem
                 id="id"
-                className={cn(data?.id === "default" && "hidden")}
+                className={cn(
+                  (data?.id === "default" || isSingleton) && "hidden",
+                )}
               >
                 <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
                 <FormControl>
@@ -249,7 +253,7 @@ export default function ItemForm({
               id="isDraft"
               className={cn(
                 "flex flex-col items-start",
-                data?.id === "default" && "hidden",
+                (data?.id === "default" || isSingleton) && "hidden",
               )}
             >
               <div className="flex flex-row space-x-2">
