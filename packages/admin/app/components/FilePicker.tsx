@@ -85,10 +85,9 @@ export default function FilePicker({
     img.src = url;
   };
 
-  // Load metadata when value changes
   useEffect(() => {
     if (value && isImage(value)) {
-      getImageMetadata(`http://localhost:3001/${value}`);
+      getImageMetadata(value);
     } else {
       setImageMetadata(null);
     }
@@ -110,12 +109,11 @@ export default function FilePicker({
         <div className="space-y-3">
           <div className="border rounded-lg p-4 bg-background">
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 {isImage(value) ? (
                   <div className="w-32 h-24 rounded border overflow-hidden bg-muted flex items-center justify-center">
                     <img
-                      src={`http://localhost:3001/${value}`}
-                      // src={value}
+                      src={value}
                       alt="Preview"
                       className="max-w-full max-h-full object-contain"
                     />
@@ -156,7 +154,7 @@ export default function FilePicker({
                       variant="ghost"
                       size="icon"
                       title="Open File"
-                      className="h-8 w-8 flex-shrink-0 cursor-pointer"
+                      className="h-8 w-8 shrink-0 cursor-pointer"
                       asChild
                     >
                       <Link to={`/${value}`} target="_blank">
@@ -169,7 +167,7 @@ export default function FilePicker({
                       variant="ghost"
                       size="icon"
                       title="Change File"
-                      className="h-8 w-8 flex-shrink-0 cursor-pointer"
+                      className="h-8 w-8 shrink-0 cursor-pointer"
                       onClick={() => setFilesModalOpen(true)}
                       disabled={isLoading}
                     >
@@ -180,7 +178,7 @@ export default function FilePicker({
                       variant="ghost"
                       size="icon"
                       title="Remove File"
-                      className="h-8 w-8 flex-shrink-0 cursor-pointer"
+                      className="h-8 w-8 shrink-0 cursor-pointer"
                       onClick={handleClear}
                       disabled={isLoading}
                     >
