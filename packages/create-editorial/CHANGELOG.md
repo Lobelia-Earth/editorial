@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.13.0
+
+### Minor Changes
+
+- b9794dd: Improved file picker. Now shows file info and a preview version for images.
+
 ## 6.12.2
 
 ### Patch Changes
