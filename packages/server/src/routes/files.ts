@@ -290,7 +290,9 @@ export async function createFilesRoutes(config: EditorialConfig) {
         for (const file of fileArray) {
           if (file instanceof File) {
             if (file.size >= 1e6) {
-              return c.json({ error: "File too large" }, 400);
+              await largeFilesHandler.upload(file, { path: targetPath });
+              uploadedFiles.push(file.name);
+              continue;
             }
 
             const fileName = file.name;

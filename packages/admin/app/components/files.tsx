@@ -462,27 +462,33 @@ export default function Files({ disableActions, onChange }: FilesProps) {
   // New: delete confirmation target (relativePath)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = event.target.files;
-    if (!files) return;
-
+  const handleUpload = async ({
+    files,
+    path,
+  }: {
+    files: FileList;
+    path?: string;
+  }) => {
     try {
-      await uploadFiles({ files }).unwrap();
+      await uploadFiles({ files, path }).unwrap();
+      toast.success("Files uploaded", { duration: 2000 });
     } catch (error) {
       console.error("Upload failed:", error);
       toast.error("Upload failed", { duration: 2000 });
     }
   };
 
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    await handleUpload({ files });
+  };
+
   const handleDirectoryUpload = async (path: string, files: FileList) => {
-    try {
-      await uploadFiles({ files, path }).unwrap();
-    } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error("Upload failed", { duration: 2000 });
-    }
+    await handleUpload({ files, path });
   };
 
   const cancelCreate = () => setCreateTarget(null);
