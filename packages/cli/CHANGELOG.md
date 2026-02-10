@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.13.2
+
+### Patch Changes
+
+- bf07080: Fix upload types
+- Updated dependencies [bf07080]
+  - @isardsat/editorial-server@6.13.2
+
 ## 6.13.1
 
 ### Patch Changes

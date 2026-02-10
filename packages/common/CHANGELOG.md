@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.13.2
+
+### Patch Changes
+
+- bf07080: Fix upload types
+
 ## 6.13.1
 
 ### Patch Changes
