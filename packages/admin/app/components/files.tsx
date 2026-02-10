@@ -128,7 +128,9 @@ function RootCreateRow({
 export interface TreeNodeProps {
   node: EditorialFiles[number];
   level?: number;
-  onDelete: (path: string) => void;
+
+  onDelete: (relativePath: string) => void;
+
   onChange?: (value: string) => void;
   disableActions?: boolean;
   onUpload?: (path: string, files: FileList) => void;
@@ -137,6 +139,12 @@ export interface TreeNodeProps {
   onStartCreateInDirectory: (dirRelativePath: string) => void;
   onConfirmCreateInDirectory: (dirRelativePath: string, name: string) => void;
   onCancelCreate: () => void;
+
+  deleteTarget: string | null;
+  onStartDelete: (relativePath: string) => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: (relativePath: string) => void;
+  isDeleting: boolean;
 }
 
 const TreeNode = ({
@@ -150,6 +158,11 @@ const TreeNode = ({
   onStartCreateInDirectory,
   onConfirmCreateInDirectory,
   onCancelCreate,
+  deleteTarget,
+  onStartDelete,
+  onCancelDelete,
+  onConfirmDelete,
+  isDeleting,
 }: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [draftFolderName, setDraftFolderName] = useState("");
@@ -166,6 +179,8 @@ const TreeNode = ({
     isDirectory &&
     createTarget.path === node.relativePath;
 
+  const isConfirmingDeleteHere = deleteTarget === node.relativePath;
+
   useEffect(() => {
     if (isCreatingHere) setDraftFolderName("");
   }, [isCreatingHere]);
@@ -178,9 +193,7 @@ const TreeNode = ({
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = event.target.files;
-    if (files && onUpload) {
-      onUpload(node.relativePath, files);
-    }
+    if (files && onUpload) onUpload(node.relativePath, files);
   };
 
   const confirmCreateHere = () => {
@@ -192,7 +205,10 @@ const TreeNode = ({
       <Comp
         to={`/${node.relativePath}`}
         target="_blank"
-        className="flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer"
+        className={clsx(
+          "flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer",
+          isConfirmingDeleteHere && "bg-red-50 hover:bg-red-50",
+        )}
         style={{ paddingLeft: `calc(0.5rem + ${level * 20}px)` }}
         onClick={
           isDirectory
@@ -308,27 +324,61 @@ const TreeNode = ({
               <span className="sr-only">Copy file URL</span>
             </button>
 
-            <button
-              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onDelete(node.path);
-              }}
-              title={`Delete this ${isDirectory ? "folder" : "file"}`}
-            >
-              <Trash size={16} />
-              <span className="sr-only">
-                Delete this {isDirectory ? "folder" : "file"}
-              </span>
-            </button>
+            {!isConfirmingDeleteHere ? (
+              <button
+                className="hover:text-red-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onStartDelete(node.relativePath);
+                }}
+                title={`Delete this ${isDirectory ? "folder" : "file"}`}
+              >
+                <Trash size={16} />
+                <span className="sr-only">
+                  Delete this {isDirectory ? "folder" : "file"}
+                </span>
+              </button>
+            ) : (
+              <div
+                className="flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="p-1 hover:bg-muted rounded-sm disabled:opacity-50 text-red-600 cursor-pointer"
+                  title="Confirm delete"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onConfirmDelete(node.relativePath);
+                  }}
+                  disabled={isDeleting}
+                >
+                  <Check size={16} />
+                  <span className="sr-only">Confirm delete</span>
+                </button>
+
+                <button
+                  className="p-1 hover:bg-muted rounded-sm disabled:opacity-50 cursor-pointer"
+                  title="Cancel"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onCancelDelete();
+                  }}
+                  disabled={isDeleting}
+                >
+                  <X size={16} />
+                  <span className="sr-only">Cancel delete</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Comp>
 
       {isDirectory && isExpanded && (
         <div>
-          {/* Inline "new folder" row inside this directory */}
           {!disableActions && isCreatingHere && (
             <div
               className="flex items-center gap-2 h-10 p-2"
@@ -382,6 +432,11 @@ const TreeNode = ({
               onStartCreateInDirectory={onStartCreateInDirectory}
               onConfirmCreateInDirectory={onConfirmCreateInDirectory}
               onCancelCreate={onCancelCreate}
+              deleteTarget={deleteTarget}
+              onStartDelete={onStartDelete}
+              onCancelDelete={onCancelDelete}
+              onConfirmDelete={onConfirmDelete}
+              isDeleting={isDeleting}
             />
           ))}
         </div>
@@ -397,11 +452,15 @@ export interface FilesProps {
 
 export default function Files({ disableActions, onChange }: FilesProps) {
   const { data: files } = useGetFilesQuery();
-  const [triggerDelete] = useDeleteFileMutation();
+
+  const [triggerDelete, deleteState] = useDeleteFileMutation();
   const [uploadFiles] = useUploadFilesMutation();
   const [createDirectory, createDirectoryState] = useCreateDirectoryMutation();
 
   const [createTarget, setCreateTarget] = useState<CreateTarget>(null);
+
+  // New: delete confirmation target (relativePath)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -467,6 +526,29 @@ export default function Files({ disableActions, onChange }: FilesProps) {
     }
   };
 
+  const handleDelete = async (relativePath: string) => {
+    try {
+      await triggerDelete(relativePath).unwrap();
+      toast.success("Moved to deleted", { duration: 2000 });
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error("Delete failed", { duration: 2000 });
+    }
+  };
+
+  const startDelete = (relativePath: string) => {
+    setDeleteTarget(relativePath);
+  };
+
+  const cancelDelete = () => {
+    setDeleteTarget(null);
+  };
+
+  const confirmDelete = async (relativePath: string) => {
+    await handleDelete(relativePath);
+    setDeleteTarget(null);
+  };
+
   const fileList = useMemo(
     () =>
       files
@@ -479,7 +561,7 @@ export default function Files({ disableActions, onChange }: FilesProps) {
           <TreeNode
             key={file.name}
             node={file}
-            onDelete={triggerDelete}
+            onDelete={handleDelete}
             onChange={onChange}
             disableActions={disableActions}
             onUpload={handleDirectoryUpload}
@@ -489,9 +571,21 @@ export default function Files({ disableActions, onChange }: FilesProps) {
             }
             onConfirmCreateInDirectory={confirmCreateInDirectory}
             onCancelCreate={cancelCreate}
+            deleteTarget={deleteTarget}
+            onStartDelete={startDelete}
+            onCancelDelete={cancelDelete}
+            onConfirmDelete={confirmDelete}
+            isDeleting={deleteState.isLoading}
           />
         )),
-    [files, disableActions, onChange, createTarget],
+    [
+      files,
+      disableActions,
+      onChange,
+      createTarget,
+      deleteTarget,
+      deleteState.isLoading,
+    ],
   );
 
   return (
@@ -527,6 +621,7 @@ export default function Files({ disableActions, onChange }: FilesProps) {
               onClick={() => setCreateTarget({ kind: "root" })}
               className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
               title="Create Folder"
+              disabled={createDirectoryState.isLoading}
             >
               <FolderPlus size={16} />
               <span className="sr-only">Create folder</span>
