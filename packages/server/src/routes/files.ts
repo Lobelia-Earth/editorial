@@ -8,7 +8,7 @@ import {
 } from "@isardsat/editorial-common";
 import { readdirSync, statSync } from "node:fs";
 import { access, constants, mkdir, rename, writeFile } from "node:fs/promises";
-import { basename, join, normalize, relative } from "node:path";
+import { basename, dirname, join, normalize, relative } from "node:path";
 
 export async function createFilesRoutes(config: EditorialConfig) {
   const app = new OpenAPIHono();
@@ -92,13 +92,13 @@ export async function createFilesRoutes(config: EditorialConfig) {
 
       function mergeDirectoryTrees(
         localFiles: EditorialFiles,
-        largeFiles: EditorialFiles
+        largeFiles: EditorialFiles,
       ): EditorialFiles {
         const merged: EditorialFiles = [...localFiles];
 
         for (const largeFile of largeFiles) {
           const existingIndex = merged.findIndex(
-            (file) => file.name === largeFile.name && file.type === "directory"
+            (file) => file.name === largeFile.name && file.type === "directory",
           );
 
           if (
@@ -111,7 +111,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
               ...existingDir,
               children: mergeDirectoryTrees(
                 existingDir.children || [],
-                largeFile.children || []
+                largeFile.children || [],
               ),
             };
           } else {
@@ -132,12 +132,12 @@ export async function createFilesRoutes(config: EditorialConfig) {
       const largeFiles = await largeFilesHandler.list();
       const mergedFiles = mergeDirectoryTrees(
         files,
-        largeFiles as EditorialFiles
+        largeFiles as EditorialFiles,
       );
       const totalSize = calculateTotalSize(mergedFiles);
 
       return c.json({ files: mergedFiles, totalSize });
-    }
+    },
   );
 
   app.openapi(
@@ -149,6 +149,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
           content: {
             "application/json": {
               schema: z.object({
+                // relative to publicDirPath, e.g. "images/2026/a.png" or "images/2026"
                 path: z.string(),
               }),
             },
@@ -158,56 +159,45 @@ export async function createFilesRoutes(config: EditorialConfig) {
       },
       responses: {
         200: {
-          content: {
-            "application/json": {
-              schema: z.boolean(),
-            },
-          },
-          description: "",
+          content: { "application/json": { schema: z.boolean() } },
+          description: "Deleted (moved to deleted folder)",
         },
         400: {
           content: {
-            "application/json": {
-              schema: z.object({
-                error: z.string(),
-              }),
-            },
+            "application/json": { schema: z.object({ error: z.string() }) },
           },
           description: "Invalid file path",
         },
         404: {
           content: {
-            "application/json": {
-              schema: z.object({
-                error: z.string(),
-              }),
-            },
+            "application/json": { schema: z.object({ error: z.string() }) },
           },
           description: "File not found",
         },
         500: {
           content: {
-            "application/json": {
-              schema: z.object({
-                error: z.string(),
-              }),
-            },
+            "application/json": { schema: z.object({ error: z.string() }) },
           },
           description: "Server error",
         },
       },
     }),
     async (c) => {
-      const { path: filePath } = c.req.valid("json");
+      const { path: relativePathInput } = c.req.valid("json");
 
       try {
-        const normalizedPath = normalize(filePath);
+        const rel = normalize(relativePathInput).replace(/^([/\\])+/, "");
 
-        if (!normalizedPath.startsWith(publicDirPath)) {
+        const absoluteSource = normalize(join(publicDirPath, rel));
+
+        const publicRoot = normalize(
+          publicDirPath + (publicDirPath.endsWith("/") ? "" : "/"),
+        );
+        if (!absoluteSource.startsWith(publicRoot)) {
           return c.json({ error: "Invalid file path" }, 400);
         }
 
-        const exists = await access(filePath, constants.W_OK)
+        const exists = await access(absoluteSource, constants.F_OK)
           .then(() => true)
           .catch(() => false);
 
@@ -215,18 +205,18 @@ export async function createFilesRoutes(config: EditorialConfig) {
           return c.json({ error: "File not found" }, 404);
         }
 
-        // Move to deleted directory
-        await mkdir(deletedDirPath, { recursive: true });
-        await rename(filePath, join(deletedDirPath, basename(filePath)));
+        const absoluteTarget = normalize(join(deletedDirPath, rel));
+
+        await mkdir(dirname(absoluteTarget), { recursive: true });
+        await rename(absoluteSource, absoluteTarget);
 
         return c.json(true, 200);
       } catch (err) {
         console.error("Delete failed:", err);
         return c.json({ error: "Server error" }, 500);
       }
-    }
+    },
   );
-
   app.openapi(
     createRoute({
       method: "put",
@@ -300,7 +290,9 @@ export async function createFilesRoutes(config: EditorialConfig) {
         for (const file of fileArray) {
           if (file instanceof File) {
             if (file.size >= 1e6) {
-              return c.json({ error: "File too large" }, 400);
+              await largeFilesHandler.upload(file, { path: targetPath });
+              uploadedFiles.push(file.name);
+              continue;
             }
 
             const fileName = file.name;
@@ -317,7 +309,109 @@ export async function createFilesRoutes(config: EditorialConfig) {
         console.error("Upload failed:", err);
         return c.json({ error: "Server error" }, 500);
       }
-    }
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/files/directory",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                // path relative to publicDirPath, e.g. "images/2026"
+                path: z.string().optional().default(""),
+                // directory name to create, e.g. "new-folder"
+                name: z.string().min(1),
+              }),
+            },
+          },
+          required: true,
+        },
+      },
+      responses: {
+        201: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                relativePath: z.string(),
+              }),
+            },
+          },
+          description: "Directory created",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: "Invalid directory path/name",
+        },
+        409: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: "Directory already exists",
+        },
+        500: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: "Server error",
+        },
+      },
+    }),
+    async (c) => {
+      try {
+        const { path, name } = c.req.valid("json");
+
+        // Avoid path traversal and invalid names
+        if (
+          name.includes("/") ||
+          name.includes("\\") ||
+          name === "." ||
+          name === ".."
+        ) {
+          return c.json({ error: "Invalid directory name" }, 400);
+        }
+
+        const targetDir = join(publicDirPath, path ?? "", name);
+        const normalizedTargetDir = normalize(targetDir);
+
+        if (!normalizedTargetDir.startsWith(publicDirPath)) {
+          return c.json({ error: "Invalid directory path" }, 400);
+        }
+
+        const exists = await access(normalizedTargetDir, constants.F_OK)
+          .then(() => true)
+          .catch(() => false);
+
+        if (exists) {
+          return c.json({ error: "Directory already exists" }, 409);
+        }
+
+        await mkdir(normalizedTargetDir, { recursive: true });
+
+        const relativePath = relative(publicDirPath, normalizedTargetDir);
+        return c.json({ relativePath }, 201);
+      } catch (err) {
+        console.error("Create directory failed:", err);
+        return c.json({ error: "Server error" }, 500);
+      }
+    },
   );
 
   return app;

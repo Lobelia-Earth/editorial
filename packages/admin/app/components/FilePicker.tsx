@@ -60,7 +60,7 @@ export default function FilePicker({
             format:
               blob.type.split("/")[1]?.toUpperCase() ||
               url.split(".").pop()?.toUpperCase(),
-            name: url.split("/").pop(),
+            name: url,
           });
         })
         .catch((err) => {
@@ -70,7 +70,7 @@ export default function FilePicker({
             width: img.width,
             height: img.height,
             format: url.split(".").pop()?.toUpperCase(),
-            name: url.split("/").pop(),
+            name: url,
           });
         });
     };
@@ -78,7 +78,7 @@ export default function FilePicker({
       console.error("Error loading image for metadata:", err);
       // Fallback for invalid images
       setImageMetadata({
-        name: url.split("/").pop(),
+        name: url,
         format: url.split(".").pop()?.toUpperCase(),
       });
     };
