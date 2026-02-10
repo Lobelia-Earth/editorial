@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 import { Badge } from "./ui/badge";
 
 const textFileSuffixes = ["txt", "md", "html", "pdf"] as const;
@@ -197,6 +198,9 @@ const TreeNode = ({
                 event.preventDefault();
                 event.stopPropagation();
                 navigator.clipboard.writeText(node.path);
+                toast.success("File URL copied to clipboard", {
+                  duration: 2000,
+                });
               }}
               title="Copy file URL"
             >
