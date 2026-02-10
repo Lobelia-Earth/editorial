@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.13.1
+
+### Patch Changes
+
+- 9d96ec7: Fix file management
+- Updated dependencies [9d96ec7]
+  - @isardsat/editorial-admin@6.13.1
+  - @isardsat/editorial-common@6.13.1
+
 ## 6.13.0
 
 ### Minor Changes

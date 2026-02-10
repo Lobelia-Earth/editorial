@@ -1,5 +1,11 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.13.1
+
+### Patch Changes
+
+- 9d96ec7: Fix file management
+
 ## 6.13.0
 
 ### Minor Changes
