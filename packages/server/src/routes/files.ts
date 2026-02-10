@@ -92,13 +92,13 @@ export async function createFilesRoutes(config: EditorialConfig) {
 
       function mergeDirectoryTrees(
         localFiles: EditorialFiles,
-        largeFiles: EditorialFiles
+        largeFiles: EditorialFiles,
       ): EditorialFiles {
         const merged: EditorialFiles = [...localFiles];
 
         for (const largeFile of largeFiles) {
           const existingIndex = merged.findIndex(
-            (file) => file.name === largeFile.name && file.type === "directory"
+            (file) => file.name === largeFile.name && file.type === "directory",
           );
 
           if (
@@ -111,7 +111,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
               ...existingDir,
               children: mergeDirectoryTrees(
                 existingDir.children || [],
-                largeFile.children || []
+                largeFile.children || [],
               ),
             };
           } else {
@@ -132,12 +132,12 @@ export async function createFilesRoutes(config: EditorialConfig) {
       const largeFiles = await largeFilesHandler.list();
       const mergedFiles = mergeDirectoryTrees(
         files,
-        largeFiles as EditorialFiles
+        largeFiles as EditorialFiles,
       );
       const totalSize = calculateTotalSize(mergedFiles);
 
       return c.json({ files: mergedFiles, totalSize });
-    }
+    },
   );
 
   app.openapi(
@@ -224,7 +224,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
         console.error("Delete failed:", err);
         return c.json({ error: "Server error" }, 500);
       }
-    }
+    },
   );
 
   app.openapi(
@@ -317,7 +317,109 @@ export async function createFilesRoutes(config: EditorialConfig) {
         console.error("Upload failed:", err);
         return c.json({ error: "Server error" }, 500);
       }
-    }
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/files/directory",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                // path relative to publicDirPath, e.g. "images/2026"
+                path: z.string().optional().default(""),
+                // directory name to create, e.g. "new-folder"
+                name: z.string().min(1),
+              }),
+            },
+          },
+          required: true,
+        },
+      },
+      responses: {
+        201: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                relativePath: z.string(),
+              }),
+            },
+          },
+          description: "Directory created",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: "Invalid directory path/name",
+        },
+        409: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: "Directory already exists",
+        },
+        500: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                error: z.string(),
+              }),
+            },
+          },
+          description: "Server error",
+        },
+      },
+    }),
+    async (c) => {
+      try {
+        const { path, name } = c.req.valid("json");
+
+        // Avoid path traversal and invalid names
+        if (
+          name.includes("/") ||
+          name.includes("\\") ||
+          name === "." ||
+          name === ".."
+        ) {
+          return c.json({ error: "Invalid directory name" }, 400);
+        }
+
+        const targetDir = join(publicDirPath, path ?? "", name);
+        const normalizedTargetDir = normalize(targetDir);
+
+        if (!normalizedTargetDir.startsWith(publicDirPath)) {
+          return c.json({ error: "Invalid directory path" }, 400);
+        }
+
+        const exists = await access(normalizedTargetDir, constants.F_OK)
+          .then(() => true)
+          .catch(() => false);
+
+        if (exists) {
+          return c.json({ error: "Directory already exists" }, 409);
+        }
+
+        await mkdir(normalizedTargetDir, { recursive: true });
+
+        const relativePath = relative(publicDirPath, normalizedTargetDir);
+        return c.json({ relativePath }, 201);
+      } catch (err) {
+        console.error("Create directory failed:", err);
+        return c.json({ error: "Server error" }, 500);
+      }
+    },
   );
 
   return app;

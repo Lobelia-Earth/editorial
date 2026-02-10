@@ -16,6 +16,7 @@ import {
   FileText,
   Folder,
   FolderOpen,
+  FolderPlus,
   Trash,
   Upload,
 } from "lucide-react";
@@ -170,25 +171,26 @@ const TreeNode = ({
                   <span className="sr-only">Upload files to this folder</span>
                 </label>
 
-                {/* <button
-                  className="hover:text-green-500 p-1 hover:bg-muted rounded-sm"
+                <button
+                  className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
                     handleDirectoryCreateFolder();
                   }}
+                  title="Create Folder"
                 >
                   <FolderPlus size={16} />
                   <span className="sr-only">
                     Create folder in this directory
                   </span>
-                </button> */}
+                </button>
               </>
             )}
 
             <button
               className={clsx(
-                `hover:text-yellow-500 p-1 hover:bg-muted rounded-sm`,
+                `hover:text-yellow-500 p-1 hover:bg-muted rounded-sm cursor-pointer`,
                 isDirectory && "hidden",
               )}
               onClick={(event) => {
@@ -196,18 +198,20 @@ const TreeNode = ({
                 event.stopPropagation();
                 navigator.clipboard.writeText(node.path);
               }}
+              title="Copy file URL"
             >
               <Copy size={16} />
               <span className="sr-only">Copy file URL</span>
             </button>
 
             <button
-              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
+              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 onDelete(node.path);
               }}
+              title={`Delete this ${isDirectory ? "folder" : "file"}`}
             >
               <Trash size={16} />
               <span className="sr-only">
@@ -342,18 +346,20 @@ export default function Files({ disableActions, onChange }: FilesProps) {
             <label
               htmlFor="file-upload"
               className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
+              title="Upload File"
             >
               <Upload size={16} />
               <span className="sr-only">Upload files</span>
             </label>
 
-            {/* <button
+            <button
               onClick={handleCreateFolder}
-              className="hover:text-green-500 p-1 hover:bg-muted rounded-sm"
+              className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
+              title="Create Folder"
             >
               <FolderPlus size={16} />
               <span className="sr-only">Create folder</span>
-            </button> */}
+            </button>
           </div>
         )}
       </div>
