@@ -13,7 +13,7 @@ import type {
 export interface LargeFileHandler {
   list: () => Promise<object[]>;
   delete: () => Promise<void>;
-  upload: () => Promise<void>;
+  upload: (file: unknown, options?: unknown) => Promise<void>;
 }
 
 export type EditorialConfig = z.infer<typeof EditorialConfigSchema>;
