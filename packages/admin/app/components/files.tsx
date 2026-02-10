@@ -9,6 +9,7 @@ import { cn, formatFileSize } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
 import clsx from "clsx";
 import {
+  Check,
   ChevronDown,
   Copy,
   File,
@@ -19,8 +20,9 @@ import {
   FolderPlus,
   Trash,
   Upload,
+  X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { Badge } from "./ui/badge";
@@ -41,9 +43,87 @@ const fileTypes = [
   },
 ] as const;
 
-const defaultFileType = {
-  Icon: File,
-};
+const defaultFileType = { Icon: File };
+
+type CreateTarget =
+  | { kind: "root" }
+  | { kind: "directory"; path: string }
+  | null;
+
+function isValidFolderName(name: string) {
+  if (!name.trim()) return false;
+  if (name === "." || name === "..") return false;
+  if (name.includes("/") || name.includes("\\")) return false;
+  return true;
+}
+
+function RootCreateRow({
+  visible,
+  onConfirm,
+  onCancel,
+  disabled,
+}: {
+  visible: boolean;
+  onConfirm: (name: string) => void;
+  onCancel: () => void;
+  disabled?: boolean;
+}) {
+  const [draft, setDraft] = useState("");
+
+  useEffect(() => {
+    if (visible) setDraft("");
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      className="flex items-center gap-2 h-10 p-2 border-b"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="w-4" />
+      <div className="flex flex-grow w-24 items-center gap-2 ml-2">
+        <Folder size={16} className="text-yellow-500" />
+        <input
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onConfirm(draft);
+            if (e.key === "Escape") onCancel();
+          }}
+          placeholder="New folder name"
+          className="h-8 flex-1 rounded-md border px-2 text-sm"
+          disabled={disabled}
+        />
+      </div>
+
+      <div className="flex w-24 justify-end gap-2">
+        <span className="text-sm text-gray-500">--</span>
+      </div>
+
+      <div className="flex items-center gap-1 ml-4">
+        <button
+          className="p-1 hover:bg-muted rounded-sm disabled:opacity-50"
+          title="Create"
+          onClick={() => onConfirm(draft)}
+          disabled={disabled || !draft.trim()}
+        >
+          <Check size={16} />
+        </button>
+
+        <button
+          className="p-1 hover:bg-muted rounded-sm"
+          title="Cancel"
+          onClick={onCancel}
+          disabled={disabled}
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export interface TreeNodeProps {
   node: EditorialFiles[number];
@@ -52,7 +132,11 @@ export interface TreeNodeProps {
   onChange?: (value: string) => void;
   disableActions?: boolean;
   onUpload?: (path: string, files: FileList) => void;
-  onCreateFolder?: (path: string, folderName: string) => void;
+
+  createTarget: CreateTarget;
+  onStartCreateInDirectory: (dirRelativePath: string) => void;
+  onConfirmCreateInDirectory: (dirRelativePath: string, name: string) => void;
+  onCancelCreate: () => void;
 }
 
 const TreeNode = ({
@@ -62,9 +146,13 @@ const TreeNode = ({
   onChange,
   disableActions,
   onUpload,
-  onCreateFolder,
+  createTarget,
+  onStartCreateInDirectory,
+  onConfirmCreateInDirectory,
+  onCancelCreate,
 }: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [draftFolderName, setDraftFolderName] = useState("");
 
   const { data: config } = useGetConfigQuery();
 
@@ -73,10 +161,17 @@ const TreeNode = ({
 
   const Comp = isDirectory || onChange ? "div" : Link;
 
+  const isCreatingHere =
+    createTarget?.kind === "directory" &&
+    isDirectory &&
+    createTarget.path === node.relativePath;
+
+  useEffect(() => {
+    if (isCreatingHere) setDraftFolderName("");
+  }, [isCreatingHere]);
+
   const toggleExpand = () => {
-    if (isDirectory) {
-      setIsExpanded(!isExpanded);
-    }
+    if (isDirectory) setIsExpanded(!isExpanded);
   };
 
   const handleDirectoryUpload = (
@@ -84,15 +179,12 @@ const TreeNode = ({
   ) => {
     const files = event.target.files;
     if (files && onUpload) {
-      onUpload(node.path, files);
+      onUpload(node.relativePath, files);
     }
   };
 
-  const handleDirectoryCreateFolder = () => {
-    const folderName = prompt("Enter folder name:");
-    if (folderName && onCreateFolder) {
-      onCreateFolder(node.path, folderName);
-    }
+  const confirmCreateHere = () => {
+    onConfirmCreateInDirectory(node.relativePath, draftFolderName);
   };
 
   return (
@@ -100,7 +192,7 @@ const TreeNode = ({
       <Comp
         to={`/${node.relativePath}`}
         target="_blank"
-        className={`flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer`}
+        className="flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer"
         style={{ paddingLeft: `calc(0.5rem + ${level * 20}px)` }}
         onClick={
           isDirectory
@@ -136,6 +228,7 @@ const TreeNode = ({
           ) : (
             <fileType.Icon size={16} className=" text-gray-500" />
           )}
+
           <span className="flex gap-2 items-center text-sm whitespace-nowrap text-ellipsis overflow-hidden w-full">
             {!isDirectory && node.isLarge && (
               <Badge variant="outline">Large</Badge>
@@ -159,14 +252,12 @@ const TreeNode = ({
                   multiple
                   onChange={handleDirectoryUpload}
                   className="hidden"
-                  id={`dir-upload-${node.name}-${level}`}
+                  id={`dir-upload-${node.relativePath}-${level}`}
                 />
                 <label
-                  htmlFor={`dir-upload-${node.name}-${level}`}
+                  htmlFor={`dir-upload-${node.relativePath}-${level}`}
                   className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                  }}
+                  onClick={(event) => event.stopPropagation()}
                 >
                   <Upload size={16} />
                   <span className="sr-only">Upload files to this folder</span>
@@ -177,7 +268,8 @@ const TreeNode = ({
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    handleDirectoryCreateFolder();
+                    setIsExpanded(true);
+                    onStartCreateInDirectory(node.relativePath);
                   }}
                   title="Create Folder"
                 >
@@ -191,16 +283,24 @@ const TreeNode = ({
 
             <button
               className={clsx(
-                `hover:text-yellow-500 p-1 hover:bg-muted rounded-sm cursor-pointer`,
+                "hover:text-yellow-500 p-1 hover:bg-muted rounded-sm cursor-pointer",
                 isDirectory && "hidden",
               )}
-              onClick={(event) => {
+              onClick={async (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                navigator.clipboard.writeText(node.path);
-                toast.success("File URL copied to clipboard", {
-                  duration: 2000,
-                });
+
+                try {
+                  await navigator.clipboard.writeText(node.path);
+                  toast.success("File URL copied to clipboard", {
+                    duration: 2000,
+                  });
+                } catch (e) {
+                  console.error("Copy failed:", e);
+                  toast.error("Failed to copy to clipboard", {
+                    duration: 2000,
+                  });
+                }
               }}
               title="Copy file URL"
             >
@@ -222,15 +322,54 @@ const TreeNode = ({
                 Delete this {isDirectory ? "folder" : "file"}
               </span>
             </button>
-
-            {/* <Ellipsis size={14} className="text-gray-400" /> */}
           </div>
         )}
       </Comp>
 
-      {isDirectory && isExpanded && node.children && (
+      {isDirectory && isExpanded && (
         <div>
-          {node.children.map((childNode, index) => (
+          {/* Inline "new folder" row inside this directory */}
+          {!disableActions && isCreatingHere && (
+            <div
+              className="flex items-center gap-2 h-10 p-2"
+              style={{ paddingLeft: `calc(0.5rem + ${(level + 1) * 20}px)` }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-4" />
+              <Folder size={16} className="text-yellow-500" />
+
+              <input
+                autoFocus
+                value={draftFolderName}
+                onChange={(e) => setDraftFolderName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") confirmCreateHere();
+                  if (e.key === "Escape") onCancelCreate();
+                }}
+                placeholder="New folder name"
+                className="h-8 flex-1 rounded-md border px-2 text-sm"
+              />
+
+              <button
+                className="p-1 hover:bg-muted rounded-sm disabled:opacity-50"
+                title="Create"
+                onClick={confirmCreateHere}
+                disabled={!draftFolderName.trim()}
+              >
+                <Check size={16} />
+              </button>
+
+              <button
+                className="p-1 hover:bg-muted rounded-sm"
+                title="Cancel"
+                onClick={onCancelCreate}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
+          {node.children?.map((childNode, index) => (
             <TreeNode
               key={`${childNode.name}-${index}`}
               node={childNode}
@@ -239,7 +378,10 @@ const TreeNode = ({
               onChange={onChange}
               disableActions={disableActions}
               onUpload={onUpload}
-              onCreateFolder={onCreateFolder}
+              createTarget={createTarget}
+              onStartCreateInDirectory={onStartCreateInDirectory}
+              onConfirmCreateInDirectory={onConfirmCreateInDirectory}
+              onCancelCreate={onCancelCreate}
             />
           ))}
         </div>
@@ -257,29 +399,21 @@ export default function Files({ disableActions, onChange }: FilesProps) {
   const { data: files } = useGetFilesQuery();
   const [triggerDelete] = useDeleteFileMutation();
   const [uploadFiles] = useUploadFilesMutation();
-  const [createDirectory] = useCreateDirectoryMutation();
+  const [createDirectory, createDirectoryState] = useCreateDirectoryMutation();
+
+  const [createTarget, setCreateTarget] = useState<CreateTarget>(null);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = event.target.files;
-    if (files) {
-      try {
-        await uploadFiles({ files }).unwrap();
-      } catch (error) {
-        console.error("Upload failed:", error);
-      }
-    }
-  };
+    if (!files) return;
 
-  const handleCreateFolder = async () => {
-    const folderName = prompt("Enter folder name:");
-    if (folderName) {
-      try {
-        await createDirectory({ name: folderName }).unwrap();
-      } catch (error) {
-        console.error("Create folder failed:", error);
-      }
+    try {
+      await uploadFiles({ files }).unwrap();
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Upload failed", { duration: 2000 });
     }
   };
 
@@ -288,17 +422,48 @@ export default function Files({ disableActions, onChange }: FilesProps) {
       await uploadFiles({ files, path }).unwrap();
     } catch (error) {
       console.error("Upload failed:", error);
+      toast.error("Upload failed", { duration: 2000 });
     }
   };
 
-  const handleDirectoryCreateFolder = async (
-    path: string,
-    folderName: string,
-  ) => {
+  const cancelCreate = () => setCreateTarget(null);
+
+  const confirmCreateAtRoot = async (name: string) => {
+    const trimmed = name.trim();
+
+    if (!isValidFolderName(trimmed)) {
+      toast.error("Invalid folder name", { duration: 2000 });
+      return;
+    }
+
     try {
-      await createDirectory({ name: folderName, path }).unwrap();
+      await createDirectory({ name: trimmed, path: "" }).unwrap();
+      toast.success("Folder created", { duration: 2000 });
+      setCreateTarget(null);
     } catch (error) {
       console.error("Create folder failed:", error);
+      toast.error("Create folder failed", { duration: 2000 });
+    }
+  };
+
+  const confirmCreateInDirectory = async (
+    dirRelativePath: string,
+    name: string,
+  ) => {
+    const trimmed = name.trim();
+
+    if (!isValidFolderName(trimmed)) {
+      toast.error("Invalid folder name", { duration: 2000 });
+      return;
+    }
+
+    try {
+      await createDirectory({ name: trimmed, path: dirRelativePath }).unwrap();
+      toast.success("Folder created", { duration: 2000 });
+      setCreateTarget(null);
+    } catch (error) {
+      console.error("Create folder failed:", error);
+      toast.error("Create folder failed", { duration: 2000 });
     }
   };
 
@@ -308,7 +473,6 @@ export default function Files({ disableActions, onChange }: FilesProps) {
         ?.toSorted((a, b) => {
           if (a.type === "directory" && b.type !== "directory") return -1;
           if (a.type !== "directory" && b.type === "directory") return 1;
-
           return a.name.localeCompare(b.name);
         })
         .map((file) => (
@@ -319,17 +483,20 @@ export default function Files({ disableActions, onChange }: FilesProps) {
             onChange={onChange}
             disableActions={disableActions}
             onUpload={handleDirectoryUpload}
-            onCreateFolder={handleDirectoryCreateFolder}
+            createTarget={createTarget}
+            onStartCreateInDirectory={(dirRelativePath) =>
+              setCreateTarget({ kind: "directory", path: dirRelativePath })
+            }
+            onConfirmCreateInDirectory={confirmCreateInDirectory}
+            onCancelCreate={cancelCreate}
           />
         )),
-    [files, disableActions, onChange],
+    [files, disableActions, onChange, createTarget],
   );
 
   return (
     <div className="overflow-auto h-full max-w-[800px] rounded-xl border">
-      <div
-        className={`sticky top-0 bg-white flex items-center gap-2 py-1 px-2 border-b group`}
-      >
+      <div className="sticky top-0 bg-white flex items-center gap-2 py-1 px-2 border-b group">
         <div className="w-4" />
         <div className="flex flex-grow items-center gap-2 ml-2">
           <span className="text-sm font-semibold">Name</span>
@@ -357,7 +524,7 @@ export default function Files({ disableActions, onChange }: FilesProps) {
             </label>
 
             <button
-              onClick={handleCreateFolder}
+              onClick={() => setCreateTarget({ kind: "root" })}
               className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
               title="Create Folder"
             >
@@ -367,6 +534,15 @@ export default function Files({ disableActions, onChange }: FilesProps) {
           </div>
         )}
       </div>
+
+      {!disableActions && (
+        <RootCreateRow
+          visible={createTarget?.kind === "root"}
+          disabled={createDirectoryState.isLoading}
+          onConfirm={confirmCreateAtRoot}
+          onCancel={cancelCreate}
+        />
+      )}
 
       {fileList}
     </div>
