@@ -12,7 +12,7 @@ export interface FilePickerProps {
   id?: string;
   value: string;
   name: string;
-  register: UseFormRegister<Record<string, string>>;
+  register: UseFormRegister<Record<string, string | string[]>>;
   onChange: (value: string) => void;
 }
 

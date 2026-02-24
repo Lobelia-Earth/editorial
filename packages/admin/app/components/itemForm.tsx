@@ -20,6 +20,7 @@ import {
 import UnsavedChangesGuard from "@/components/unsavedChangesGuard";
 import {
   useCreateObjectMutation,
+  useGetDataQuery,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,17 @@ export interface SinglesPageProps {
   isNew?: boolean;
 }
 
+/**
+ * Checks if the options value is a reference to another field.
+ * References are in the format $key_field
+ */
+function isOptionsReference(options: string[] | undefined): string | null {
+  if (!options || options.length !== 1) return null;
+
+  const match = options[0].match(/^\$(.+)$/);
+  return match ? match[1] : null;
+}
+
 export default function ItemForm({
   itemType,
   fields,
@@ -63,6 +75,7 @@ export default function ItemForm({
 
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
+  const { data: allData } = useGetDataQuery();
 
   useEffect(() => {
     if (!hash) return;
@@ -108,7 +121,7 @@ export default function ItemForm({
         }),
       ),
     };
-  }, [data, fields]);
+  }, [data, fields, isSingleton]);
 
   const validationSchema = useMemo(() => {
     const schemaShape: Record<string, z.ZodTypeAny> = {
@@ -145,7 +158,11 @@ export default function ItemForm({
           fieldSchema = RGBColorSchema;
           break;
         case "select":
-          if (field.options && field.options.length > 0) {
+          // For referenced options, use string validation instead of enum
+          // since the options are dynamic
+          if (isOptionsReference(field.options)) {
+            fieldSchema = z.string();
+          } else if (field.options && field.options.length > 0) {
             fieldSchema = z.enum(field.options as [string, ...string[]]);
           } else {
             fieldSchema = z.string();
@@ -247,6 +264,31 @@ export default function ItemForm({
       Object.entries(fields).filter(([, value]) => value.type === "boolean"),
     [fields],
   );
+
+  // Pre-resolve all field options (including referenced ones)
+  // If options reference another fileds, return the ids of the referenced data items
+  // If options are directly defined, return them as is
+  const resolvedOptionsMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+
+    Object.entries(fields).forEach(([key, field]) => {
+      if (field.type === "select" || field.type === "multiselect") {
+        const referencedKey = isOptionsReference(field.options);
+        if (referencedKey && allData) {
+          const referencedData = allData[referencedKey];
+          if (referencedData) {
+            map[key] = Object.values(referencedData).map((item) => item.id);
+          } else {
+            map[key] = [];
+          }
+        } else {
+          map[key] = field.options ?? [];
+        }
+      }
+    });
+
+    return map;
+  }, [fields, allData]);
 
   return (
     <Form {...form}>
@@ -381,6 +423,9 @@ export default function ItemForm({
         {Object.entries(fields)
           .filter(([, value]) => value.type !== "boolean")
           .map(([key, value]) => {
+            // Get resolved options for select/multiselect fields
+            const resolvedOptions = resolvedOptionsMap[key] ?? [];
+
             return (
               <FormField
                 key={key}
@@ -495,7 +540,7 @@ export default function ItemForm({
                               />
                             </SelectTrigger>
                             <SelectContent>
-                              {value.options?.map((option) => (
+                              {resolvedOptions.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>
@@ -551,8 +596,8 @@ export default function ItemForm({
                                 <SelectValue placeholder="Add option..." />
                               </SelectTrigger>
                               <SelectContent>
-                                {value.options
-                                  ?.filter(
+                                {resolvedOptions
+                                  .filter(
                                     (option) =>
                                       !(field.value as string[])?.includes(
                                         option,
