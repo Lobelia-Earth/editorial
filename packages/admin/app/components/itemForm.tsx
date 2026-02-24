@@ -10,6 +10,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import UnsavedChangesGuard from "@/components/unsavedChangesGuard";
 import {
   useCreateObjectMutation,
@@ -22,7 +29,7 @@ import type {
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { RGBColorSchema } from "@isardsat/editorial-common";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
@@ -83,11 +90,21 @@ export default function ItemForm({
             if (fieldType === "boolean") {
               return [key, String(value)];
             }
+            if (fieldType === "multiselect") {
+              // Keep multiselect as array
+              return [key, Array.isArray(value) ? value : [value]];
+            }
             return [key, String(value)];
           }
 
           // Default values for new items
-          return [key, fieldType === "boolean" ? "false" : ""];
+          if (fieldType === "boolean") {
+            return [key, "false"];
+          }
+          if (fieldType === "multiselect") {
+            return [key, []];
+          }
+          return [key, ""];
         }),
       ),
     };
@@ -127,13 +144,33 @@ export default function ItemForm({
         case "color":
           fieldSchema = RGBColorSchema;
           break;
+        case "select":
+          if (field.options && field.options.length > 0) {
+            fieldSchema = z.enum(field.options as [string, ...string[]]);
+          } else {
+            fieldSchema = z.string();
+          }
+          break;
+        case "multiselect":
+          fieldSchema = z.array(z.string());
+          break;
         default:
           fieldSchema = z.string();
       }
 
       if (field.optional) {
-        fieldSchema = fieldSchema.optional().or(z.literal(""));
-      } else if (field.type !== "boolean") {
+        if (field.type === "multiselect") {
+          // Multiselect is already optional by allowing empty array
+          fieldSchema = fieldSchema.optional();
+        } else {
+          fieldSchema = fieldSchema.optional().or(z.literal(""));
+        }
+      } else if (field.type === "multiselect") {
+        fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
+          1,
+          `${field.displayName} requires at least one selection`,
+        );
+      } else if (field.type !== "boolean" && field.type !== "select") {
         fieldSchema = (fieldSchema as z.ZodString).min(
           1,
           `${field.displayName} is required`,
@@ -146,7 +183,7 @@ export default function ItemForm({
     return z.object(schemaShape);
   }, [fields]);
 
-  const form = useForm<Record<string, string>>({
+  const form = useForm<Record<string, string | string[]>>({
     resolver: zodResolver(validationSchema) as any,
     defaultValues: defaultValues,
   });
@@ -177,7 +214,7 @@ export default function ItemForm({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [form, isNew, onSubmit]);
 
-  async function onSubmit(values: Record<string, string>) {
+  async function onSubmit(values: Record<string, string | string[]>) {
     // Convert field values to their proper types
     const processedValues: Record<string, any> = {
       ...values,
@@ -190,6 +227,7 @@ export default function ItemForm({
       if (field.type === "boolean") {
         processedValues[key] = values[key] === "true";
       }
+      // multiselect values are already arrays, no conversion needed
     });
 
     if (isNew) {
@@ -234,6 +272,7 @@ export default function ItemForm({
                     placeholder="item-id"
                     {...form.register("id")}
                     {...field}
+                    value={field.value as string}
                     onChange={(e) => {
                       const alphanumericValue = e.target.value
                         .toLowerCase()
@@ -366,7 +405,7 @@ export default function ItemForm({
                             name={key}
                             register={form.register}
                             className="h-52"
-                            markdown={field.value}
+                            markdown={field.value as string}
                             onChange={(value, initialChange) => {
                               if (initialChange) return;
 
@@ -383,13 +422,14 @@ export default function ItemForm({
                               value.placeholder ?? "https://example.website/"
                             }
                             {...field}
+                            value={field.value as string}
                           />
                         ) : value.type === "string" && value.isUploadedFile ? (
                           <FilePicker
                             id={key}
                             name={key}
                             register={form.register}
-                            value={field.value}
+                            value={field.value as string}
                             onChange={field.onChange}
                           />
                         ) : value.type === "date" ? (
@@ -397,7 +437,9 @@ export default function ItemForm({
                             id={key}
                             {...form.register(key)}
                             date={
-                              field.value ? new Date(field.value) : undefined
+                              field.value
+                                ? new Date(field.value as string)
+                                : undefined
                             }
                             onDateChange={(date) => {
                               field.onChange(date ? date.toISOString() : "");
@@ -411,7 +453,9 @@ export default function ItemForm({
                               id={key}
                               {...form.register(key)}
                               date={
-                                field.value ? new Date(field.value) : undefined
+                                field.value
+                                  ? new Date(field.value as string)
+                                  : undefined
                               }
                               onDateTimeChange={(date) => {
                                 field.onChange(date ? date.toISOString() : "");
@@ -425,7 +469,7 @@ export default function ItemForm({
                         ) : value.type === "color" ? (
                           <ColorPicker
                             id={key}
-                            value={field.value}
+                            value={field.value as string}
                             onChange={field.onChange}
                             placeholder={value.placeholder}
                           />
@@ -434,16 +478,101 @@ export default function ItemForm({
                             id={key}
                             {...form.register(key, { valueAsNumber: true })}
                             type="number"
-                            value={field.value}
+                            value={field.value as string}
                             onChange={field.onChange}
                             placeholder={value.placeholder}
                           />
+                        ) : value.type === "select" ? (
+                          <Select
+                            value={field.value as string}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger id={key} className="w-full">
+                              <SelectValue
+                                placeholder={
+                                  value.placeholder ?? "Select an option"
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {value.options?.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : value.type === "multiselect" ? (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-wrap gap-2 min-h-[38px] p-2 border rounded-md bg-background">
+                              {(field.value as string[])?.length > 0 ? (
+                                (field.value as string[]).map(
+                                  (selectedValue) => (
+                                    <span
+                                      key={selectedValue}
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                                    >
+                                      {selectedValue}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newValues = (
+                                            field.value as string[]
+                                          ).filter((v) => v !== selectedValue);
+                                          field.onChange(newValues);
+                                        }}
+                                        className="hover:bg-purple-200 rounded-full p-0.5"
+                                      >
+                                        <X size={14} />
+                                        <span className="sr-only">
+                                          Remove {selectedValue}
+                                        </span>
+                                      </button>
+                                    </span>
+                                  ),
+                                )
+                              ) : (
+                                <span className="text-muted-foreground text-sm">
+                                  {value.placeholder ?? "Select options"}
+                                </span>
+                              )}
+                            </div>
+                            <Select
+                              value=""
+                              onValueChange={(newValue) => {
+                                const currentValues =
+                                  (field.value as string[]) || [];
+                                if (!currentValues.includes(newValue)) {
+                                  field.onChange([...currentValues, newValue]);
+                                }
+                              }}
+                            >
+                              <SelectTrigger id={key} className="w-full">
+                                <SelectValue placeholder="Add option..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {value.options
+                                  ?.filter(
+                                    (option) =>
+                                      !(field.value as string[])?.includes(
+                                        option,
+                                      ),
+                                  )
+                                  .map((option) => (
+                                    <SelectItem key={option} value={option}>
+                                      {option}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         ) : (
                           <Input
                             id={key}
                             {...form.register(key)}
                             placeholder={value.placeholder}
                             {...field}
+                            value={field.value as string}
                           />
                         )}
                       </FormControl>

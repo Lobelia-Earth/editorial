@@ -38,6 +38,7 @@ import {
   ExternalLink,
   FileImageIcon,
   LetterTextIcon,
+  ListChecksIcon,
   ListIcon,
   Trash,
 } from "lucide-react";
@@ -51,6 +52,7 @@ const TypeIconMap: Record<string, FunctionComponent> = {
   datetime: CalendarIcon,
   markdown: LetterTextIcon,
   select: ListIcon,
+  multiselect: ListChecksIcon,
   string: LetterTextIcon,
   url: ExternalLink,
 };
@@ -181,7 +183,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
               );
             },
             cell(props) {
-              const cellValue = props.getValue() as string;
+              const cellValue = props.getValue() as string | string[];
 
               switch (value.type) {
                 case "boolean":
@@ -203,9 +205,9 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
 
                   return (
                     <Link
-                      to={cellValue}
+                      to={cellValue as string}
                       className="flex items-center w-48 hover:text-blue-500 overflow-hidden text-ellipsis whitespace-nowrap"
-                      title={cellValue}
+                      title={cellValue as string}
                     >
                       {cellValue}
                     </Link>
@@ -214,8 +216,8 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   if (!cellValue) return "--";
 
                   return (
-                    <span className=" text-nowrap" title={cellValue}>
-                      {new Date(cellValue).toLocaleString(undefined, {
+                    <span className=" text-nowrap" title={cellValue as string}>
+                      {new Date(cellValue as string).toLocaleString(undefined, {
                         year: "numeric",
                         month: "2-digit",
                         day: "2-digit",
@@ -229,8 +231,51 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   if (!cellValue) return "--";
 
                   return (
-                    <span className="text-nowrap" title={cellValue}>
-                      {formatTime(new Date(cellValue))}
+                    <span className="text-nowrap" title={cellValue as string}>
+                      {formatTime(new Date(cellValue as string))}
+                    </span>
+                  );
+                case "select":
+                  if (!cellValue) return "--";
+
+                  return (
+                    <span
+                      title={cellValue as string}
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-48 overflow-hidden text-ellipsis whitespace-nowrap"
+                    >
+                      {cellValue}
+                    </span>
+                  );
+                case "multiselect":
+                  if (
+                    !cellValue ||
+                    (Array.isArray(cellValue) && cellValue.length === 0)
+                  )
+                    return "--";
+
+                  const values = Array.isArray(cellValue)
+                    ? cellValue
+                    : [cellValue];
+                  const displayText = values.join(", ");
+
+                  return (
+                    <span
+                      title={displayText}
+                      className="flex items-center gap-1 w-48 overflow-hidden"
+                    >
+                      {values.slice(0, 3).map((val, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap"
+                        >
+                          {val}
+                        </span>
+                      ))}
+                      {values.length > 3 && (
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                          +{values.length - 3}
+                        </span>
+                      )}
                     </span>
                   );
                 case "markdown":
@@ -238,7 +283,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   if (value.isUploadedFile) {
                     return (
                       <span
-                        title={cellValue}
+                        title={cellValue as string}
                         className="flex items-center w-48 overflow-hidden text-ellipsis whitespace-nowrap"
                       >
                         <ExternalLink className="h-4 shrink-0" /> {cellValue}
@@ -248,14 +293,16 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
 
                   return (
                     <span
-                      title={cellValue}
+                      title={cellValue as string}
                       className="block w-48 overflow-hidden text-ellipsis whitespace-nowrap"
                     >
                       {cellValue}
                     </span>
                   );
                 default:
-                  return cellValue;
+                  return Array.isArray(cellValue)
+                    ? cellValue.join(", ")
+                    : cellValue;
               }
             },
           }),

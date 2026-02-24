@@ -36,12 +36,12 @@ export const EditorialDataItemSchema = z.looseObject({
 
 export const EditorialDataTypeSchema = z.record(
   z.string(),
-  EditorialDataItemSchema
+  EditorialDataItemSchema,
 );
 
 export const EditorialDataSchema = z.record(
   z.string(),
-  EditorialDataTypeSchema
+  EditorialDataTypeSchema,
 );
 
 export const EditorialSchemaItemFieldType = z.enum([
@@ -54,16 +54,20 @@ export const EditorialSchemaItemFieldType = z.enum([
   "color",
   "select",
   "url",
+  "select",
+  "multiselect",
 ]);
 
 export const RGBColorSchema = z
   .string()
   .regex(
     /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/,
-    "Must be a valid RGB color format: rgb(r, g, b)"
+    "Must be a valid RGB color format: rgb(r, g, b)",
   )
   .refine((value) => {
-    const match = value.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/);
+    const match = value.match(
+      /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/,
+    );
     if (!match) return false;
     const [, r, g, b] = match;
     return (
@@ -94,7 +98,7 @@ export const EditorialSchemaItemSchema = z.object({
 
 export const EditorialSchemaSchema = z.record(
   z.string(),
-  EditorialSchemaItemSchema
+  EditorialSchemaItemSchema,
 );
 
 export const BaseEditorialFileSchema = z.object({
