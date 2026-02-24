@@ -528,25 +528,39 @@ export default function ItemForm({
                             placeholder={value.placeholder}
                           />
                         ) : value.type === "select" ? (
-                          <Select
-                            value={field.value as string}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger id={key} className="w-full">
-                              <SelectValue
-                                placeholder={
-                                  value.placeholder ?? "Select an option"
-                                }
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {resolvedOptions.map((option) => (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex gap-2">
+                            <Select
+                              value={field.value as string}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger id={key} className="w-full">
+                                <SelectValue
+                                  placeholder={
+                                    value.placeholder ?? "Select an option"
+                                  }
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {resolvedOptions.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {value.optional && field.value && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => field.onChange("")}
+                                className="shrink-0"
+                              >
+                                <X size={16} />
+                                <span className="sr-only">Clear selection</span>
+                              </Button>
+                            )}
+                          </div>
                         ) : value.type === "multiselect" ? (
                           <div className="flex flex-col gap-2">
                             <div className="flex flex-wrap gap-2 min-h-[38px] p-2 border rounded-md bg-background">
