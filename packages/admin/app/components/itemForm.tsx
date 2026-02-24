@@ -596,34 +596,47 @@ export default function ItemForm({
                                 </span>
                               )}
                             </div>
-                            <Select
-                              value=""
-                              onValueChange={(newValue) => {
-                                const currentValues =
-                                  (field.value as string[]) || [];
-                                if (!currentValues.includes(newValue)) {
-                                  field.onChange([...currentValues, newValue]);
-                                }
-                              }}
-                            >
-                              <SelectTrigger id={key} className="w-full">
-                                <SelectValue placeholder="Add option..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {resolvedOptions
-                                  .filter(
-                                    (option) =>
-                                      !(field.value as string[])?.includes(
-                                        option,
-                                      ),
-                                  )
-                                  .map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
+                            {(!value.maxSelectedItems ||
+                              (field.value as string[])?.length <
+                                value.maxSelectedItems) && (
+                              <Select
+                                value=""
+                                onValueChange={(newValue) => {
+                                  const currentValues =
+                                    (field.value as string[]) || [];
+                                  if (!currentValues.includes(newValue)) {
+                                    field.onChange([
+                                      ...currentValues,
+                                      newValue,
+                                    ]);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger id={key} className="w-full">
+                                  <SelectValue placeholder="Add option..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {resolvedOptions
+                                    .filter(
+                                      (option) =>
+                                        !(field.value as string[])?.includes(
+                                          option,
+                                        ),
+                                    )
+                                    .map((option) => (
+                                      <SelectItem key={option} value={option}>
+                                        {option}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                            {value.maxSelectedItems && (
+                              <span className="text-xs text-muted-foreground">
+                                {(field.value as string[])?.length ?? 0} /{" "}
+                                {value.maxSelectedItems} selected
+                              </span>
+                            )}
                           </div>
                         ) : (
                           <Input

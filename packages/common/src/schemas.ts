@@ -88,6 +88,7 @@ export const EditorialSchemaItemFieldSchema = z.looseObject({
   optional: z.boolean().default(false),
   showInSummary: z.boolean().optional(),
   options: z.array(z.string()).optional(),
+  maxSelectedItems: z.number().optional(),
 });
 
 export const EditorialSchemaItemSchema = z.object({
