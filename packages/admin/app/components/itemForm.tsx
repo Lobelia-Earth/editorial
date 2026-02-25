@@ -10,9 +10,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import UnsavedChangesGuard from "@/components/unsavedChangesGuard";
 import {
   useCreateObjectMutation,
+  useGetDataQuery,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
 import { cn } from "@/lib/utils";
@@ -21,8 +29,11 @@ import type {
   EditorialDataItem,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
-import { RGBColorSchema } from "@isardsat/editorial-common";
-import { Loader2, Save } from "lucide-react";
+import {
+  getOptionsReference,
+  RGBColorSchema,
+} from "@isardsat/editorial-common";
+import { Loader2, Save, X } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
@@ -56,6 +67,7 @@ export default function ItemForm({
 
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
+  const { data: allData } = useGetDataQuery();
 
   useEffect(() => {
     if (!hash) return;
@@ -83,15 +95,25 @@ export default function ItemForm({
             if (fieldType === "boolean") {
               return [key, String(value)];
             }
+            if (fieldType === "multiselect") {
+              // Keep multiselect as array
+              return [key, Array.isArray(value) ? value : [value]];
+            }
             return [key, String(value)];
           }
 
           // Default values for new items
-          return [key, fieldType === "boolean" ? "false" : ""];
+          if (fieldType === "boolean") {
+            return [key, "false"];
+          }
+          if (fieldType === "multiselect") {
+            return [key, []];
+          }
+          return [key, ""];
         }),
       ),
     };
-  }, [data, fields]);
+  }, [data, fields, isSingleton]);
 
   const validationSchema = useMemo(() => {
     const schemaShape: Record<string, z.ZodTypeAny> = {
@@ -127,13 +149,54 @@ export default function ItemForm({
         case "color":
           fieldSchema = RGBColorSchema;
           break;
+        case "select":
+          // For referenced options, use string validation instead of enum
+          // since the options are dynamic
+          if (getOptionsReference(field.options)) {
+            fieldSchema = z.string();
+          } else if (field.options && field.options.length > 0) {
+            fieldSchema = z.enum(field.options as [string, ...string[]]);
+          } else {
+            fieldSchema = z.string();
+          }
+          break;
+        case "multiselect":
+          fieldSchema = z.array(z.string());
+          // Apply min/max constraints
+          if (field.minSelectedOptions) {
+            fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
+              field.minSelectedOptions,
+              `${field.displayName} requires at least ${field.minSelectedOptions} selection${field.minSelectedOptions > 1 ? "s" : ""}`,
+            );
+          }
+          if (field.maxSelectedOptions) {
+            fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).max(
+              field.maxSelectedOptions,
+              `${field.displayName} allows maximum ${field.maxSelectedOptions} selection${field.maxSelectedOptions > 1 ? "s" : ""}`,
+            );
+          }
+          break;
         default:
           fieldSchema = z.string();
       }
 
       if (field.optional) {
-        fieldSchema = fieldSchema.optional().or(z.literal(""));
-      } else if (field.type !== "boolean") {
+        if (field.type === "multiselect") {
+          // Multiselect is already optional by allowing empty array
+          // But if minSelectedOptions is set, it overrides optional
+          if (!field.minSelectedOptions) {
+            fieldSchema = fieldSchema.optional();
+          }
+        } else {
+          fieldSchema = fieldSchema.optional().or(z.literal(""));
+        }
+      } else if (field.type === "multiselect" && !field.minSelectedOptions) {
+        // If not optional and no minSelectedOptions, require at least 1
+        fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
+          1,
+          `${field.displayName} requires at least one selection`,
+        );
+      } else if (field.type !== "boolean" && field.type !== "select") {
         fieldSchema = (fieldSchema as z.ZodString).min(
           1,
           `${field.displayName} is required`,
@@ -146,7 +209,7 @@ export default function ItemForm({
     return z.object(schemaShape);
   }, [fields]);
 
-  const form = useForm<Record<string, string>>({
+  const form = useForm<Record<string, string | string[]>>({
     resolver: zodResolver(validationSchema) as any,
     defaultValues: defaultValues,
   });
@@ -177,7 +240,7 @@ export default function ItemForm({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [form, isNew, onSubmit]);
 
-  async function onSubmit(values: Record<string, string>) {
+  async function onSubmit(values: Record<string, string | string[]>) {
     // Convert field values to their proper types
     const processedValues: Record<string, any> = {
       ...values,
@@ -190,6 +253,7 @@ export default function ItemForm({
       if (field.type === "boolean") {
         processedValues[key] = values[key] === "true";
       }
+      // multiselect values are already arrays, no conversion needed
     });
 
     if (isNew) {
@@ -209,6 +273,31 @@ export default function ItemForm({
       Object.entries(fields).filter(([, value]) => value.type === "boolean"),
     [fields],
   );
+
+  // Pre-resolve all field options (including referenced ones)
+  // If options reference another fileds, return the ids of the referenced data items
+  // If options are directly defined, return them as is
+  const resolvedOptionsMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+
+    Object.entries(fields).forEach(([key, field]) => {
+      if (field.type === "select" || field.type === "multiselect") {
+        const referencedKey = getOptionsReference(field.options);
+        if (referencedKey && allData) {
+          const referencedData = allData[referencedKey];
+          if (referencedData) {
+            map[key] = Object.values(referencedData).map((item) => item.id);
+          } else {
+            map[key] = [];
+          }
+        } else {
+          map[key] = field.options ?? [];
+        }
+      }
+    });
+
+    return map;
+  }, [fields, allData]);
 
   return (
     <Form {...form}>
@@ -234,6 +323,7 @@ export default function ItemForm({
                     placeholder="item-id"
                     {...form.register("id")}
                     {...field}
+                    value={field.value as string}
                     onChange={(e) => {
                       const alphanumericValue = e.target.value
                         .toLowerCase()
@@ -342,6 +432,9 @@ export default function ItemForm({
         {Object.entries(fields)
           .filter(([, value]) => value.type !== "boolean")
           .map(([key, value]) => {
+            // Get resolved options for select/multiselect fields
+            const resolvedOptions = resolvedOptionsMap[key] ?? [];
+
             return (
               <FormField
                 key={key}
@@ -351,6 +444,11 @@ export default function ItemForm({
                   required: !value.optional,
                 }}
                 render={({ field }) => {
+                  const selectedCount = (field.value as string[])?.length ?? 0;
+                  const hasMinMax =
+                    value.type === "multiselect" &&
+                    (value.minSelectedOptions || value.maxSelectedOptions);
+
                   return (
                     <FormItem id={key}>
                       <FormLabel className="flex gap-1 items-baseline">
@@ -366,7 +464,7 @@ export default function ItemForm({
                             name={key}
                             register={form.register}
                             className="h-52"
-                            markdown={field.value}
+                            markdown={field.value as string}
                             onChange={(value, initialChange) => {
                               if (initialChange) return;
 
@@ -383,13 +481,14 @@ export default function ItemForm({
                               value.placeholder ?? "https://example.website/"
                             }
                             {...field}
+                            value={field.value as string}
                           />
                         ) : value.type === "string" && value.isUploadedFile ? (
                           <FilePicker
                             id={key}
                             name={key}
                             register={form.register}
-                            value={field.value}
+                            value={field.value as string}
                             onChange={field.onChange}
                           />
                         ) : value.type === "date" ? (
@@ -397,7 +496,9 @@ export default function ItemForm({
                             id={key}
                             {...form.register(key)}
                             date={
-                              field.value ? new Date(field.value) : undefined
+                              field.value
+                                ? new Date(field.value as string)
+                                : undefined
                             }
                             onDateChange={(date) => {
                               field.onChange(date ? date.toISOString() : "");
@@ -411,7 +512,9 @@ export default function ItemForm({
                               id={key}
                               {...form.register(key)}
                               date={
-                                field.value ? new Date(field.value) : undefined
+                                field.value
+                                  ? new Date(field.value as string)
+                                  : undefined
                               }
                               onDateTimeChange={(date) => {
                                 field.onChange(date ? date.toISOString() : "");
@@ -425,7 +528,7 @@ export default function ItemForm({
                         ) : value.type === "color" ? (
                           <ColorPicker
                             id={key}
-                            value={field.value}
+                            value={field.value as string}
                             onChange={field.onChange}
                             placeholder={value.placeholder}
                           />
@@ -434,16 +537,140 @@ export default function ItemForm({
                             id={key}
                             {...form.register(key, { valueAsNumber: true })}
                             type="number"
-                            value={field.value}
+                            value={field.value as string}
                             onChange={field.onChange}
                             placeholder={value.placeholder}
                           />
+                        ) : value.type === "select" ? (
+                          <div className="flex gap-2">
+                            <Select
+                              value={field.value as string}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger id={key} className="w-full">
+                                <SelectValue
+                                  placeholder={
+                                    value.placeholder ?? "Select an item..."
+                                  }
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {resolvedOptions.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {value.optional && field.value && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => field.onChange("")}
+                                className="shrink-0"
+                              >
+                                <X size={16} />
+                                <span className="sr-only">Clear selection</span>
+                              </Button>
+                            )}
+                          </div>
+                        ) : value.type === "multiselect" ? (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-wrap gap-2 min-h-[38px] p-2 border rounded-md bg-background">
+                              {(field.value as string[])?.length > 0 ? (
+                                (field.value as string[]).map(
+                                  (selectedValue) => (
+                                    <span
+                                      key={selectedValue}
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-black-800"
+                                    >
+                                      {selectedValue}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newValues = (
+                                            field.value as string[]
+                                          ).filter((v) => v !== selectedValue);
+                                          field.onChange(newValues);
+                                        }}
+                                        className="hover:bg-gray-200 rounded-sm p-0.5"
+                                      >
+                                        <X size={14} />
+                                        <span className="sr-only">
+                                          Remove {selectedValue}
+                                        </span>
+                                      </button>
+                                    </span>
+                                  ),
+                                )
+                              ) : (
+                                <span className="text-muted-foreground text-sm">
+                                  {value.placeholder ?? "Select items..."}
+                                </span>
+                              )}
+                            </div>
+                            {(!value.maxSelectedOptions ||
+                              selectedCount < value.maxSelectedOptions) && (
+                              <Select
+                                value=""
+                                onValueChange={(newValue) => {
+                                  const currentValues =
+                                    (field.value as string[]) || [];
+                                  if (!currentValues.includes(newValue)) {
+                                    field.onChange([
+                                      ...currentValues,
+                                      newValue,
+                                    ]);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger id={key} className="w-full">
+                                  <SelectValue placeholder="Add item..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {resolvedOptions
+                                    .filter(
+                                      (option) =>
+                                        !(field.value as string[])?.includes(
+                                          option,
+                                        ),
+                                    )
+                                    .map((option) => (
+                                      <SelectItem key={option} value={option}>
+                                        {option}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                            {hasMinMax && (
+                              <span
+                                className={cn(
+                                  "text-xs",
+                                  value.minSelectedOptions &&
+                                    selectedCount < value.minSelectedOptions
+                                    ? "text-destructive"
+                                    : "text-muted-foreground",
+                                )}
+                              >
+                                {selectedCount}
+                                {value.minSelectedOptions &&
+                                value.maxSelectedOptions
+                                  ? `/${value.maxSelectedOptions} (min ${value.minSelectedOptions})`
+                                  : value.minSelectedOptions
+                                    ? ` selected (min ${value.minSelectedOptions})`
+                                    : `/${value.maxSelectedOptions} selected`}
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <Input
                             id={key}
                             {...form.register(key)}
                             placeholder={value.placeholder}
                             {...field}
+                            value={field.value as string}
                           />
                         )}
                       </FormControl>

@@ -41,7 +41,7 @@ export interface MarkdownEditorProps extends MDXEditorProps {
   id: string;
   className?: string;
   name: string;
-  register: UseFormRegister<Record<string, string>>;
+  register: UseFormRegister<Record<string, string | string[]>>;
   fieldDisplayName?: string;
   fullscreenable?: boolean;
 }

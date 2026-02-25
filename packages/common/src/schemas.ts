@@ -36,12 +36,12 @@ export const EditorialDataItemSchema = z.looseObject({
 
 export const EditorialDataTypeSchema = z.record(
   z.string(),
-  EditorialDataItemSchema
+  EditorialDataItemSchema,
 );
 
 export const EditorialDataSchema = z.record(
   z.string(),
-  EditorialDataTypeSchema
+  EditorialDataTypeSchema,
 );
 
 export const EditorialSchemaItemFieldType = z.enum([
@@ -54,16 +54,20 @@ export const EditorialSchemaItemFieldType = z.enum([
   "color",
   "select",
   "url",
+  "select",
+  "multiselect",
 ]);
 
 export const RGBColorSchema = z
   .string()
   .regex(
     /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/,
-    "Must be a valid RGB color format: rgb(r, g, b)"
+    "Must be a valid RGB color format: rgb(r, g, b)",
   )
   .refine((value) => {
-    const match = value.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/);
+    const match = value.match(
+      /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/,
+    );
     if (!match) return false;
     const [, r, g, b] = match;
     return (
@@ -83,6 +87,9 @@ export const EditorialSchemaItemFieldSchema = z.looseObject({
   placeholder: z.string().optional(),
   optional: z.boolean().default(false),
   showInSummary: z.boolean().optional(),
+  options: z.array(z.string()).optional(),
+  maxSelectedOptions: z.number().optional(),
+  minSelectedOptions: z.number().optional(),
 });
 
 export const EditorialSchemaItemSchema = z.object({
@@ -94,7 +101,7 @@ export const EditorialSchemaItemSchema = z.object({
 
 export const EditorialSchemaSchema = z.record(
   z.string(),
-  EditorialSchemaItemSchema
+  EditorialSchemaItemSchema,
 );
 
 export const BaseEditorialFileSchema = z.object({
