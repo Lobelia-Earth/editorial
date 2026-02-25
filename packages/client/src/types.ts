@@ -18,6 +18,8 @@ export interface GetContentOptions {
   locale?: string;
   /** Include preview/draft content in the response */
   preview?: boolean;
+  /** Resolve references to other content items in the response */
+  resolve?: boolean;
 }
 
 export interface EditorialClientInterface {
@@ -26,23 +28,23 @@ export interface EditorialClientInterface {
   getContent<T = EditorialData>(options?: GetContentOptions): Promise<T>;
   getContentByType<T = EditorialDataType>(
     type: string,
-    options?: GetContentOptions
+    options?: GetContentOptions,
   ): Promise<T[]>;
   getContentIds(type: string, options?: GetContentOptions): Promise<string[]>;
   getContentById<T = EditorialDataItem>(
     type: string,
     id: string,
-    options?: GetContentOptions
+    options?: GetContentOptions,
   ): Promise<T>;
   createContent<T = EditorialDataItem>(
     type: string,
     id: string,
-    data: T
+    data: T,
   ): Promise<T>;
   updateContent<T = EditorialDataItem>(
     type: string,
     id: string,
-    data: Partial<T>
+    data: Partial<T>,
   ): Promise<T>;
   deleteContent(type: string, id: string): Promise<boolean>;
 }

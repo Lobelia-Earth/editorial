@@ -29,7 +29,10 @@ import type {
   EditorialDataItem,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
-import { RGBColorSchema } from "@isardsat/editorial-common";
+import {
+  getOptionsReference,
+  RGBColorSchema,
+} from "@isardsat/editorial-common";
 import { Loader2, Save, X } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -50,17 +53,6 @@ export interface SinglesPageProps {
   isSingleton?: boolean;
   data?: EditorialDataItem;
   isNew?: boolean;
-}
-
-/**
- * Checks if the options value is a reference to another field.
- * References are in the format $key_field
- */
-function isOptionsReference(options: string[] | undefined): string | null {
-  if (!options || options.length !== 1) return null;
-
-  const match = options[0].match(/^\$(.+)$/);
-  return match ? match[1] : null;
 }
 
 export default function ItemForm({
@@ -160,7 +152,7 @@ export default function ItemForm({
         case "select":
           // For referenced options, use string validation instead of enum
           // since the options are dynamic
-          if (isOptionsReference(field.options)) {
+          if (getOptionsReference(field.options)) {
             fieldSchema = z.string();
           } else if (field.options && field.options.length > 0) {
             fieldSchema = z.enum(field.options as [string, ...string[]]);
@@ -273,7 +265,7 @@ export default function ItemForm({
 
     Object.entries(fields).forEach(([key, field]) => {
       if (field.type === "select" || field.type === "multiselect") {
-        const referencedKey = isOptionsReference(field.options);
+        const referencedKey = getOptionsReference(field.options);
         if (referencedKey && allData) {
           const referencedData = allData[referencedKey];
           if (referencedData) {
@@ -596,9 +588,9 @@ export default function ItemForm({
                                 </span>
                               )}
                             </div>
-                            {(!value.maxSelectedItems ||
+                            {(!value.maxSelectedOptions ||
                               (field.value as string[])?.length <
-                                value.maxSelectedItems) && (
+                                value.maxSelectedOptions) && (
                               <Select
                                 value=""
                                 onValueChange={(newValue) => {
@@ -631,10 +623,10 @@ export default function ItemForm({
                                 </SelectContent>
                               </Select>
                             )}
-                            {value.maxSelectedItems && (
+                            {value.maxSelectedOptions && (
                               <span className="text-xs text-muted-foreground">
                                 {(field.value as string[])?.length ?? 0} /{" "}
-                                {value.maxSelectedItems} selected
+                                {value.maxSelectedOptions} selected
                               </span>
                             )}
                           </div>

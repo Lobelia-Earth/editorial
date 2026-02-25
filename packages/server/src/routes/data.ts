@@ -3,8 +3,10 @@ import {
   EditorialDataItemSchema,
   EditorialDataSchema,
   EditorialSchemaSchema,
+  getOptionsReference,
   type EditorialConfig,
   type EditorialData,
+  type EditorialDataItem,
   type EditorialSchema,
 } from "@isardsat/editorial-common";
 import type { Storage } from "../lib/storage.js";
@@ -36,7 +38,7 @@ function createCache() {
 
     async getContent(
       storage: Storage,
-      options: { production?: boolean; lang?: string } = {}
+      options: { production?: boolean; lang?: string } = {},
     ): Promise<EditorialData> {
       const mode = options.production ? "production" : "preview";
       const langSuffix = options.lang ? `-${options.lang}` : "";
@@ -60,6 +62,136 @@ function createCache() {
       contentCache.clear();
     },
   };
+}
+
+/**
+ * Resolves uploaded file paths to full URLs for an item.
+ */
+function resolveFileUrls(
+  item: EditorialDataItem,
+  schema: EditorialSchema,
+  itemType: string,
+  origin: string,
+): EditorialDataItem {
+  const resolvedItem = { ...item };
+  const itemSchema = schema[itemType];
+
+  if (!itemSchema) return resolvedItem;
+
+  for (const [key, value] of Object.entries(resolvedItem)) {
+    if (!itemSchema.fields[key]?.isUploadedFile) continue;
+    if (typeof value !== "string") continue;
+    if (value.startsWith("http")) continue;
+
+    resolvedItem[key] = `${origin}/${value}`;
+  }
+
+  return resolvedItem;
+}
+
+/**
+ * Resolves referenced fields in an item, replacing IDs with full objects.
+ * Recursively resolves nested references.
+ */
+function resolveReferences(
+  item: EditorialDataItem,
+  schema: EditorialSchema,
+  itemType: string,
+  content: EditorialData,
+  origin: string,
+  resolvedIds: Set<string> = new Set(),
+): EditorialDataItem {
+  const itemIdentifier = `${itemType}:${item.id}`;
+
+  // Prevent circular references
+  if (resolvedIds.has(itemIdentifier)) {
+    return resolveFileUrls(item, schema, itemType, origin);
+  }
+
+  resolvedIds.add(itemIdentifier);
+
+  // First resolve file URLs for the current item
+  let resolvedItem = resolveFileUrls(item, schema, itemType, origin);
+  const itemSchema = schema[itemType];
+
+  if (!itemSchema) return resolvedItem;
+
+  for (const [fieldKey, fieldConfig] of Object.entries(itemSchema.fields)) {
+    if (fieldConfig.type !== "select" && fieldConfig.type !== "multiselect") {
+      continue;
+    }
+
+    const referencedType = getOptionsReference(fieldConfig.options);
+    if (!referencedType) continue;
+
+    const referencedCollection = content[referencedType];
+    if (!referencedCollection) continue;
+
+    const fieldValue = item[fieldKey];
+
+    if (fieldConfig.type === "select" && typeof fieldValue === "string") {
+      // Single reference - replace ID with full object
+      const referencedItem = referencedCollection[fieldValue];
+      if (referencedItem) {
+        // Recursively resolve nested references
+        resolvedItem[fieldKey] = resolveReferences(
+          referencedItem,
+          schema,
+          referencedType,
+          content,
+          origin,
+          new Set(resolvedIds),
+        );
+      }
+    } else if (
+      fieldConfig.type === "multiselect" &&
+      Array.isArray(fieldValue)
+    ) {
+      // Multiple references - replace IDs with full objects
+      resolvedItem[fieldKey] = fieldValue
+        .map((id) => {
+          const referencedItem = referencedCollection[id];
+          if (!referencedItem) return null;
+          // Recursively resolve nested references
+          return resolveReferences(
+            referencedItem,
+            schema,
+            referencedType,
+            content,
+            origin,
+            new Set(resolvedIds),
+          );
+        })
+        .filter(Boolean);
+    }
+  }
+
+  return resolvedItem;
+}
+
+/**
+ * Resolves all references in a collection.
+ */
+function resolveCollectionReferences(
+  collection: Record<string, EditorialDataItem>,
+  schema: EditorialSchema,
+  itemType: string,
+  content: EditorialData,
+  origin: string,
+): Record<string, EditorialDataItem> {
+  const resolvedCollection: Record<string, EditorialDataItem> = {};
+
+  for (const [itemKey, item] of Object.entries(collection)) {
+    resolvedCollection[itemKey] = resolveReferences(
+      item,
+      schema,
+      itemType,
+      content,
+      origin,
+    );
+  }
+
+  return resolvedCollection;
 }
 
 export function createDataRoutes(config: EditorialConfig, storage: Storage) {
@@ -87,7 +219,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       const schema = await cache.getSchema(storage);
 
       return c.json(schema);
-    }
+    },
   );
 
   app.openapi(
@@ -104,6 +236,13 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
               example: "es_ES",
             }),
           preview: z.string().optional(),
+          resolve: z
+            .string()
+            .optional()
+            .openapi({
+              param: { name: "resolve", in: "query" },
+              description: "Resolve referenced fields to full objects",
+            }),
         }),
       },
       responses: {
@@ -118,11 +257,31 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       },
     }),
     async (c) => {
-      const { preview } = c.req.valid("query");
+      const { preview, resolve } = c.req.valid("query");
       const content = await cache.getContent(storage, { production: !preview });
 
-      return c.json(content);
-    }
+      if (!resolve) {
+        return c.json(content);
+      }
+
+      const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
+
+      // Resolve references for all collections
+      const schema = await cache.getSchema(storage);
+      const resolvedContent: EditorialData = {};
+
+      for (const [itemType, collection] of Object.entries(content)) {
+        resolvedContent[itemType] = resolveCollectionReferences(
+          collection,
+          schema,
+          itemType,
+          content,
+          origin,
+        );
+      }
+
+      return c.json(resolvedContent);
+    },
   );
 
   app.openapi(
@@ -145,6 +304,13 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
               example: "es_ES",
             }),
           preview: z.string().optional(),
+          resolve: z
+            .string()
+            .optional()
+            .openapi({
+              param: { name: "resolve", in: "query" },
+              description: "Resolve referenced fields to full objects",
+            }),
         }),
       },
       responses: {
@@ -163,7 +329,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     }),
     async (c) => {
       const { itemType } = c.req.valid("param");
-      const { lang, preview } = c.req.valid("query");
+      const { lang, preview, resolve } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
       const content = await cache.getContent(storage, {
@@ -195,6 +361,20 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         }
       }
 
+      // Resolve references if requested (includes file URL resolution)
+      if (resolve) {
+        return c.json(
+          resolveCollectionReferences(
+            collection,
+            schema,
+            itemType,
+            content,
+            origin,
+          ),
+        );
+      }
+
+      // Apply file URL resolution for non-resolved requests
       for (const [itemKey, itemValue] of Object.entries(collection)) {
         for (const [key, value] of Object.entries(itemValue)) {
           if (!schema[itemType].fields[key]?.isUploadedFile) continue;
@@ -205,7 +385,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       }
 
       return c.json(collection);
-    }
+    },
   );
 
   app.openapi(
@@ -248,7 +428,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       }
 
       return c.json(Object.keys(content[itemType]));
-    }
+    },
   );
 
   app.openapi(
@@ -275,6 +455,13 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
               example: "es_ES",
             }),
           preview: z.string().optional(),
+          resolve: z
+            .string()
+            .optional()
+            .openapi({
+              param: { name: "resolve", in: "query" },
+              description: "Resolve referenced fields to full objects",
+            }),
         }),
       },
       responses: {
@@ -293,7 +480,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
-      const { lang, preview } = c.req.valid("query");
+      const { lang, preview, resolve } = c.req.valid("query");
 
       const origin = preview ? new URL(c.req.url).origin : publicFilesUrl;
       const content = await cache.getContent(storage, {
@@ -307,7 +494,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         return c.notFound();
       }
 
-      const item = collection[id];
+      let item = collection[id];
 
       if (!item) {
         return c.notFound();
@@ -326,6 +513,13 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         }
       }
 
+      // Resolve references if requested (includes file URL resolution)
+      if (resolve) {
+        item = resolveReferences(item, schema, itemType, content, origin);
+        return c.json(item);
+      }
+
+      // Apply file URL resolution for non-resolved requests
       for (const [key, value] of Object.entries(item)) {
         if (!schema[itemType].fields[key]?.isUploadedFile) continue;
         if ((value as string).startsWith("http")) continue;
@@ -334,7 +528,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       }
 
       return c.json(item);
-    }
+    },
   );
 
   app.openapi(
@@ -379,7 +573,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       cache.invalidateContent();
 
       return c.json(newItem);
-    }
+    },
   );
 
   app.openapi(
@@ -424,7 +618,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       cache.invalidateContent();
 
       return c.json(newItem);
-    }
+    },
   );
 
   app.openapi(
@@ -461,7 +655,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       cache.invalidateContent();
 
       return c.json(true, 200);
-    }
+    },
   );
 
   return app;

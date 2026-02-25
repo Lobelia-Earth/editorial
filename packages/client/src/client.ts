@@ -19,7 +19,7 @@ import type {
 
 export function createEditorialClient(
   baseURL: string,
-  options: ClientOptions = {}
+  options: ClientOptions = {},
 ): EditorialClientInterface {
   const apiBaseURL = new URL("/api/v1/", baseURL);
   const defaultLocale = options.defaultLocale || "en";
@@ -32,7 +32,7 @@ export function createEditorialClient(
 
   async function request<T>(
     endpoint: string,
-    requestOptions: RequestInit = {}
+    requestOptions: RequestInit = {},
   ): Promise<T> {
     const url = new URL(endpoint, apiBaseURL);
 
@@ -67,7 +67,7 @@ export function createEditorialClient(
         throw new EditorialError(
           errorMessage || `HTTP ${response.status} ${response.statusText}`,
           response.status,
-          response.statusText
+          response.statusText,
         );
       }
 
@@ -87,7 +87,7 @@ export function createEditorialClient(
         `Network error: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -103,6 +103,10 @@ export function createEditorialClient(
       params.append("preview", "true");
     }
 
+    if (options.resolve) {
+      params.append("resolve", "true");
+    }
+
     return params;
   }
 
@@ -116,7 +120,7 @@ export function createEditorialClient(
     },
 
     async getContent<T = EditorialData>(
-      options: GetContentOptions = {}
+      options: GetContentOptions = {},
     ): Promise<T> {
       const params = buildQueryParams(options);
       const endpoint = params.toString() ? `data?${params}` : "data";
@@ -126,7 +130,7 @@ export function createEditorialClient(
 
     async getContentByType<T = EditorialDataType>(
       type: string,
-      options: GetContentOptions = {}
+      options: GetContentOptions = {},
     ): Promise<T[]> {
       const params = buildQueryParams(options);
       const endpoint = params.toString()
@@ -139,7 +143,7 @@ export function createEditorialClient(
 
     async getContentIds(
       type: string,
-      options: GetContentOptions = {}
+      options: GetContentOptions = {},
     ): Promise<string[]> {
       const params = new URLSearchParams();
       if (options.preview) {
@@ -156,7 +160,7 @@ export function createEditorialClient(
     async getContentById<T = EditorialDataItem>(
       type: string,
       id: string,
-      options: GetContentOptions = {}
+      options: GetContentOptions = {},
     ): Promise<T> {
       const params = buildQueryParams(options);
       const endpoint = params.toString()
@@ -169,28 +173,28 @@ export function createEditorialClient(
     async createContent<T = EditorialDataItem>(
       type: string,
       id: string,
-      data: T
+      data: T,
     ): Promise<T> {
       return request<T>(
         `data/${encodeURIComponent(type)}/${encodeURIComponent(id)}`,
         {
           method: "PUT",
           body: JSON.stringify(data),
-        }
+        },
       );
     },
 
     async updateContent<T = EditorialDataItem>(
       type: string,
       id: string,
-      data: Partial<T>
+      data: Partial<T>,
     ): Promise<T> {
       return request<T>(
         `data/${encodeURIComponent(type)}/${encodeURIComponent(id)}`,
         {
           method: "PATCH",
           body: JSON.stringify(data),
-        }
+        },
       );
     },
 
@@ -199,7 +203,7 @@ export function createEditorialClient(
         `data/${encodeURIComponent(type)}/${encodeURIComponent(id)}`,
         {
           method: "DELETE",
-        }
+        },
       );
     },
   };
