@@ -241,7 +241,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                   return (
                     <span
                       title={cellValue as string}
-                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-48 overflow-hidden text-ellipsis whitespace-nowrap"
+                      className="inline-flex items-center px-2 py-0.5 font-medium max-w-48 overflow-hidden text-ellipsis whitespace-nowrap"
                     >
                       {cellValue}
                     </span>
@@ -266,7 +266,7 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                       {values.slice(0, 3).map((val, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap"
+                          className="inline-flex items-center px-0.5 py-0.5 font-medium  whitespace-nowrap"
                         >
                           {val}
                         </span>
