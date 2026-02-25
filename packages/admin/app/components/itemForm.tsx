@@ -536,7 +536,7 @@ export default function ItemForm({
                               <SelectTrigger id={key} className="w-full">
                                 <SelectValue
                                   placeholder={
-                                    value.placeholder ?? "Select an option"
+                                    value.placeholder ?? "Select an item..."
                                   }
                                 />
                               </SelectTrigger>
@@ -569,7 +569,7 @@ export default function ItemForm({
                                   (selectedValue) => (
                                     <span
                                       key={selectedValue}
-                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-black-800"
                                     >
                                       {selectedValue}
                                       <button
@@ -580,7 +580,7 @@ export default function ItemForm({
                                           ).filter((v) => v !== selectedValue);
                                           field.onChange(newValues);
                                         }}
-                                        className="hover:bg-purple-200 rounded-full p-0.5"
+                                        className="hover:bg-gray-200 rounded-sm p-0.5"
                                       >
                                         <X size={14} />
                                         <span className="sr-only">
@@ -592,7 +592,7 @@ export default function ItemForm({
                                 )
                               ) : (
                                 <span className="text-muted-foreground text-sm">
-                                  {value.placeholder ?? "Select options"}
+                                  {value.placeholder ?? "Select items..."}
                                 </span>
                               )}
                             </div>
@@ -613,7 +613,7 @@ export default function ItemForm({
                                 }}
                               >
                                 <SelectTrigger id={key} className="w-full">
-                                  <SelectValue placeholder="Add option..." />
+                                  <SelectValue placeholder="Add item..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {resolvedOptions
