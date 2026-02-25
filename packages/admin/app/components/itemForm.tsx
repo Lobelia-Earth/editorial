@@ -162,6 +162,19 @@ export default function ItemForm({
           break;
         case "multiselect":
           fieldSchema = z.array(z.string());
+          // Apply min/max constraints
+          if (field.minSelectedOptions) {
+            fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
+              field.minSelectedOptions,
+              `${field.displayName} requires at least ${field.minSelectedOptions} selection${field.minSelectedOptions > 1 ? "s" : ""}`,
+            );
+          }
+          if (field.maxSelectedOptions) {
+            fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).max(
+              field.maxSelectedOptions,
+              `${field.displayName} allows maximum ${field.maxSelectedOptions} selection${field.maxSelectedOptions > 1 ? "s" : ""}`,
+            );
+          }
           break;
         default:
           fieldSchema = z.string();
@@ -170,11 +183,15 @@ export default function ItemForm({
       if (field.optional) {
         if (field.type === "multiselect") {
           // Multiselect is already optional by allowing empty array
-          fieldSchema = fieldSchema.optional();
+          // But if minSelectedOptions is set, it overrides optional
+          if (!field.minSelectedOptions) {
+            fieldSchema = fieldSchema.optional();
+          }
         } else {
           fieldSchema = fieldSchema.optional().or(z.literal(""));
         }
-      } else if (field.type === "multiselect") {
+      } else if (field.type === "multiselect" && !field.minSelectedOptions) {
+        // If not optional and no minSelectedOptions, require at least 1
         fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
           1,
           `${field.displayName} requires at least one selection`,
@@ -427,6 +444,11 @@ export default function ItemForm({
                   required: !value.optional,
                 }}
                 render={({ field }) => {
+                  const selectedCount = (field.value as string[])?.length ?? 0;
+                  const hasMinMax =
+                    value.type === "multiselect" &&
+                    (value.minSelectedOptions || value.maxSelectedOptions);
+
                   return (
                     <FormItem id={key}>
                       <FormLabel className="flex gap-1 items-baseline">
@@ -589,8 +611,7 @@ export default function ItemForm({
                               )}
                             </div>
                             {(!value.maxSelectedOptions ||
-                              (field.value as string[])?.length <
-                                value.maxSelectedOptions) && (
+                              selectedCount < value.maxSelectedOptions) && (
                               <Select
                                 value=""
                                 onValueChange={(newValue) => {
@@ -623,10 +644,23 @@ export default function ItemForm({
                                 </SelectContent>
                               </Select>
                             )}
-                            {value.maxSelectedOptions && (
-                              <span className="text-xs text-muted-foreground">
-                                {(field.value as string[])?.length ?? 0} /{" "}
-                                {value.maxSelectedOptions} selected
+                            {hasMinMax && (
+                              <span
+                                className={cn(
+                                  "text-xs",
+                                  value.minSelectedOptions &&
+                                    selectedCount < value.minSelectedOptions
+                                    ? "text-destructive"
+                                    : "text-muted-foreground",
+                                )}
+                              >
+                                {selectedCount}
+                                {value.minSelectedOptions &&
+                                value.maxSelectedOptions
+                                  ? `/${value.maxSelectedOptions} (min ${value.minSelectedOptions})`
+                                  : value.minSelectedOptions
+                                    ? ` selected (min ${value.minSelectedOptions})`
+                                    : `/${value.maxSelectedOptions} selected`}
                               </span>
                             )}
                           </div>
