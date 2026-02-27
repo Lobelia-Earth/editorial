@@ -22,7 +22,7 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
 
   return (
     <div className="overflow-auto scrollbar-stable">
-      <div className="flex p-4 gap-4">
+      <div className="p-4 gap-4">
         <ItemForm
           key={`${collectionId}-${documentId}`}
           itemType={collectionId}

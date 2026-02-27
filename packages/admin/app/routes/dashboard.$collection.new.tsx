@@ -11,7 +11,7 @@ export default function Page({ params }: Route.ComponentProps) {
 
   return (
     <div className="overflow-auto">
-      <div className="flex p-4 gap-4">
+      <div className=" p-4 gap-4">
         <ItemForm
           itemType={collectionId}
           fields={schema.fields}
