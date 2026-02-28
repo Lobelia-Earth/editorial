@@ -4,7 +4,7 @@ import {
   useGetFileCountQuery,
 } from "@/lib/store/slices/editorialApi";
 import DraftsSection from "./drafts";
-import RecentActivitySection from "./recentActivity";
+import UnpublishedChangesSection from "./unpublishedChangesSection";
 
 export default function Dashboard() {
   const { data: dataCount, isLoading: dataCountLoading } =
@@ -30,7 +30,8 @@ export default function Dashboard() {
           />
         </div>
 
-        <RecentActivitySection />
+        {/* <RecentActivitySection /> */}
+        <UnpublishedChangesSection />
         <DraftsSection />
       </div>
     </div>

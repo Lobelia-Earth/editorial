@@ -2,6 +2,7 @@ import type {
   EditorialConfig,
   EditorialData,
   EditorialDataItem,
+  EditorialDiffResponse,
   EditorialFile,
   EditorialFiles,
   EditorialFilesResponse,
@@ -67,6 +68,10 @@ export const editorialApi = createApi({
     }),
     getData: builder.query<EditorialData, void>({
       query: () => "/data?preview=true",
+      providesTags: () => [{ type: "data" }],
+    }),
+    getDataDiff: builder.query<EditorialDiffResponse, void>({
+      query: () => "/diff",
       providesTags: () => [{ type: "data" }],
     }),
     getDataCount: builder.query<number, void>({
@@ -208,6 +213,7 @@ export const {
   useGetDataCountQuery,
   useGetDataObjectQuery,
   useGetDataQuery,
+  useGetDataDiffQuery,
   useGetFileCountQuery,
   useGetFilesQuery,
   useGetFilesTotalSizeQuery,

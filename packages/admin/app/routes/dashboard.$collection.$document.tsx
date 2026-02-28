@@ -1,13 +1,18 @@
 import ItemForm from "@/components/itemForm";
 import {
+  useGetDataDiffQuery,
   useGetDataObjectQuery,
   useGetSchemaTypeQuery,
 } from "@/lib/store/slices/editorialApi";
+import type { EditorialDataItemStatus } from "@isardsat/editorial-common";
+import { useMemo, useState } from "react";
 import type { Route } from "./+types/dashboard.$collection.$document";
 
 export default function CollectionItemPage({ params }: Route.ComponentProps) {
   const { collectionId, documentId } = params;
-
+  const [itemStatus, setItemStatus] = useState<
+    EditorialDataItemStatus | undefined
+  >(undefined);
   const { data: schema, isFetching: isSchemaFetching } =
     useGetSchemaTypeQuery(collectionId);
   const { data: item, isFetching: isDataObjectFetching } =
@@ -15,6 +20,34 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
       itemType: collectionId,
       id: documentId,
     });
+  const { data: diffData } = useGetDataDiffQuery();
+
+  const changedFields = useMemo(() => {
+    if (!diffData) return [];
+
+    // Check if it's a singleton
+    const single = diffData.singles[collectionId];
+    if (single?.changedFields) {
+      setItemStatus(single.status);
+      return single.changedFields;
+    }
+
+    // Check collections
+    const collection = diffData.collections[collectionId];
+    if (!collection) return [];
+
+    const modifiedItem = collection.modified.find((m) => m.id === documentId);
+    if (modifiedItem) {
+      setItemStatus("modified");
+      return modifiedItem.changedFields;
+    }
+
+    if (collection.added.find((m) => m.id === documentId)) {
+      setItemStatus("added");
+    }
+
+    return [];
+  }, [diffData, collectionId, documentId]);
 
   const isFetching = isSchemaFetching || isDataObjectFetching;
 
@@ -29,6 +62,8 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
           fields={schema.fields}
           data={item ?? undefined}
           isSingleton={schema.singleton}
+          changedFields={changedFields}
+          itemStatus={itemStatus}
         />
       </div>
     </div>
