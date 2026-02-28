@@ -8,6 +8,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
+
+import {
   useDeleteObjectMutation,
   useGetDataQuery,
   useGetSchemaTypeQuery,
@@ -130,21 +142,50 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
       header: () => <span className="flex justify-end ml-auto"></span>,
       cell(props) {
         return (
-          <div className="flex gap-2 justify-end">
-            <button
-              className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
-              onClick={(event) => {
-                event.stopPropagation();
+          <div
+            className="flex gap-2 justify-end"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="hover:text-red-500 p-1 hover:bg-muted rounded-sm">
+                  <Trash size={16} />
+                  <span className="sr-only">Delete entry</span>
+                </button>
+              </AlertDialogTrigger>
 
-                trigger({
-                  type: itemType,
-                  id: props.row.original.id,
-                });
-              }}
-            >
-              <Trash size={16} className="group-hover:text-red-400" />
-              <span className="sr-only">Delete entry</span>
-            </button>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Delete <i>{props.row.original.id}</i>?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    this object.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700 cursor-pointer"
+                    onClick={() =>
+                      trigger({
+                        type: itemType,
+                        id: props.row.original.id,
+                      })
+                    }
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         );
       },
