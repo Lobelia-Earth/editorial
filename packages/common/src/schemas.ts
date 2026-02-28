@@ -133,6 +133,8 @@ export const EditorialFilesResponseSchema = z.object({
 
 export const EditorialFilesSchema = z.array(EditorialFileSchema);
 
+const itemStatus = ["added", "modified", "deleted"] as const;
+
 export const EditorialDiffResponseSchema = z.object({
   collections: z.record(
     z.string(),
@@ -150,6 +152,7 @@ export const EditorialDiffResponseSchema = z.object({
           preview: EditorialDataItemSchema,
           production: EditorialDataItemSchema,
           updatedAt: z.string().optional(),
+          changedFields: z.array(z.string()),
         }),
       ),
       deleted: z.array(
@@ -163,10 +166,11 @@ export const EditorialDiffResponseSchema = z.object({
   singles: z.record(
     z.string(),
     z.object({
-      status: z.enum(["added", "modified", "deleted"]),
+      status: z.enum(itemStatus),
       preview: EditorialDataItemSchema.optional(),
       production: EditorialDataItemSchema.optional(),
       updatedAt: z.string().optional(),
+      changedFields: z.array(z.string()).optional(),
     }),
   ),
 });
@@ -177,3 +181,4 @@ export type EditorialFilesResponse = z.infer<
   typeof EditorialFilesResponseSchema
 >;
 export type EditorialDiffResponse = z.infer<typeof EditorialDiffResponseSchema>;
+export type EditorialDataItemStatus = (typeof itemStatus)[number];

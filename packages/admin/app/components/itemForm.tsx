@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -23,10 +24,11 @@ import {
   useGetDataQuery,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
-import { cn } from "@/lib/utils";
+import { cn, statusColors } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   EditorialDataItem,
+  EditorialDataItemStatus,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import {
@@ -53,6 +55,8 @@ export interface SinglesPageProps {
   isSingleton?: boolean;
   data?: EditorialDataItem;
   isNew?: boolean;
+  changedFields?: string[];
+  itemStatus?: EditorialDataItemStatus;
 }
 
 export default function ItemForm({
@@ -61,6 +65,8 @@ export default function ItemForm({
   isSingleton,
   data,
   isNew,
+  changedFields = [],
+  itemStatus,
 }: SinglesPageProps) {
   const navigate = useNavigate();
   const { hash } = useLocation();
@@ -68,6 +74,8 @@ export default function ItemForm({
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
   const { data: allData } = useGetDataQuery();
+
+  const isFieldChanged = (fieldKey: string) => changedFields.includes(fieldKey);
 
   useEffect(() => {
     if (!hash) return;
@@ -299,13 +307,33 @@ export default function ItemForm({
     return map;
   }, [fields, allData]);
 
+  const changedFieldStyles =
+    "outline outline-1 outline-yellow-400 outline-offset-4 rounded-sm";
+
+  const ModifiedMessage = () => (
+    <span className="text-yellow-800 text-xs">(modified)</span>
+  );
+
   return (
     <>
-      <p className="text-sm text-muted-foreground mb-4 block">
-        {data &&
-          data.updatedAt &&
-          `Last updated: ${new Date(data.updatedAt).toLocaleString()}`}
-      </p>
+      <div className="flex items-center gap-4 mb-4">
+        {data && data.updatedAt && (
+          <div className="flex items-center gap-1">
+            <p className="text-sm text-muted-foreground">Last updated:</p>
+            <p className="text-sm">
+              {new Date(data.updatedAt).toLocaleString()}
+            </p>
+          </div>
+        )}
+        {itemStatus && (
+          <div className="flex items-center gap-1">
+            <p className="text-sm text-muted-foreground">Unpublished status:</p>
+            <Badge className={cn("capitalize", statusColors[itemStatus])}>
+              {itemStatus}
+            </Badge>
+          </div>
+        )}
+      </div>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -321,10 +349,12 @@ export default function ItemForm({
                   id="id"
                   className={cn(
                     (data?.id === "default" || isSingleton) && "hidden",
+                    isFieldChanged("id") && changedFieldStyles,
                   )}
                 >
                   <FormLabel className="flex gap-1 items-baseline">
                     ID
+                    {isFieldChanged("id") && <ModifiedMessage />}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -366,6 +396,7 @@ export default function ItemForm({
                 className={cn(
                   "flex flex-col items-start",
                   (data?.id === "default" || isSingleton) && "hidden",
+                  isFieldChanged("isDraft") && changedFieldStyles,
                 )}
               >
                 <div className="flex flex-row space-x-2">
@@ -383,6 +414,11 @@ export default function ItemForm({
                   </FormControl>
                   <FormLabel className="flex gap-1 items-baseline">
                     Draft
+                    {isFieldChanged("isDraft") && (
+                      <span className="text-yellow-600 text-xs">
+                        <ModifiedMessage />
+                      </span>
+                    )}
                   </FormLabel>
                 </div>
                 <FormDescription>
@@ -404,7 +440,12 @@ export default function ItemForm({
                       name={key}
                       control={form.control}
                       render={({ field }) => (
-                        <FormItem className="flex flex-col items-start">
+                        <FormItem
+                          className={cn(
+                            "flex flex-col items-start",
+                            isFieldChanged(key) && changedFieldStyles,
+                          )}
+                        >
                           <div className="flex flex-row space-x-2">
                             <FormControl>
                               <Checkbox
@@ -420,6 +461,11 @@ export default function ItemForm({
                             </FormControl>
                             <FormLabel className="flex gap-1 items-baseline">
                               {value.displayName}
+                              {isFieldChanged(key) && (
+                                <span className="text-yellow-800 text-xs">
+                                  <ModifiedMessage />
+                                </span>
+                              )}
                             </FormLabel>
                           </div>
                           {value.displayExtra && (
@@ -459,11 +505,21 @@ export default function ItemForm({
                       (value.minSelectedOptions || value.maxSelectedOptions);
 
                     return (
-                      <FormItem id={key}>
+                      <FormItem
+                        id={key}
+                        className={cn(
+                          isFieldChanged(key) && changedFieldStyles,
+                        )}
+                      >
                         <FormLabel className="flex gap-1 items-baseline">
                           {value.displayName}
                           {value.optional && (
                             <span className="text-gray-400">(optional)</span>
+                          )}
+                          {isFieldChanged(key) && (
+                            <span className="text-yellow-600 text-xs">
+                              <ModifiedMessage />
+                            </span>
                           )}
                         </FormLabel>
                         <FormControl>
