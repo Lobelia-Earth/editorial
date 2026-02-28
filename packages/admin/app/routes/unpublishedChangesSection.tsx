@@ -209,7 +209,9 @@ export default function UnpublishedChangesSection() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>{table.getRowModel().rows.map(renderRow)}</TableBody>
+          <TableBody className="max-h-96 overflow-y-scroll">
+            {table.getRowModel().rows.map(renderRow)}
+          </TableBody>
         </Table>
       </div>
     </div>
