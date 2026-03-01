@@ -27,6 +27,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
     createRoute({
       method: "get",
       path: "/files",
+      summary: "Get tree of public files with total size",
       request: {
         query: z.object({
           preview: z.string().optional(),
@@ -42,6 +43,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
           description: "Get tree of public files with total size",
         },
       },
+      tags: ["Files"],
     }),
     // TODO: Index large files from bucket.
     async (c) => {
@@ -144,6 +146,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
     createRoute({
       method: "delete",
       path: "/files",
+      summary: "Delete a file or directory (moved to deleted folder)",
       request: {
         body: {
           content: {
@@ -181,6 +184,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
           description: "Server error",
         },
       },
+      tags: ["Files"],
     }),
     async (c) => {
       const { path: relativePathInput } = c.req.valid("json");
@@ -221,6 +225,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
     createRoute({
       method: "put",
       path: "/files",
+      summary: "Upload files to a specified directory",
       request: {
         body: {
           content: {
@@ -264,6 +269,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
           description: "Server error",
         },
       },
+      tags: ["Files"],
     }),
     async (c) => {
       try {
@@ -316,6 +322,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
     createRoute({
       method: "post",
       path: "/files/directory",
+      summary: "Create a new directory",
       request: {
         body: {
           content: {
@@ -373,6 +380,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
           description: "Server error",
         },
       },
+      tags: ["Files"],
     }),
     async (c) => {
       try {

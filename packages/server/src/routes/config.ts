@@ -20,10 +20,11 @@ export function createConfigRoutes(config: EditorialConfig) {
           description: "Editorial configuration",
         },
       },
+      tags: ["Config"],
     },
     (c) => {
       return c.json(config);
-    }
+    },
   );
 
   return app;
