@@ -1,6 +1,7 @@
 import {
   EditorialSchemaItemFieldSchema,
   EditorialSchemaItemFieldType,
+  EditorialSchemaItemSchema,
 } from "@isardsat/editorial-common";
 import { z } from "zod";
 
@@ -15,8 +16,8 @@ type GenerateMetaSchemaOptions = {
 export function generateMetaSchema(options: GenerateMetaSchemaOptions = {}) {
   const { allowedExtraFields = [] } = options;
 
-  function generateFieldDefinition() {
-    const fieldShape = EditorialSchemaItemFieldSchema.shape;
+  function generateDefinition(schema: any) {
+    const fieldShape = schema.shape;
     const properties: Record<string, any> = {};
     const required: string[] = [];
 
@@ -100,7 +101,12 @@ export function generateMetaSchema(options: GenerateMetaSchemaOptions = {}) {
     };
   }
 
-  const fieldDefinition = generateFieldDefinition();
+  const fieldDefinition = generateDefinition(EditorialSchemaItemFieldSchema);
+  const schemaItemDefinition = generateDefinition(EditorialSchemaItemSchema);
+  schemaItemDefinition.properties.fields = {
+    type: "object",
+    additionalProperties: { $ref: "#/definitions/Field" },
+  };
 
   return {
     $schema: "http://json-schema.org/draft-07/schema#",
@@ -108,20 +114,7 @@ export function generateMetaSchema(options: GenerateMetaSchemaOptions = {}) {
     type: "object",
     additionalProperties: { $ref: "#/definitions/SchemaItem" },
     definitions: {
-      SchemaItem: {
-        type: "object",
-        required: ["displayName", "fields"],
-        properties: {
-          displayName: { type: "string" },
-          filterBy: { type: "string" },
-          singleton: { type: "boolean" },
-          fields: {
-            type: "object",
-            additionalProperties: { $ref: "#/definitions/Field" },
-          },
-        },
-        additionalProperties: false,
-      },
+      SchemaItem: schemaItemDefinition,
       Field: fieldDefinition,
     },
   };
