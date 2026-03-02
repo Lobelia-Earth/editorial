@@ -27,13 +27,24 @@ export const initCommand = new Command()
           previewUrl: "http://localhost:3001/preview/",
         },
         null,
-        2
+        2,
       );
       await writeFile(path.join("editorial", "config.json"), configData);
       console.log("Created config.json");
 
       // Create schema.yaml with a dummy schema
-      const schemaData = `# Editorial Schema
+      const schemaData = `
+      # ----------------------------------- Editorial Meta Schema YAML File ------------------------------------
+      # If you are using an editor that supports JSON Schema, you can use the following URL 
+      # to get validation and autocompletion based on the Editorial meta-schema. 
+      # For example, VSCode with redhat.vscode-yaml extension should work out of the box.
+      # Make sure to replace "localhost:3001" with the actual address of your Editorial if it's different.
+      # Don't uncomment the line below, it is required for the editor to recognize the schema.
+      # yaml-language-server: $schema=http://localhost:3001/api/v1/meta-schema?allowedExtraFields=dontTranslate
+      #----------------------------------------------------------------------------------------------------------
+
+      
+      # Editorial Schema
 dummy:
   displayName: Dummy Object
   fields:
@@ -62,7 +73,7 @@ dummy:
           },
         },
         null,
-        2
+        2,
       );
       await writeFile(path.join("editorial", "data.json"), dataJson);
       console.log("Created data.json");
