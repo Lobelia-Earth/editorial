@@ -1,5 +1,18 @@
 # @isardsat/editorial-client
 
+## 6.15.0
+
+### Minor Changes
+
+- 7ff5f4d: - Adds a new /api/v1/meta-schema endpoint that returns the JSON Schema for the Editorial configuration.
+  - Includes optional `allowedExtraFields` parameter to allow additional fields not defined in the meta-schema.
+  - - Updated the CLI `init` command to automatically add the line `# yaml-language-server: $schema=http://localhost:3001/api/v1/meta-schema` to schema.yml
+
+### Patch Changes
+
+- Updated dependencies [7ff5f4d]
+  - @isardsat/editorial-common@6.15.0
+
 ## 6.14.0
 
 ### Minor Changes
