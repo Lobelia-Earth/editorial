@@ -12,6 +12,7 @@ import {
   type EditorialSchema,
 } from "@isardsat/editorial-common";
 import type { Storage } from "../lib/storage.js";
+import { generateMetaSchema } from "../lib/utils/schema.js";
 
 interface CacheEntry<T> {
   data: T;
@@ -271,6 +272,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "get",
       path: "/schema",
+      summary: "Get Editorial schema",
       responses: {
         200: {
           content: {
@@ -281,6 +283,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Get Editorial schema",
         },
       },
+      tags: ["Schema"],
     }),
     async (c) => {
       const schema = await cache.getSchema(storage);
@@ -293,6 +296,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "get",
       path: "/data",
+      summary: "Get all Editorial data",
       request: {
         query: z.object({
           lang: z
@@ -322,6 +326,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Get all Editorial data",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       const { preview, resolve } = c.req.valid("query");
@@ -355,6 +360,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "get",
       path: "/data/{itemType}",
+      summary: "Get objects data by type",
       request: {
         params: z.object({
           itemType: z.string().openapi({
@@ -393,6 +399,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Collection not found",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       const { itemType } = c.req.valid("param");
@@ -459,6 +466,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "get",
       path: "/data/{itemType}/ids",
+      summary: "Get object ids by type",
       request: {
         params: z.object({
           itemType: z.string().openapi({
@@ -483,6 +491,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Item not found",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       const { itemType } = c.req.valid("param");
@@ -502,6 +511,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "get",
       path: "/data/{itemType}/{id}",
+      summary: "Get object data by type and id",
       request: {
         params: z.object({
           itemType: z.string().openapi({
@@ -544,6 +554,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Collection or item not found",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
@@ -602,6 +613,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "put",
       path: "/data/{itemType}/{id}",
+      summary: "Create or update object data by type and id",
       request: {
         params: z.object({
           itemType: z.string().openapi({
@@ -632,6 +644,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Create a new object",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       const itemAtts = await c.req.json();
@@ -647,6 +660,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "patch",
       path: "/data/{itemType}/{id}",
+      summary: "Update object data by type and id",
       request: {
         params: z.object({
           itemType: z.string().openapi({
@@ -677,6 +691,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Update object",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       const itemAtts = await c.req.json();
@@ -692,6 +707,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "delete",
       path: "/data/{itemType}/{id}",
+      summary: "Delete object by type and id",
       request: {
         params: z.object({
           itemType: z.string().openapi({
@@ -714,6 +730,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Delete object",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
@@ -722,6 +739,49 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       cache.invalidateContent();
 
       return c.json(true, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/meta-schema",
+      summary: "Get Editorial meta-schema",
+      request: {
+        query: z.object({
+          allowedExtraFields: z
+            .string()
+            .optional()
+            .openapi({
+              param: { name: "allowedExtraFields", in: "query" },
+              example: "customField,legacyField",
+              description:
+                "Comma-separated list of extra field names that exist in the Editorial's schema but should not cause validation errors",
+            }),
+        }),
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.record(z.string(), z.any()),
+            },
+          },
+          description:
+            "JSON Schema meta-schema for the Editorial configuration",
+        },
+      },
+      tags: ["Schema"],
+    }),
+    async (c) => {
+      const { allowedExtraFields: allowedExtraFieldsParam } =
+        c.req.valid("query");
+      const allowedExtraFields = allowedExtraFieldsParam
+        ? allowedExtraFieldsParam.split(",").map((f) => f.trim())
+        : [];
+
+      const metaSchema = generateMetaSchema({ allowedExtraFields });
+      return c.json(metaSchema);
     },
   );
 

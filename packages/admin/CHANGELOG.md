@@ -1,5 +1,29 @@
 # @isardsat/editorial-admin
 
+## 6.16.0
+
+### Minor Changes
+
+- 5ae66db: Improves init command to ensure all required files are created even if the editorial directory already exists.
+
+### Patch Changes
+
+- Updated dependencies [5ae66db]
+  - @isardsat/editorial-common@6.16.0
+
+## 6.15.0
+
+### Minor Changes
+
+- 7ff5f4d: - Adds a new /api/v1/meta-schema endpoint that returns the JSON Schema for the Editorial configuration.
+  - Includes optional `allowedExtraFields` parameter to allow additional fields not defined in the meta-schema.
+  - - Updated the CLI `init` command to automatically add the line `# yaml-language-server: $schema=http://localhost:3001/api/v1/meta-schema` to schema.yml
+
+### Patch Changes
+
+- Updated dependencies [7ff5f4d]
+  - @isardsat/editorial-common@6.15.0
+
 ## 6.14.0
 
 ### Minor Changes
