@@ -1,5 +1,20 @@
 # @isardsat/editorial-server
 
+## 6.17.0
+
+### Minor Changes
+
+- 74f9fff: - Adds /api/v1/diff endpoint that compares preview and production data.
+  - Adds an unpublished changes table on dashboard showing all pending changes with color-coded status badge.
+  - Highlight modified fields in ItemForm with yellow ring and "(modified)" label.
+  - Adds delete confirmation dialog to prevent accidental deletions.
+
+### Patch Changes
+
+- Updated dependencies [74f9fff]
+  - @isardsat/editorial-admin@6.17.0
+  - @isardsat/editorial-common@6.17.0
+
 ## 6.16.0
 
 ### Minor Changes
