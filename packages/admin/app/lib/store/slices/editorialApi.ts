@@ -2,6 +2,7 @@ import type {
   EditorialConfig,
   EditorialData,
   EditorialDataItem,
+  EditorialDiffResponse,
   EditorialFile,
   EditorialFiles,
   EditorialFilesResponse,
@@ -29,7 +30,7 @@ export const ssrAwareBaseQuery = async (
 export const editorialApi = createApi({
   reducerPath: "editorialApi",
   baseQuery: ssrAwareBaseQuery,
-  tagTypes: ["schema", "data", "files", "config"],
+  tagTypes: ["schema", "data", "files", "config", "dataDiff"],
   endpoints: (builder) => ({
     getConfig: builder.query<EditorialConfig, void>({
       query: () => "/config",
@@ -51,6 +52,7 @@ export const editorialApi = createApi({
         method: "POST",
         body: { author },
       }),
+      invalidatesTags: () => [{ type: "dataDiff" }],
     }),
     getSchema: builder.query<EditorialSchema, void>({
       query: () => "/schema",
@@ -68,6 +70,10 @@ export const editorialApi = createApi({
     getData: builder.query<EditorialData, void>({
       query: () => "/data?preview=true",
       providesTags: () => [{ type: "data" }],
+    }),
+    getDataDiff: builder.query<EditorialDiffResponse, void>({
+      query: () => "/diff",
+      providesTags: () => [{ type: "dataDiff" }],
     }),
     getDataCount: builder.query<number, void>({
       query: () => "/data?preview=true",
@@ -173,7 +179,7 @@ export const editorialApi = createApi({
         method: "PATCH",
         body: { id, type, ...patch },
       }),
-      invalidatesTags: () => [{ type: "data" }],
+      invalidatesTags: () => [{ type: "data" }, { type: "dataDiff" }],
     }),
     createObject: builder.mutation<
       EditorialDataItem,
@@ -184,7 +190,7 @@ export const editorialApi = createApi({
         method: "PUT",
         body: { id, type, ...put },
       }),
-      invalidatesTags: () => [{ type: "data" }],
+      invalidatesTags: () => [{ type: "data" }, { type: "dataDiff" }],
     }),
     deleteObject: builder.mutation<
       void,
@@ -194,7 +200,7 @@ export const editorialApi = createApi({
         url: `/data/${type}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: () => [{ type: "data" }],
+      invalidatesTags: () => [{ type: "data" }, { type: "dataDiff" }],
     }),
   }),
 });
@@ -208,6 +214,7 @@ export const {
   useGetDataCountQuery,
   useGetDataObjectQuery,
   useGetDataQuery,
+  useGetDataDiffQuery,
   useGetFileCountQuery,
   useGetFilesQuery,
   useGetFilesTotalSizeQuery,

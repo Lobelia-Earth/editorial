@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -23,10 +24,11 @@ import {
   useGetDataQuery,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
-import { cn } from "@/lib/utils";
+import { cn, statusColors } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   EditorialDataItem,
+  EditorialDataItemStatus,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import {
@@ -53,6 +55,8 @@ export interface SinglesPageProps {
   isSingleton?: boolean;
   data?: EditorialDataItem;
   isNew?: boolean;
+  changedFields?: string[];
+  itemStatus?: EditorialDataItemStatus;
 }
 
 export default function ItemForm({
@@ -61,6 +65,8 @@ export default function ItemForm({
   isSingleton,
   data,
   isNew,
+  changedFields = [],
+  itemStatus,
 }: SinglesPageProps) {
   const navigate = useNavigate();
   const { hash } = useLocation();
@@ -68,6 +74,8 @@ export default function ItemForm({
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
   const { data: allData } = useGetDataQuery();
+
+  const isFieldChanged = (fieldKey: string) => changedFields.includes(fieldKey);
 
   useEffect(() => {
     if (!hash) return;
@@ -299,216 +307,258 @@ export default function ItemForm({
     return map;
   }, [fields, allData]);
 
+  const changedFieldStyles =
+    "outline outline-1 outline-yellow-400 outline-offset-4 rounded-sm";
+
+  const ModifiedMessage = () => (
+    <span className="text-yellow-800 text-xs">(modified)</span>
+  );
+
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 max-w-[800px] w-[800px]"
-      >
-        <FormField
-          name="id"
-          control={form.control}
-          rules={{ required: true }}
-          render={({ field }) => {
-            return (
-              <FormItem
-                id="id"
-                className={cn(
-                  (data?.id === "default" || isSingleton) && "hidden",
-                )}
-              >
-                <FormLabel className="flex gap-1 items-baseline">ID</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="item-id"
-                    {...form.register("id")}
-                    {...field}
-                    value={field.value as string}
-                    onChange={(e) => {
-                      const alphanumericValue = e.target.value
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")
-                        .replace(/-+/g, "-")
-                        .replace(/[^a-z0-9-]/g, "");
-
-                      field.onChange(alphanumericValue);
-                    }}
-                    onBlur={(e) => {
-                      const trimmedValue = e.target.value
-                        .trim()
-                        .replace(/^-+|-+$/g, "");
-
-                      field.onChange(trimmedValue);
-                    }}
-                  />
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-
-        <FormField
-          name="isDraft"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem
-              id="isDraft"
-              className={cn(
-                "flex flex-col items-start",
-                (data?.id === "default" || isSingleton) && "hidden",
-              )}
-            >
-              <div className="flex flex-row space-x-2">
-                <FormControl>
-                  <Checkbox
-                    id="isDraft"
-                    {...form.register("isDraft")}
-                    checked={field.value === "true"}
-                    onCheckedChange={(newCheckedState) => {
-                      field.onChange(
-                        newCheckedState === true ? "true" : "false",
-                      );
-                    }}
-                  />
-                </FormControl>
-                <FormLabel className="flex gap-1 items-baseline">
-                  Draft
-                </FormLabel>
-              </div>
-              <FormDescription>
-                Draft items are not visible on the published site
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {flagFields.length > 0 && (
-          <div className="flex flex-col gap-3">
-            <FormLabel>Flags</FormLabel>
-            <div className="flex flex-row flex-wrap gap-4">
-              {flagFields.map(([key, value]) => {
-                return (
-                  <FormField
-                    key={key}
-                    name={key}
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col items-start">
-                        <div className="flex flex-row space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              id={key}
-                              {...form.register(key)}
-                              checked={field.value === "true"}
-                              onCheckedChange={(newCheckedState) => {
-                                field.onChange(
-                                  newCheckedState === true ? "true" : "false",
-                                );
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="flex gap-1 items-baseline">
-                            {value.displayName}
-                          </FormLabel>
-                        </div>
-                        {value.displayExtra && (
-                          <FormDescription>
-                            {value.displayExtra}
-                          </FormDescription>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                );
-              })}
-            </div>
+    <>
+      <div className="flex items-center gap-4 mb-4">
+        {data && data.updatedAt && (
+          <div className="flex items-center gap-1">
+            <p className="text-sm text-muted-foreground">Last updated:</p>
+            <p className="text-sm">
+              {new Date(data.updatedAt).toLocaleString()}
+            </p>
           </div>
         )}
+        {itemStatus && (
+          <div className="flex items-center gap-1">
+            <p className="text-sm text-muted-foreground">Unpublished status:</p>
+            <Badge className={cn("capitalize", statusColors[itemStatus])}>
+              {itemStatus}
+            </Badge>
+          </div>
+        )}
+      </div>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4 max-w-[800px] w-[800px]"
+        >
+          <FormField
+            name="id"
+            control={form.control}
+            rules={{ required: true }}
+            render={({ field }) => {
+              return (
+                <FormItem
+                  id="id"
+                  className={cn(
+                    (data?.id === "default" || isSingleton) && "hidden",
+                    isFieldChanged("id") && changedFieldStyles,
+                  )}
+                >
+                  <FormLabel className="flex gap-1 items-baseline">
+                    ID
+                    {isFieldChanged("id") && <ModifiedMessage />}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="item-id"
+                      {...form.register("id")}
+                      {...field}
+                      value={field.value as string}
+                      onChange={(e) => {
+                        const alphanumericValue = e.target.value
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")
+                          .replace(/-+/g, "-")
+                          .replace(/[^a-z0-9-]/g, "");
 
-        {Object.entries(fields)
-          .filter(([, value]) => value.type !== "boolean")
-          .map(([key, value]) => {
-            // Get resolved options for select/multiselect fields
-            const resolvedOptions = resolvedOptionsMap[key] ?? [];
+                        field.onChange(alphanumericValue);
+                      }}
+                      onBlur={(e) => {
+                        const trimmedValue = e.target.value
+                          .trim()
+                          .replace(/^-+|-+$/g, "");
 
-            return (
-              <FormField
-                key={key}
-                name={key}
-                control={form.control}
-                rules={{
-                  required: !value.optional,
-                }}
-                render={({ field }) => {
-                  const selectedCount = (field.value as string[])?.length ?? 0;
-                  const hasMinMax =
-                    value.type === "multiselect" &&
-                    (value.minSelectedOptions || value.maxSelectedOptions);
+                        field.onChange(trimmedValue);
+                      }}
+                    />
+                  </FormControl>
 
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+
+          <FormField
+            name="isDraft"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem
+                id="isDraft"
+                className={cn(
+                  "flex flex-col items-start",
+                  (data?.id === "default" || isSingleton) && "hidden",
+                  isFieldChanged("isDraft") && changedFieldStyles,
+                )}
+              >
+                <div className="flex flex-row space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      id="isDraft"
+                      {...form.register("isDraft")}
+                      checked={field.value === "true"}
+                      onCheckedChange={(newCheckedState) => {
+                        field.onChange(
+                          newCheckedState === true ? "true" : "false",
+                        );
+                      }}
+                    />
+                  </FormControl>
+                  <FormLabel className="flex gap-1 items-baseline">
+                    Draft
+                    {isFieldChanged("isDraft") && (
+                      <span className="text-yellow-600 text-xs">
+                        <ModifiedMessage />
+                      </span>
+                    )}
+                  </FormLabel>
+                </div>
+                <FormDescription>
+                  Draft items are not visible on the published site
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {flagFields.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <FormLabel>Flags</FormLabel>
+              <div className="flex flex-row flex-wrap gap-4">
+                {flagFields.map(([key, value]) => {
                   return (
-                    <FormItem id={key}>
-                      <FormLabel className="flex gap-1 items-baseline">
-                        {value.displayName}
-                        {value.optional && (
-                          <span className="text-gray-400">(optional)</span>
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        {value.type === "markdown" ? (
-                          <MarkdownEditor
-                            id={key}
-                            name={key}
-                            register={form.register}
-                            className="h-52"
-                            markdown={field.value as string}
-                            onChange={(value, initialChange) => {
-                              if (initialChange) return;
+                    <FormField
+                      key={key}
+                      name={key}
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem
+                          className={cn(
+                            "flex flex-col items-start",
+                            isFieldChanged(key) && changedFieldStyles,
+                          )}
+                        >
+                          <div className="flex flex-row space-x-2">
+                            <FormControl>
+                              <Checkbox
+                                id={key}
+                                {...form.register(key)}
+                                checked={field.value === "true"}
+                                onCheckedChange={(newCheckedState) => {
+                                  field.onChange(
+                                    newCheckedState === true ? "true" : "false",
+                                  );
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="flex gap-1 items-baseline">
+                              {value.displayName}
+                              {isFieldChanged(key) && (
+                                <span className="text-yellow-800 text-xs">
+                                  <ModifiedMessage />
+                                </span>
+                              )}
+                            </FormLabel>
+                          </div>
+                          {value.displayExtra && (
+                            <FormDescription>
+                              {value.displayExtra}
+                            </FormDescription>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-                              field.onChange(value);
-                            }}
-                            placeholder={value.placeholder}
-                            fieldDisplayName={value.displayName}
-                          />
-                        ) : value.type === "url" ? (
-                          <URLInput
-                            id={key}
-                            {...form.register(key)}
-                            placeholder={
-                              value.placeholder ?? "https://example.website/"
-                            }
-                            {...field}
-                            value={field.value as string}
-                          />
-                        ) : value.type === "string" && value.isUploadedFile ? (
-                          <FilePicker
-                            id={key}
-                            name={key}
-                            register={form.register}
-                            value={field.value as string}
-                            onChange={field.onChange}
-                          />
-                        ) : value.type === "date" ? (
-                          <DatePicker
-                            id={key}
-                            {...form.register(key)}
-                            date={
-                              field.value
-                                ? new Date(field.value as string)
-                                : undefined
-                            }
-                            onDateChange={(date) => {
-                              field.onChange(date ? date.toISOString() : "");
-                            }}
-                            placeholder={value.placeholder ?? "Select date"}
-                            allowClear={value.optional}
-                          />
-                        ) : value.type === "datetime" ? (
-                          <div className="relative">
-                            <DateTimePicker
+          {Object.entries(fields)
+            .filter(([, value]) => value.type !== "boolean")
+            .map(([key, value]) => {
+              // Get resolved options for select/multiselect fields
+              const resolvedOptions = resolvedOptionsMap[key] ?? [];
+
+              return (
+                <FormField
+                  key={key}
+                  name={key}
+                  control={form.control}
+                  rules={{
+                    required: !value.optional,
+                  }}
+                  render={({ field }) => {
+                    const selectedCount =
+                      (field.value as string[])?.length ?? 0;
+                    const hasMinMax =
+                      value.type === "multiselect" &&
+                      (value.minSelectedOptions || value.maxSelectedOptions);
+
+                    return (
+                      <FormItem
+                        id={key}
+                        className={cn(
+                          isFieldChanged(key) && changedFieldStyles,
+                        )}
+                      >
+                        <FormLabel className="flex gap-1 items-baseline">
+                          {value.displayName}
+                          {value.optional && (
+                            <span className="text-gray-400">(optional)</span>
+                          )}
+                          {isFieldChanged(key) && (
+                            <span className="text-yellow-600 text-xs">
+                              <ModifiedMessage />
+                            </span>
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          {value.type === "markdown" ? (
+                            <MarkdownEditor
+                              id={key}
+                              name={key}
+                              register={form.register}
+                              className="h-52"
+                              markdown={field.value as string}
+                              onChange={(value, initialChange) => {
+                                if (initialChange) return;
+
+                                field.onChange(value);
+                              }}
+                              placeholder={value.placeholder}
+                              fieldDisplayName={value.displayName}
+                            />
+                          ) : value.type === "url" ? (
+                            <URLInput
+                              id={key}
+                              {...form.register(key)}
+                              placeholder={
+                                value.placeholder ?? "https://example.website/"
+                              }
+                              {...field}
+                              value={field.value as string}
+                            />
+                          ) : value.type === "string" &&
+                            value.isUploadedFile ? (
+                            <FilePicker
+                              id={key}
+                              name={key}
+                              register={form.register}
+                              value={field.value as string}
+                              onChange={field.onChange}
+                            />
+                          ) : value.type === "date" ? (
+                            <DatePicker
                               id={key}
                               {...form.register(key)}
                               date={
@@ -516,199 +566,224 @@ export default function ItemForm({
                                   ? new Date(field.value as string)
                                   : undefined
                               }
-                              onDateTimeChange={(date) => {
+                              onDateChange={(date) => {
                                 field.onChange(date ? date.toISOString() : "");
                               }}
-                              placeholder={
-                                value.placeholder ?? "Select date and time"
-                              }
+                              placeholder={value.placeholder ?? "Select date"}
                               allowClear={value.optional}
                             />
-                          </div>
-                        ) : value.type === "color" ? (
-                          <ColorPicker
-                            id={key}
-                            value={field.value as string}
-                            onChange={field.onChange}
-                            placeholder={value.placeholder}
-                          />
-                        ) : value.type === "number" ? (
-                          <Input
-                            id={key}
-                            {...form.register(key, { valueAsNumber: true })}
-                            type="number"
-                            value={field.value as string}
-                            onChange={field.onChange}
-                            placeholder={value.placeholder}
-                          />
-                        ) : value.type === "select" ? (
-                          <div className="flex gap-2">
-                            <Select
+                          ) : value.type === "datetime" ? (
+                            <div className="relative">
+                              <DateTimePicker
+                                id={key}
+                                {...form.register(key)}
+                                date={
+                                  field.value
+                                    ? new Date(field.value as string)
+                                    : undefined
+                                }
+                                onDateTimeChange={(date) => {
+                                  field.onChange(
+                                    date ? date.toISOString() : "",
+                                  );
+                                }}
+                                placeholder={
+                                  value.placeholder ?? "Select date and time"
+                                }
+                                allowClear={value.optional}
+                              />
+                            </div>
+                          ) : value.type === "color" ? (
+                            <ColorPicker
+                              id={key}
                               value={field.value as string}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger id={key} className="w-full">
-                                <SelectValue
-                                  placeholder={
-                                    value.placeholder ?? "Select an item..."
-                                  }
-                                />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {resolvedOptions.map((option) => (
-                                  <SelectItem key={option} value={option}>
-                                    {option}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {value.optional && field.value && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                onClick={() => field.onChange("")}
-                                className="shrink-0"
+                              onChange={field.onChange}
+                              placeholder={value.placeholder}
+                            />
+                          ) : value.type === "number" ? (
+                            <Input
+                              id={key}
+                              {...form.register(key, { valueAsNumber: true })}
+                              type="number"
+                              value={field.value as string}
+                              onChange={field.onChange}
+                              placeholder={value.placeholder}
+                            />
+                          ) : value.type === "select" ? (
+                            <div className="flex gap-2">
+                              <Select
+                                value={field.value as string}
+                                onValueChange={field.onChange}
                               >
-                                <X size={16} />
-                                <span className="sr-only">Clear selection</span>
-                              </Button>
-                            )}
-                          </div>
-                        ) : value.type === "multiselect" ? (
-                          <div className="flex flex-col gap-2">
-                            <div className="flex flex-wrap gap-2 min-h-[38px] p-2 border rounded-md bg-background">
-                              {(field.value as string[])?.length > 0 ? (
-                                (field.value as string[]).map(
-                                  (selectedValue) => (
-                                    <span
-                                      key={selectedValue}
-                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-black-800"
-                                    >
-                                      {selectedValue}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const newValues = (
-                                            field.value as string[]
-                                          ).filter((v) => v !== selectedValue);
-                                          field.onChange(newValues);
-                                        }}
-                                        className="hover:bg-gray-200 rounded-sm p-0.5"
+                                <SelectTrigger id={key} className="w-full">
+                                  <SelectValue
+                                    placeholder={
+                                      value.placeholder ?? "Select an item..."
+                                    }
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {resolvedOptions.map((option) => (
+                                    <SelectItem key={option} value={option}>
+                                      {option}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {value.optional && field.value && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => field.onChange("")}
+                                  className="shrink-0"
+                                >
+                                  <X size={16} />
+                                  <span className="sr-only">
+                                    Clear selection
+                                  </span>
+                                </Button>
+                              )}
+                            </div>
+                          ) : value.type === "multiselect" ? (
+                            <div className="flex flex-col gap-2">
+                              <div className="flex flex-wrap gap-2 min-h-[38px] p-2 border rounded-md bg-background">
+                                {(field.value as string[])?.length > 0 ? (
+                                  (field.value as string[]).map(
+                                    (selectedValue) => (
+                                      <span
+                                        key={selectedValue}
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-black-800"
                                       >
-                                        <X size={14} />
-                                        <span className="sr-only">
-                                          Remove {selectedValue}
-                                        </span>
-                                      </button>
-                                    </span>
-                                  ),
-                                )
-                              ) : (
-                                <span className="text-muted-foreground text-sm">
-                                  {value.placeholder ?? "Select items..."}
+                                        {selectedValue}
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const newValues = (
+                                              field.value as string[]
+                                            ).filter(
+                                              (v) => v !== selectedValue,
+                                            );
+                                            field.onChange(newValues);
+                                          }}
+                                          className="hover:bg-gray-200 rounded-sm p-0.5"
+                                        >
+                                          <X size={14} />
+                                          <span className="sr-only">
+                                            Remove {selectedValue}
+                                          </span>
+                                        </button>
+                                      </span>
+                                    ),
+                                  )
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">
+                                    {value.placeholder ?? "Select items..."}
+                                  </span>
+                                )}
+                              </div>
+                              {(!value.maxSelectedOptions ||
+                                selectedCount < value.maxSelectedOptions) && (
+                                <Select
+                                  value=""
+                                  onValueChange={(newValue) => {
+                                    const currentValues =
+                                      (field.value as string[]) || [];
+                                    if (!currentValues.includes(newValue)) {
+                                      field.onChange([
+                                        ...currentValues,
+                                        newValue,
+                                      ]);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger id={key} className="w-full">
+                                    <SelectValue placeholder="Add item..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {resolvedOptions
+                                      .filter(
+                                        (option) =>
+                                          !(field.value as string[])?.includes(
+                                            option,
+                                          ),
+                                      )
+                                      .map((option) => (
+                                        <SelectItem key={option} value={option}>
+                                          {option}
+                                        </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                              {hasMinMax && (
+                                <span
+                                  className={cn(
+                                    "text-xs",
+                                    value.minSelectedOptions &&
+                                      selectedCount < value.minSelectedOptions
+                                      ? "text-destructive"
+                                      : "text-muted-foreground",
+                                  )}
+                                >
+                                  {selectedCount}
+                                  {value.minSelectedOptions &&
+                                  value.maxSelectedOptions
+                                    ? `/${value.maxSelectedOptions} (min ${value.minSelectedOptions})`
+                                    : value.minSelectedOptions
+                                      ? ` selected (min ${value.minSelectedOptions})`
+                                      : `/${value.maxSelectedOptions} selected`}
                                 </span>
                               )}
                             </div>
-                            {(!value.maxSelectedOptions ||
-                              selectedCount < value.maxSelectedOptions) && (
-                              <Select
-                                value=""
-                                onValueChange={(newValue) => {
-                                  const currentValues =
-                                    (field.value as string[]) || [];
-                                  if (!currentValues.includes(newValue)) {
-                                    field.onChange([
-                                      ...currentValues,
-                                      newValue,
-                                    ]);
-                                  }
-                                }}
-                              >
-                                <SelectTrigger id={key} className="w-full">
-                                  <SelectValue placeholder="Add item..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {resolvedOptions
-                                    .filter(
-                                      (option) =>
-                                        !(field.value as string[])?.includes(
-                                          option,
-                                        ),
-                                    )
-                                    .map((option) => (
-                                      <SelectItem key={option} value={option}>
-                                        {option}
-                                      </SelectItem>
-                                    ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                            {hasMinMax && (
-                              <span
-                                className={cn(
-                                  "text-xs",
-                                  value.minSelectedOptions &&
-                                    selectedCount < value.minSelectedOptions
-                                    ? "text-destructive"
-                                    : "text-muted-foreground",
-                                )}
-                              >
-                                {selectedCount}
-                                {value.minSelectedOptions &&
-                                value.maxSelectedOptions
-                                  ? `/${value.maxSelectedOptions} (min ${value.minSelectedOptions})`
-                                  : value.minSelectedOptions
-                                    ? ` selected (min ${value.minSelectedOptions})`
-                                    : `/${value.maxSelectedOptions} selected`}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <Input
-                            id={key}
-                            {...form.register(key)}
-                            placeholder={value.placeholder}
-                            {...field}
-                            value={field.value as string}
-                          />
+                          ) : (
+                            <Input
+                              id={key}
+                              {...form.register(key)}
+                              placeholder={value.placeholder}
+                              {...field}
+                              value={field.value as string}
+                            />
+                          )}
+                        </FormControl>
+                        {value.displayExtra && (
+                          <FormDescription>
+                            {value.displayExtra}
+                          </FormDescription>
                         )}
-                      </FormControl>
-                      {value.displayExtra && (
-                        <FormDescription>{value.displayExtra}</FormDescription>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-            );
-          })}
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              );
+            })}
 
-        <Button
-          disabled={
-            (!form.formState.isDirty && !isNew) || form.formState.isSubmitting
+          <Button
+            disabled={
+              (!form.formState.isDirty && !isNew) || form.formState.isSubmitting
+            }
+            type="submit"
+          >
+            {form.formState.isSubmitting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Save />
+            )}
+            {form.formState.isSubmitting
+              ? "Saving"
+              : form.watch("isDraft") === "true"
+                ? "Save Draft"
+                : "Save"}
+          </Button>
+        </form>
+
+        <UnsavedChangesGuard
+          hasUnsavedChanges={
+            !form.formState.isSubmitting && form.formState.isDirty
           }
-          type="submit"
-        >
-          {form.formState.isSubmitting ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <Save />
-          )}
-          {form.formState.isSubmitting
-            ? "Saving"
-            : form.watch("isDraft") === "true"
-              ? "Save Draft"
-              : "Save"}
-        </Button>
-      </form>
-
-      <UnsavedChangesGuard
-        hasUnsavedChanges={
-          !form.formState.isSubmitting && form.formState.isDirty
-        }
-      />
-    </Form>
+        />
+      </Form>
+    </>
   );
 }

@@ -2,11 +2,13 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   EditorialDataItemSchema,
   EditorialDataSchema,
+  EditorialDiffResponseSchema,
   EditorialSchemaSchema,
   getOptionsReference,
   type EditorialConfig,
   type EditorialData,
   type EditorialDataItem,
+  type EditorialDiffResponse,
   type EditorialSchema,
 } from "@isardsat/editorial-common";
 import type { Storage } from "../lib/storage.js";
@@ -193,6 +195,71 @@ function resolveCollectionReferences(
   }
 
   return resolvedCollection;
+}
+
+/**
+ * Compares two items and returns the list of fields that have changed.
+ * Excludes metadata fields like 'updatedAt'.
+ */
+function getChangedFields(
+  previewItem: EditorialDataItem,
+  productionItem: EditorialDataItem,
+): string[] {
+  const changedFields: string[] = [];
+  const excludedFields = ["updatedAt", "createdAt"];
+
+  // Get all unique keys from both items
+  const allKeys = new Set([
+    ...Object.keys(previewItem),
+    ...Object.keys(productionItem),
+  ]);
+
+  for (const key of allKeys) {
+    if (excludedFields.includes(key)) continue;
+
+    const previewValue = previewItem[key];
+    const productionValue = productionItem[key];
+
+    if (!deepEqual(previewValue, productionValue)) {
+      changedFields.push(key);
+    }
+  }
+
+  return changedFields;
+}
+
+/**
+ * Deep equality comparison for values.
+ */
+function deepEqual(value1: unknown, value2: unknown): boolean {
+  if (value1 === value2) return true;
+  if (value1 == null || value2 == null) return false;
+  if (typeof value1 !== typeof value2) return false;
+
+  if (typeof value1 !== "object") {
+    return value1 === value2;
+  }
+
+  if (Array.isArray(value1) !== Array.isArray(value2)) return false;
+
+  if (Array.isArray(value1)) {
+    if (value1.length !== (value2 as unknown[]).length) return false;
+    return value1.every((item, index) =>
+      deepEqual(item, (value2 as unknown[])[index]),
+    );
+  }
+
+  const keys1 = Object.keys(value1);
+  const keys2 = Object.keys(value2 as object);
+
+  if (keys1.length !== keys2.length) return false;
+
+  return keys1.every((key) =>
+    deepEqual(
+      (value1 as Record<string, unknown>)[key],
+      (value2 as Record<string, unknown>)[key],
+    ),
+  );
 }
 
 export function createDataRoutes(config: EditorialConfig, storage: Storage) {
@@ -715,6 +782,150 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
 
       const metaSchema = generateMetaSchema({ allowedExtraFields });
       return c.json(metaSchema);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/diff",
+      summary: "Get differences between preview and production data",
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: EditorialDiffResponseSchema,
+            },
+          },
+          description: "Get differences between preview and production data",
+        },
+      },
+      tags: ["Data"],
+    }),
+    async (c) => {
+      // Fetch both preview and production content
+      const [previewContent, productionContent, schema] = await Promise.all([
+        cache.getContent(storage, { production: false }),
+        cache.getContent(storage, { production: true }),
+        cache.getSchema(storage),
+      ]);
+
+      const result: EditorialDiffResponse = {
+        collections: {},
+        singles: {},
+      };
+
+      // Get all item types from both preview and production
+      const allItemTypes = new Set([
+        ...Object.keys(previewContent),
+        ...Object.keys(productionContent),
+      ]);
+
+      for (const itemType of allItemTypes) {
+        const previewCollection = previewContent[itemType] || {};
+        const productionCollection = productionContent[itemType] || {};
+        const itemSchema = schema[itemType];
+
+        // Check if this is a "singleton" type (only one item allowed)
+        const isSingleton = itemSchema?.singleton === true;
+
+        if (isSingleton) {
+          // Compare the singleton item
+          const previewKeys = Object.keys(previewCollection);
+          const productionKeys = Object.keys(productionCollection);
+          const singletonKey = previewKeys[0] || productionKeys[0];
+
+          if (singletonKey) {
+            const previewItem = previewCollection[singletonKey];
+            const productionItem = productionCollection[singletonKey];
+
+            if (previewItem && !productionItem) {
+              // Singleton exists in preview but not in production = added
+              result.singles[itemType] = {
+                status: "added",
+                preview: previewItem,
+                updatedAt: previewItem.updatedAt,
+                changedFields: Object.keys(previewItem).filter(
+                  (k) => !["updatedAt", "createdAt"].includes(k),
+                ),
+              };
+            } else if (!previewItem && productionItem) {
+              // Singleton exists in production but not in preview = deleted
+              result.singles[itemType] = {
+                status: "deleted",
+                production: productionItem,
+              };
+            } else if (previewItem?.updatedAt !== productionItem?.updatedAt) {
+              // Singleton has different updatedAt = modified
+              const changedFields = getChangedFields(
+                previewItem,
+                productionItem,
+              );
+              result.singles[itemType] = {
+                status: "modified",
+                preview: previewItem,
+                production: productionItem,
+                updatedAt: previewItem?.updatedAt,
+                changedFields,
+              };
+            }
+          }
+        } else {
+          // Handle collections
+          const added: EditorialDiffResponse["collections"][string]["added"] =
+            [];
+          const modified: EditorialDiffResponse["collections"][string]["modified"] =
+            [];
+          const deleted: EditorialDiffResponse["collections"][string]["deleted"] =
+            [];
+
+          // Find added and modified items
+          for (const [id, previewItem] of Object.entries(previewCollection)) {
+            const productionItem = productionCollection[id];
+
+            if (!productionItem) {
+              // Item exists in preview but not in production = added
+              added.push({
+                id,
+                item: previewItem,
+                updatedAt: previewItem.updatedAt,
+              });
+            } else if (previewItem.updatedAt !== productionItem.updatedAt) {
+              // Item has different updatedAt = modified (not yet published)
+              const changedFields = getChangedFields(
+                previewItem,
+                productionItem,
+              );
+              modified.push({
+                id,
+                preview: previewItem,
+                production: productionItem,
+                updatedAt: previewItem.updatedAt,
+                changedFields,
+              });
+            }
+          }
+
+          // Find deleted items (exist in production but not in preview)
+          for (const [id, productionItem] of Object.entries(
+            productionCollection,
+          )) {
+            if (!previewCollection[id]) {
+              deleted.push({
+                id,
+                item: productionItem,
+              });
+            }
+          }
+
+          // Only include collections with changes
+          if (added.length > 0 || modified.length > 0 || deleted.length > 0) {
+            result.collections[itemType] = { added, modified, deleted };
+          }
+        }
+      }
+
+      return c.json(result);
     },
   );
 
