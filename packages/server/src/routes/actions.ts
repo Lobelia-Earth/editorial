@@ -13,6 +13,7 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
     createRoute({
       method: "post",
       path: "/publish",
+      summary: "Trigger the publishing process",
       request: {
         body: {
           content: {
@@ -32,6 +33,7 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
           description: "Trigger the publishing process",
         },
       },
+      tags: ["Actions"],
     }),
     // TODO: Don't async, let the promises run in the background.
     async (c) => {
@@ -65,13 +67,14 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
       }
 
       return c.json(true);
-    }
+    },
   );
 
   app.openapi(
     createRoute({
       method: "post",
       path: "/pull",
+      summary: "Trigger the pull process",
       request: {
         body: {
           content: {
@@ -86,6 +89,7 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
           description: "Trigger the pull process",
         },
       },
+      tags: ["Actions"],
     }),
     async (c) => {
       const { author } = c.req.valid("json");
@@ -93,13 +97,14 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
       await hooks.onPull(author);
 
       return c.json(true);
-    }
+    },
   );
 
   app.openapi(
     createRoute({
       method: "post",
       path: "/push",
+      summary: "Trigger the push process",
       request: {
         body: {
           content: {
@@ -114,6 +119,7 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
           description: "Trigger the push process",
         },
       },
+      tags: ["Actions"],
     }),
     async (c) => {
       const { author } = c.req.valid("json");
@@ -121,7 +127,7 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
       await hooks.onPush(author);
 
       return c.json(true);
-    }
+    },
   );
 
   return app;

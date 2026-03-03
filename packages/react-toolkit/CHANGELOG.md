@@ -1,5 +1,14 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.14.0
+
+### Minor Changes
+
+- 61cb350: This PR adds:
+  - select and multiselect (with maxSelectedItems and 'minSelectedItems` optional fields) field types.
+  - Support for dynamic options via $field_name references to populate from other data types.
+  - resolve param to /api/v1/data /api/v1/data/{itemType} /api/v1/data/{itemType}/{id} GET endpoints which resolve referenced fields to full objects.
+
 ## 6.13.2
 
 ### Patch Changes
