@@ -35,13 +35,15 @@ export const initCommand = new Command()
       // Create schema.yaml with a dummy schema
       const schemaData = `
       # ----------------------------------- Editorial Meta Schema YAML File ------------------------------------
-      # If you are using an editor that supports JSON Schema, you can use the following URL 
-      # to get validation and autocompletion based on the Editorial meta-schema. 
+      # If you are using an editor that supports JSON Schema, you can use the following URL
+      # to get validation and autocompletion based on the Editorial meta-schema.
       # For example, VSCode with redhat.vscode-yaml extension should work out of the box.
       # Make sure to replace "localhost:3001" with the actual address of your Editorial if it's different.
-      # Don't uncomment the line below, it is required for the editor to recognize the schema.
-      # yaml-language-server: $schema=http://localhost:3001/api/v1/meta-schema?allowedExtraFields=dontTranslate
+      # allowedExtraFields parameter can be used to allow additional fields in the schema that are not defined in the meta-schema.
+      # Don't uncomment the yaml-language-server line below, it is required for the editor to recognize the schema.
       #----------------------------------------------------------------------------------------------------------
+          
+      # yaml-language-server: $schema=http://localhost:3001/api/v1/meta-schema
 
       
       # Editorial Schema
