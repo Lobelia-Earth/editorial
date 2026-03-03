@@ -789,6 +789,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "get",
       path: "/diff",
+      summary: "Get differences between preview and production data",
       responses: {
         200: {
           content: {
@@ -799,6 +800,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           description: "Get differences between preview and production data",
         },
       },
+      tags: ["Data"],
     }),
     async (c) => {
       // Fetch both preview and production content
