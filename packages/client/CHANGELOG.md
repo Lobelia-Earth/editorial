@@ -1,5 +1,16 @@
 # @isardsat/editorial-client
 
+## 6.16.0
+
+### Minor Changes
+
+- 5ae66db: Improves init command to ensure all required files are created even if the editorial directory already exists.
+
+### Patch Changes
+
+- Updated dependencies [5ae66db]
+  - @isardsat/editorial-common@6.16.0
+
 ## 6.15.0
 
 ### Minor Changes

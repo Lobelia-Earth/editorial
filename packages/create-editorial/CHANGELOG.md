@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.16.0
+
+### Minor Changes
+
+- 5ae66db: Improves init command to ensure all required files are created even if the editorial directory already exists.
+
 ## 6.15.0
 
 ### Minor Changes
