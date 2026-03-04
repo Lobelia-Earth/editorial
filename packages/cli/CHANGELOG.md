@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.18.1
+
+### Patch Changes
+
+- 2d743c4: Update content fetching to ensure real-time diff without caching
+- Updated dependencies [2d743c4]
+  - @isardsat/editorial-server@6.18.1
+
 ## 6.18.0
 
 ### Minor Changes
