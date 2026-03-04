@@ -1,5 +1,18 @@
 # @isardsat/editorial-cli
 
+## 6.18.0
+
+### Minor Changes
+
+- dcbc22f: - Inject Firebase token on each request.
+  - Verify Firebase token on the server using Google public keys, requiring no extra configuration on Editorial.
+  - Add firebaseAuth middleware to protect routes.
+
+### Patch Changes
+
+- Updated dependencies [dcbc22f]
+  - @isardsat/editorial-server@6.18.0
+
 ## 6.17.0
 
 ### Minor Changes
