@@ -1,4 +1,4 @@
-import { auth, firebaseDb } from "@/lib/auth";
+import { firebaseDb, getFirebaseInstance } from "@/lib/auth";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import {
@@ -39,6 +39,7 @@ export const loginUser = createAppAsyncThunk(
     { rejectWithValue, dispatch },
   ) => {
     try {
+      const { auth } = getFirebaseInstance();
       const userCredential = await setPersistence(
         auth,
         remember ? browserLocalPersistence : browserSessionPersistence,
@@ -69,6 +70,7 @@ export const loginUser = createAppAsyncThunk(
         },
       };
     } catch (error) {
+      const { auth } = getFirebaseInstance();
       await firebaseSignOut(auth);
 
       if (error instanceof Error) {
@@ -84,6 +86,7 @@ export const signOut = createAppAsyncThunk(
   "auth/signOut",
   async (_, { rejectWithValue }) => {
     try {
+      const { auth } = getFirebaseInstance();
       await firebaseSignOut(auth);
       return null;
     } catch (error) {

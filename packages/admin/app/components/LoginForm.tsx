@@ -61,7 +61,11 @@ export default function LoginForm() {
                   Email
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="callasmaria@example.com" {...field} />
+                  <Input
+                    placeholder="callasmaria@example.com"
+                    {...field}
+                    autoComplete="email"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -78,7 +82,11 @@ export default function LoginForm() {
                   Password
                 </FormLabel>
                 <FormControl>
-                  <Input type="password" {...field} />
+                  <Input
+                    type="password"
+                    {...field}
+                    autoComplete="current-password"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

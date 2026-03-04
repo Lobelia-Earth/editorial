@@ -1,3 +1,4 @@
+import { getFirebaseInstance } from "@/lib/auth";
 import type {
   EditorialConfig,
   EditorialData,
@@ -9,27 +10,69 @@ import type {
   EditorialSchema,
   EditorialSchemaItem,
 } from "@isardsat/editorial-common";
+import type {
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const ssrAwareBaseQuery = async (
-  args: any,
-  api: any,
-  extraOptions: any,
-) => {
+const baseUrl = import.meta.env.PROD
+  ? "/api/v1"
+  : import.meta.env.VITE_EDITORIAL_BASE_URL;
+
+// Gets the current user's token
+async function getAuthToken(): Promise<string | null> {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const { auth } = getFirebaseInstance();
+
+    const user = auth.currentUser;
+
+    if (user) {
+      return await user.getIdToken();
+    }
+  } catch (error) {
+    process.env.NODE_ENV === "development" &&
+      console.debug("Auth not available:", error);
+  }
+
+  return null;
+}
+
+// Base query with automatic token injection
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl,
+  prepareHeaders: async (headers) => {
+    const token = await getAuthToken();
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    return headers;
+  },
+});
+
+const baseQueryWithAuth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  // Handle SSR
   if (typeof window === "undefined") {
     return { data: {} };
   }
 
-  return fetchBaseQuery({
-    baseUrl: import.meta.env.PROD
-      ? "/api/v1"
-      : import.meta.env.VITE_EDITORIAL_BASE_URL,
-  })(args, api, extraOptions);
+  return rawBaseQuery(args, api, extraOptions);
 };
 
 export const editorialApi = createApi({
   reducerPath: "editorialApi",
-  baseQuery: ssrAwareBaseQuery,
+  baseQuery: baseQueryWithAuth,
   tagTypes: ["schema", "data", "files", "config", "dataDiff"],
   endpoints: (builder) => ({
     getConfig: builder.query<EditorialConfig, void>({
@@ -72,7 +115,7 @@ export const editorialApi = createApi({
       providesTags: () => [{ type: "data" }],
     }),
     getDataDiff: builder.query<EditorialDiffResponse, void>({
-      query: () => "/diff",
+      query: () => "/environments/diff",
       providesTags: () => [{ type: "dataDiff" }],
     }),
     getDataCount: builder.query<number, void>({
@@ -118,7 +161,6 @@ export const editorialApi = createApi({
           return count;
         }
 
-        // Function to count files in an array of editorial files
         function countFilesInArray(items: EditorialFiles): number {
           return items.reduce((acc, item) => acc + countFiles(item), 0);
         }
