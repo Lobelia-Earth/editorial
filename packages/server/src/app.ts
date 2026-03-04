@@ -43,12 +43,12 @@ export async function createEditorialServer({
     "/api/v1/*",
     cors({
       origin: "*",
-    })
+    }),
   );
   app.route("/api/v1", createConfigRoutes(config));
   app.route("/api/v1", createDataRoutes(config, storage));
   app.route("/api/v1", await createFilesRoutes(config));
-  app.route("/api/v1", createActionRoutes(storage, hooks));
+  app.route("/api/v1", createActionRoutes(config, storage, hooks));
   app.route("/", createAdminRoutes(config));
 
   app.doc("/doc", {
@@ -65,8 +65,15 @@ export async function createEditorialServer({
     serveStatic({
       root: config.publicDir,
       rewriteRequestPath: (path) => path.replace(/^\/public/, ""),
-    })
+    }),
   );
+
+  app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+    description: "Firebase JWT token required in Authorization header",
+  });
 
   return {
     app,

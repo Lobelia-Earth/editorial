@@ -4,263 +4,19 @@ import {
   EditorialDataSchema,
   EditorialDiffResponseSchema,
   EditorialSchemaSchema,
-  getOptionsReference,
   type EditorialConfig,
   type EditorialData,
-  type EditorialDataItem,
   type EditorialDiffResponse,
-  type EditorialSchema,
 } from "@isardsat/editorial-common";
+import { createCache } from "../lib/cache.js";
+import { firebaseAuth } from "../lib/middleware/auth.js";
 import type { Storage } from "../lib/storage.js";
+import { getChangedFields } from "../lib/utils/diff.js";
+import {
+  resolveCollectionReferences,
+  resolveReferences,
+} from "../lib/utils/resolve.js";
 import { generateMetaSchema } from "../lib/utils/schema.js";
-
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-}
-
-function createCache() {
-  let schemaCache: CacheEntry<EditorialSchema> | null = null;
-  const contentCache = new Map<string, CacheEntry<EditorialData>>();
-  const ttl = 5 * 60 * 1000; // 5 minutes TTL
-
-  function isExpired(entry: CacheEntry<any>): boolean {
-    return Date.now() - entry.timestamp > ttl;
-  }
-
-  return {
-    async getSchema(storage: Storage): Promise<EditorialSchema> {
-      if (schemaCache && !isExpired(schemaCache)) {
-        return schemaCache.data;
-      }
-
-      const schema = await storage.getSchema();
-      schemaCache = { data: schema, timestamp: Date.now() };
-      return schema;
-    },
-
-    async getContent(
-      storage: Storage,
-      options: { production?: boolean; lang?: string } = {},
-    ): Promise<EditorialData> {
-      const mode = options.production ? "production" : "preview";
-      const langSuffix = options.lang ? `-${options.lang}` : "";
-      const cacheKey = `${mode}${langSuffix}`;
-      const cachedEntry = contentCache.get(cacheKey);
-
-      if (cachedEntry && !isExpired(cachedEntry)) {
-        return cachedEntry.data;
-      }
-
-      const content = await storage.getContent(options);
-      contentCache.set(cacheKey, { data: content, timestamp: Date.now() });
-      return content;
-    },
-
-    invalidateSchema(): void {
-      schemaCache = null;
-    },
-
-    invalidateContent(): void {
-      contentCache.clear();
-    },
-  };
-}
-
-/**
- * Resolves uploaded file paths to full URLs for an item.
- */
-function resolveFileUrls(
-  item: EditorialDataItem,
-  schema: EditorialSchema,
-  itemType: string,
-  origin: string,
-): EditorialDataItem {
-  const resolvedItem = { ...item };
-  const itemSchema = schema[itemType];
-
-  if (!itemSchema) return resolvedItem;
-
-  for (const [key, value] of Object.entries(resolvedItem)) {
-    if (!itemSchema.fields[key]?.isUploadedFile) continue;
-    if (typeof value !== "string") continue;
-    if (value.startsWith("http")) continue;
-
-    resolvedItem[key] = `${origin}/${value}`;
-  }
-
-  return resolvedItem;
-}
-
-/**
- * Resolves referenced fields in an item, replacing IDs with full objects.
- * Recursively resolves nested references.
- */
-function resolveReferences(
-  item: EditorialDataItem,
-  schema: EditorialSchema,
-  itemType: string,
-  content: EditorialData,
-  origin: string,
-  resolvedIds: Set<string> = new Set(),
-): EditorialDataItem {
-  const itemIdentifier = `${itemType}:${item.id}`;
-
-  // Prevent circular references
-  if (resolvedIds.has(itemIdentifier)) {
-    return resolveFileUrls(item, schema, itemType, origin);
-  }
-
-  resolvedIds.add(itemIdentifier);
-
-  // First resolve file URLs for the current item
-  let resolvedItem = resolveFileUrls(item, schema, itemType, origin);
-  const itemSchema = schema[itemType];
-
-  if (!itemSchema) return resolvedItem;
-
-  for (const [fieldKey, fieldConfig] of Object.entries(itemSchema.fields)) {
-    if (fieldConfig.type !== "select" && fieldConfig.type !== "multiselect") {
-      continue;
-    }
-
-    const referencedType = getOptionsReference(fieldConfig.options);
-    if (!referencedType) continue;
-
-    const referencedCollection = content[referencedType];
-    if (!referencedCollection) continue;
-
-    const fieldValue = item[fieldKey];
-
-    if (fieldConfig.type === "select" && typeof fieldValue === "string") {
-      // Single reference - replace ID with full object
-      const referencedItem = referencedCollection[fieldValue];
-      if (referencedItem) {
-        // Recursively resolve nested references
-        resolvedItem[fieldKey] = resolveReferences(
-          referencedItem,
-          schema,
-          referencedType,
-          content,
-          origin,
-          new Set(resolvedIds),
-        );
-      }
-    } else if (
-      fieldConfig.type === "multiselect" &&
-      Array.isArray(fieldValue)
-    ) {
-      // Multiple references - replace IDs with full objects
-      resolvedItem[fieldKey] = fieldValue
-        .map((id) => {
-          const referencedItem = referencedCollection[id];
-          if (!referencedItem) return null;
-          // Recursively resolve nested references
-          return resolveReferences(
-            referencedItem,
-            schema,
-            referencedType,
-            content,
-            origin,
-            new Set(resolvedIds),
-          );
-        })
-        .filter(Boolean);
-    }
-  }
-
-  return resolvedItem;
-}
-
-/**
- * Resolves all references in a collection.
- */
-function resolveCollectionReferences(
-  collection: Record<string, EditorialDataItem>,
-  schema: EditorialSchema,
-  itemType: string,
-  content: EditorialData,
-  origin: string,
-): Record<string, EditorialDataItem> {
-  const resolvedCollection: Record<string, EditorialDataItem> = {};
-
-  for (const [itemKey, item] of Object.entries(collection)) {
-    resolvedCollection[itemKey] = resolveReferences(
-      item,
-      schema,
-      itemType,
-      content,
-      origin,
-    );
-  }
-
-  return resolvedCollection;
-}
-
-/**
- * Compares two items and returns the list of fields that have changed.
- * Excludes metadata fields like 'updatedAt'.
- */
-function getChangedFields(
-  previewItem: EditorialDataItem,
-  productionItem: EditorialDataItem,
-): string[] {
-  const changedFields: string[] = [];
-  const excludedFields = ["updatedAt", "createdAt"];
-
-  // Get all unique keys from both items
-  const allKeys = new Set([
-    ...Object.keys(previewItem),
-    ...Object.keys(productionItem),
-  ]);
-
-  for (const key of allKeys) {
-    if (excludedFields.includes(key)) continue;
-
-    const previewValue = previewItem[key];
-    const productionValue = productionItem[key];
-
-    if (!deepEqual(previewValue, productionValue)) {
-      changedFields.push(key);
-    }
-  }
-
-  return changedFields;
-}
-
-/**
- * Deep equality comparison for values.
- */
-function deepEqual(value1: unknown, value2: unknown): boolean {
-  if (value1 === value2) return true;
-  if (value1 == null || value2 == null) return false;
-  if (typeof value1 !== typeof value2) return false;
-
-  if (typeof value1 !== "object") {
-    return value1 === value2;
-  }
-
-  if (Array.isArray(value1) !== Array.isArray(value2)) return false;
-
-  if (Array.isArray(value1)) {
-    if (value1.length !== (value2 as unknown[]).length) return false;
-    return value1.every((item, index) =>
-      deepEqual(item, (value2 as unknown[])[index]),
-    );
-  }
-
-  const keys1 = Object.keys(value1);
-  const keys2 = Object.keys(value2 as object);
-
-  if (keys1.length !== keys2.length) return false;
-
-  return keys1.every((key) =>
-    deepEqual(
-      (value1 as Record<string, unknown>)[key],
-      (value2 as Record<string, unknown>)[key],
-    ),
-  );
-}
 
 export function createDataRoutes(config: EditorialConfig, storage: Storage) {
   const app = new OpenAPIHono();
@@ -645,6 +401,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         },
       },
       tags: ["Data"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       const itemAtts = await c.req.json();
@@ -692,6 +450,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         },
       },
       tags: ["Data"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       const itemAtts = await c.req.json();
@@ -731,6 +491,8 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         },
       },
       tags: ["Data"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
@@ -788,7 +550,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
   app.openapi(
     createRoute({
       method: "get",
-      path: "/diff",
+      path: "/environments/diff",
       summary: "Get differences between preview and production data",
       responses: {
         200: {

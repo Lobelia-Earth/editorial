@@ -9,6 +9,7 @@ import {
 import { readdirSync, statSync } from "node:fs";
 import { access, constants, mkdir, rename, writeFile } from "node:fs/promises";
 import { basename, dirname, join, normalize, relative } from "node:path";
+import { firebaseAuth } from "../lib/middleware/auth.js";
 
 export async function createFilesRoutes(config: EditorialConfig) {
   const app = new OpenAPIHono();
@@ -44,6 +45,8 @@ export async function createFilesRoutes(config: EditorialConfig) {
         },
       },
       tags: ["Files"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     // TODO: Index large files from bucket.
     async (c) => {
@@ -185,6 +188,8 @@ export async function createFilesRoutes(config: EditorialConfig) {
         },
       },
       tags: ["Files"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       const { path: relativePathInput } = c.req.valid("json");
@@ -270,6 +275,8 @@ export async function createFilesRoutes(config: EditorialConfig) {
         },
       },
       tags: ["Files"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       try {
@@ -381,6 +388,8 @@ export async function createFilesRoutes(config: EditorialConfig) {
         },
       },
       tags: ["Files"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       try {

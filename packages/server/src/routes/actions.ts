@@ -1,12 +1,18 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import type { EditorialConfig } from "@isardsat/editorial-common";
 import type { Hooks } from "../lib/hooks.js";
+import { firebaseAuth } from "../lib/middleware/auth.js";
 import type { Storage } from "../lib/storage.js";
 
 const ActionRequestSchema = z.object({
   author: z.string(),
 });
 
-export function createActionRoutes(storage: Storage, hooks: Hooks) {
+export function createActionRoutes(
+  config: EditorialConfig,
+  storage: Storage,
+  hooks: Hooks,
+) {
   const app = new OpenAPIHono();
 
   app.openapi(
@@ -34,6 +40,8 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
         },
       },
       tags: ["Actions"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     // TODO: Don't async, let the promises run in the background.
     async (c) => {
@@ -90,6 +98,8 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
         },
       },
       tags: ["Actions"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       const { author } = c.req.valid("json");
@@ -120,6 +130,8 @@ export function createActionRoutes(storage: Storage, hooks: Hooks) {
         },
       },
       tags: ["Actions"],
+      middleware: [firebaseAuth(config.firebase?.projectId || "")],
+      security: [{ bearerAuth: [] }],
     }),
     async (c) => {
       const { author } = c.req.valid("json");
