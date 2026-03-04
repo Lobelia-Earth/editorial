@@ -1,6 +1,6 @@
 {
   "name": "@isardsat/editorial-client",
-  "version": "6.18.2",
+  "version": "6.19.0",
   "description": "JavaScript client for the Editorial CMS API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

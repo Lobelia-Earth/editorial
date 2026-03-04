@@ -1,5 +1,16 @@
 # @isardsat/editorial-cli
 
+## 6.19.0
+
+### Minor Changes
+
+- 257f21e: Show notifiations and loading state on all user actions
+
+### Patch Changes
+
+- Updated dependencies [257f21e]
+  - @isardsat/editorial-server@6.19.0
+
 ## 6.18.2
 
 ### Patch Changes

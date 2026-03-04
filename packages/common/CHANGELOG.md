@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.19.0
+
+### Minor Changes
+
+- 257f21e: Show notifiations and loading state on all user actions
+
 ## 6.18.2
 
 ### Patch Changes
