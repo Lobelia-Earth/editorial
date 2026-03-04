@@ -623,6 +623,11 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
                 previewItem,
                 productionItem,
               );
+
+              if (changedFields.length === 0) {
+                // If there are no changed fields other than updatedAt, we can consider it as not modified
+                continue;
+              }
               result.singles[itemType] = {
                 status: "modified",
                 preview: previewItem,
@@ -658,6 +663,10 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
                 previewItem,
                 productionItem,
               );
+              if (changedFields.length === 0) {
+                // If there are no changed fields other than updatedAt, we can consider it as not modified
+                continue;
+              }
               modified.push({
                 id,
                 preview: previewItem,

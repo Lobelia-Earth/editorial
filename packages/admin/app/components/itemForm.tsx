@@ -26,14 +26,12 @@ import {
 } from "@/lib/store/slices/editorialApi";
 import { cn, statusColors } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type {
-  EditorialDataItem,
-  EditorialDataItemStatus,
-  EditorialSchemaItem,
-} from "@isardsat/editorial-common";
 import {
-  getOptionsReference,
+  getChoicesReference,
   RGBColorSchema,
+  type EditorialDataItem,
+  type EditorialDataItemStatus,
+  type EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { Loader2, Save, X } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
@@ -158,12 +156,12 @@ export default function ItemForm({
           fieldSchema = RGBColorSchema;
           break;
         case "select":
-          // For referenced options, use string validation instead of enum
-          // since the options are dynamic
-          if (getOptionsReference(field.options)) {
+          // For referenced choices, use string validation instead of enum
+          // since the choices are dynamic
+          if (getChoicesReference(field.choicesFixed)) {
             fieldSchema = z.string();
-          } else if (field.options && field.options.length > 0) {
-            fieldSchema = z.enum(field.options as [string, ...string[]]);
+          } else if (field.choicesFixed && field.choicesFixed.length > 0) {
+            fieldSchema = z.enum(field.choicesFixed as [string, ...string[]]);
           } else {
             fieldSchema = z.string();
           }
@@ -171,16 +169,16 @@ export default function ItemForm({
         case "multiselect":
           fieldSchema = z.array(z.string());
           // Apply min/max constraints
-          if (field.minSelectedOptions) {
+          if (field.minSelectedChoices) {
             fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
-              field.minSelectedOptions,
-              `${field.displayName} requires at least ${field.minSelectedOptions} selection${field.minSelectedOptions > 1 ? "s" : ""}`,
+              field.minSelectedChoices,
+              `${field.displayName} requires at least ${field.minSelectedChoices} selection${field.minSelectedChoices > 1 ? "s" : ""}`,
             );
           }
-          if (field.maxSelectedOptions) {
+          if (field.maxSelectedChoices) {
             fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).max(
-              field.maxSelectedOptions,
-              `${field.displayName} allows maximum ${field.maxSelectedOptions} selection${field.maxSelectedOptions > 1 ? "s" : ""}`,
+              field.maxSelectedChoices,
+              `${field.displayName} allows maximum ${field.maxSelectedChoices} selection${field.maxSelectedChoices > 1 ? "s" : ""}`,
             );
           }
           break;
@@ -191,15 +189,15 @@ export default function ItemForm({
       if (field.optional) {
         if (field.type === "multiselect") {
           // Multiselect is already optional by allowing empty array
-          // But if minSelectedOptions is set, it overrides optional
-          if (!field.minSelectedOptions) {
+          // But if minSelectedChoices is set, it overrides optional
+          if (!field.minSelectedChoices) {
             fieldSchema = fieldSchema.optional();
           }
         } else {
           fieldSchema = fieldSchema.optional().or(z.literal(""));
         }
-      } else if (field.type === "multiselect" && !field.minSelectedOptions) {
-        // If not optional and no minSelectedOptions, require at least 1
+      } else if (field.type === "multiselect" && !field.minSelectedChoices) {
+        // If not optional and no minSelectedChoices, require at least 1
         fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
           1,
           `${field.displayName} requires at least one selection`,
@@ -282,15 +280,15 @@ export default function ItemForm({
     [fields],
   );
 
-  // Pre-resolve all field options (including referenced ones)
-  // If options reference another fileds, return the ids of the referenced data items
-  // If options are directly defined, return them as is
-  const resolvedOptionsMap = useMemo(() => {
+  // Pre-resolve all field choices (including referenced ones)
+  // If choices reference another fields, return the ids of the referenced data items
+  // If choices are directly defined, return them as is
+  const resolvedChoicesMap = useMemo(() => {
     const map: Record<string, string[]> = {};
 
     Object.entries(fields).forEach(([key, field]) => {
       if (field.type === "select" || field.type === "multiselect") {
-        const referencedKey = getOptionsReference(field.options);
+        const referencedKey = getChoicesReference(field.choicesFixed);
         if (referencedKey && allData) {
           const referencedData = allData[referencedKey];
           if (referencedData) {
@@ -299,7 +297,7 @@ export default function ItemForm({
             map[key] = [];
           }
         } else {
-          map[key] = field.options ?? [];
+          map[key] = field.choicesFixed || [];
         }
       }
     });
@@ -486,8 +484,8 @@ export default function ItemForm({
           {Object.entries(fields)
             .filter(([, value]) => value.type !== "boolean")
             .map(([key, value]) => {
-              // Get resolved options for select/multiselect fields
-              const resolvedOptions = resolvedOptionsMap[key] ?? [];
+              // Get resolved choices for select/multiselect fields
+              const resolvedChoices = resolvedChoicesMap[key] ?? [];
 
               return (
                 <FormField
@@ -502,7 +500,7 @@ export default function ItemForm({
                       (field.value as string[])?.length ?? 0;
                     const hasMinMax =
                       value.type === "multiselect" &&
-                      (value.minSelectedOptions || value.maxSelectedOptions);
+                      (value.minSelectedChoices || value.maxSelectedChoices);
 
                     return (
                       <FormItem
@@ -623,9 +621,9 @@ export default function ItemForm({
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {resolvedOptions.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
+                                  {resolvedChoices.map((choice) => (
+                                    <SelectItem key={choice} value={choice}>
+                                      {choice}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -682,8 +680,8 @@ export default function ItemForm({
                                   </span>
                                 )}
                               </div>
-                              {(!value.maxSelectedOptions ||
-                                selectedCount < value.maxSelectedOptions) && (
+                              {(!value.maxSelectedChoices ||
+                                selectedCount < value.maxSelectedChoices) && (
                                 <Select
                                   value=""
                                   onValueChange={(newValue) => {
@@ -701,16 +699,16 @@ export default function ItemForm({
                                     <SelectValue placeholder="Add item..." />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {resolvedOptions
+                                    {resolvedChoices
                                       .filter(
-                                        (option) =>
+                                        (choice) =>
                                           !(field.value as string[])?.includes(
-                                            option,
+                                            choice,
                                           ),
                                       )
-                                      .map((option) => (
-                                        <SelectItem key={option} value={option}>
-                                          {option}
+                                      .map((choice) => (
+                                        <SelectItem key={choice} value={choice}>
+                                          {choice}
                                         </SelectItem>
                                       ))}
                                   </SelectContent>
@@ -720,19 +718,19 @@ export default function ItemForm({
                                 <span
                                   className={cn(
                                     "text-xs",
-                                    value.minSelectedOptions &&
-                                      selectedCount < value.minSelectedOptions
+                                    value.minSelectedChoices &&
+                                      selectedCount < value.minSelectedChoices
                                       ? "text-destructive"
                                       : "text-muted-foreground",
                                   )}
                                 >
                                   {selectedCount}
-                                  {value.minSelectedOptions &&
-                                  value.maxSelectedOptions
-                                    ? `/${value.maxSelectedOptions} (min ${value.minSelectedOptions})`
-                                    : value.minSelectedOptions
-                                      ? ` selected (min ${value.minSelectedOptions})`
-                                      : `/${value.maxSelectedOptions} selected`}
+                                  {value.minSelectedChoices &&
+                                  value.maxSelectedChoices
+                                    ? `/${value.maxSelectedChoices} (min ${value.minSelectedChoices})`
+                                    : value.minSelectedChoices
+                                      ? ` selected (min ${value.minSelectedChoices})`
+                                      : `/${value.maxSelectedChoices} selected`}
                                 </span>
                               )}
                             </div>
