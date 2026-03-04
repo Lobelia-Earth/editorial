@@ -621,9 +621,9 @@ export default function ItemForm({
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {resolvedOptions.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
+                                  {resolvedChoices.map((choice) => (
+                                    <SelectItem key={choice} value={choice}>
+                                      {choice}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
