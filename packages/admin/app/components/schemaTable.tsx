@@ -151,7 +151,10 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
           >
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button className="hover:text-red-500 p-1 hover:bg-muted rounded-sm">
+                <button
+                  className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
+                  title="Delete entry"
+                >
                   <Trash size={16} />
                   <span className="sr-only">Delete entry</span>
                 </button>
