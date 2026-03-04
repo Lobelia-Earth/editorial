@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.18.2
+
+### Patch Changes
+
+- b3b3572: Fix backward select compatibility
+- Updated dependencies [b3b3572]
+  - @isardsat/editorial-admin@6.18.2
+  - @isardsat/editorial-common@6.18.2
+
 ## 6.18.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.18.2
+
+### Patch Changes
+
+- b3b3572: Fix backward select compatibility
+
 ## 6.18.1
 
 ### Patch Changes
