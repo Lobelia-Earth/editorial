@@ -1,11 +1,9 @@
 import {
+  getChoicesReference,
   type EditorialData,
   type EditorialDataItem,
   type EditorialSchema,
 } from "@isardsat/editorial-common";
-
-import { getOptionsReference } from "@isardsat/editorial-common";
-
 /**
  * Resolves uploaded file paths to full URLs for an item.
  */
@@ -63,7 +61,7 @@ export function resolveReferences(
       continue;
     }
 
-    const referencedType = getOptionsReference(fieldConfig.options);
+    const referencedType = getChoicesReference(fieldConfig.choicesFixed);
     if (!referencedType) continue;
 
     const referencedCollection = content[referencedType];

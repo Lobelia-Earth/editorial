@@ -1,12 +1,12 @@
 /**
- * Checks if the options value is a reference to another field.
+ * Checks if the choicesFixed value is a reference to another field.
  * References are in the format $key_field
  */
-export function getOptionsReference(
-  options: string[] | undefined,
+export function getChoicesReference(
+  choices: string[] | undefined,
 ): string | null {
-  if (!options || options.length !== 1) return null;
+  if (!choices || choices.length !== 1) return null;
 
-  const match = options[0].match(/^\$(.+)$/);
+  const match = choices[0].match(/^\$(.+)$/);
   return match ? match[1] : null;
 }
