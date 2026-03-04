@@ -565,11 +565,11 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       tags: ["Data"],
     }),
     async (c) => {
-      // Fetch both preview and production content
+      // Fetch both preview and production content (not cached to ensure real-time diff)
       const [previewContent, productionContent, schema] = await Promise.all([
-        cache.getContent(storage, { production: false }),
-        cache.getContent(storage, { production: true }),
-        cache.getSchema(storage),
+        storage.getContent({ production: false }),
+        storage.getContent({ production: true }),
+        storage.getSchema(),
       ]);
 
       const result: EditorialDiffResponse = {
