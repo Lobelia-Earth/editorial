@@ -38,6 +38,7 @@ import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const FilePicker = React.lazy(() => import("./FilePicker"));
@@ -263,14 +264,28 @@ export default function ItemForm({
     });
 
     if (isNew) {
-      const payload = await createItem(processedValues);
+      try {
+        const payload = await createItem(processedValues);
 
-      if (!("error" in payload)) {
-        navigate(`/admin/dashboard/${itemType}/${payload.data.id}`);
+        if (!("error" in payload)) {
+          toast.success("Item created successfully.");
+          navigate(`/admin/dashboard/${itemType}/${payload.data.id}`);
+        } else {
+          toast.error("Failed to create item.");
+        }
+      } catch (err) {
+        toast.error("Failed to create item.");
+        console.error(err);
       }
     } else {
-      await updateItem(processedValues);
-      form.reset(values);
+      try {
+        await updateItem(processedValues);
+        toast.success("Item updated successfully.");
+        form.reset(values);
+      } catch (err) {
+        toast.error("Failed to update item.");
+        console.error(err);
+      }
     }
   }
 
