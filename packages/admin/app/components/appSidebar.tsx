@@ -51,6 +51,8 @@ export default function AppSidebar() {
   const [pull] = usePullMutation();
   const [push] = usePushMutation();
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+  const [isPushing, setIsPushing] = useState(false);
 
   const { data: config } = useGetConfigQuery();
   const { data: schema } = useGetSchemaQuery();
@@ -82,6 +84,42 @@ export default function AppSidebar() {
       console.error(err);
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const handlePull = async () => {
+    setIsPulling(true);
+
+    try {
+      const result = await pull().unwrap();
+      if (result) {
+        toast.success("Content pulled successfully.");
+      } else {
+        toast.error("Pulling content failed.");
+      }
+    } catch (err) {
+      toast.error("Pulling content failed.");
+      console.error(err);
+    } finally {
+      setIsPulling(false);
+    }
+  };
+
+  const handlePush = async (options: { author: string }) => {
+    setIsPushing(true);
+
+    try {
+      const result = await push(options).unwrap();
+      if (result) {
+        toast.success("Content pushed successfully.");
+      } else {
+        toast.error("Pushing content failed.");
+      }
+    } catch (err) {
+      toast.error("Pushing content failed.");
+      console.error(err);
+    } finally {
+      setIsPushing(false);
     }
   };
 
@@ -169,18 +207,27 @@ export default function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="cursor-pointer"
-                    onClick={() => pull()}
+                    onClick={() => handlePull()}
                   >
-                    <ArrowDown />
+                    {isPulling ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <ArrowDown />
+                    )}
                     <span>Pull from repo</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="cursor-pointer"
-                    onClick={() => push({ author: user.email })}
+                    onClick={() => handlePush({ author: user.email })}
                   >
-                    <ArrowUp />
+                    {isPushing ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <ArrowUp />
+                    )}
+
                     <span>Push to repo</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
