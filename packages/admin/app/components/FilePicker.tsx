@@ -48,9 +48,6 @@ export default function FilePicker({
 
   const getImageMetadata = (url: string) => {
     const img = new Image();
-    if (!url.startsWith("http") && !url.startsWith("/")) {
-      url = `/${url}`;
-    }
     img.onload = () => {
       // Try to get file size from fetch
       fetch(url)
@@ -90,6 +87,9 @@ export default function FilePicker({
 
   useEffect(() => {
     if (value && isImage(value)) {
+      if (!value.startsWith("http") && !value.startsWith("/")) {
+        value = `/${value}`;
+      }
       getImageMetadata(value);
     } else {
       setImageMetadata(null);
