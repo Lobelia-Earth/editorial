@@ -1,5 +1,13 @@
 # @isardsat/editorial-admin
 
+## 6.19.3
+
+### Patch Changes
+
+- 12d7b41: Ensure URL starts with http or / for image metadata fetching
+- Updated dependencies [12d7b41]
+  - @isardsat/editorial-common@6.19.3
+
 ## 6.19.2
 
 ### Patch Changes

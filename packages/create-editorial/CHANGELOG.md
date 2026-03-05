@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.19.3
+
+### Patch Changes
+
+- 12d7b41: Ensure URL starts with http or / for image metadata fetching
+
 ## 6.19.2
 
 ### Patch Changes
