@@ -40,6 +40,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
+import MultiselectStringInput from "./MultiselectStringInput";
 
 const FilePicker = React.lazy(() => import("./FilePicker"));
 const MarkdownEditor = React.lazy(() => import("./markdownEditor"));
@@ -183,6 +184,20 @@ export default function ItemForm({
             );
           }
           break;
+        case "string":
+          //backwards compatibility and will be removed in future versions
+          if (field.isMultiple) {
+            if (getChoicesReference(field.choicesFixed)) {
+              fieldSchema = z.string();
+            } else if (field.choicesFixed && field.choicesFixed.length > 0) {
+              fieldSchema = z.string();
+            } else {
+              fieldSchema = z.string();
+            }
+          } else {
+            fieldSchema = z.string();
+          }
+          break;
         default:
           fieldSchema = z.string();
       }
@@ -203,7 +218,12 @@ export default function ItemForm({
           1,
           `${field.displayName} requires at least one selection`,
         );
-      } else if (field.type !== "boolean" && field.type !== "select") {
+      } else if (
+        field.type !== "boolean" &&
+        field.type !== "select" &&
+        !(field.type === "string" && field.isMultiple && field.choicesFixed)
+      ) {
+        // For non-boolean and non-select fields, require a value if not optional
         fieldSchema = (fieldSchema as z.ZodString).min(
           1,
           `${field.displayName} is required`,
@@ -302,7 +322,12 @@ export default function ItemForm({
     const map: Record<string, string[]> = {};
 
     Object.entries(fields).forEach(([key, field]) => {
-      if (field.type === "select" || field.type === "multiselect") {
+      // Handle both select and multiselect, and also backwards compatibility for string fields with isMultiple
+      if (
+        field.type === "select" ||
+        field.type === "multiselect" ||
+        (field.type === "string" && field.isMultiple && field.choicesFixed)
+      ) {
         const referencedKey = getChoicesReference(field.choicesFixed);
         if (referencedKey && allData) {
           const referencedData = allData[referencedKey];
@@ -514,7 +539,10 @@ export default function ItemForm({
                     const selectedCount =
                       (field.value as string[])?.length ?? 0;
                     const hasMinMax =
-                      value.type === "multiselect" &&
+                      (value.type === "multiselect" ||
+                        (value.type === "string" &&
+                          value.isMultiple &&
+                          value.choicesFixed)) &&
                       (value.minSelectedChoices || value.maxSelectedChoices);
 
                     return (
@@ -749,6 +777,16 @@ export default function ItemForm({
                                 </span>
                               )}
                             </div>
+                          ) : value.type === "string" &&
+                            value.isMultiple &&
+                            value.choicesFixed ? (
+                            <MultiselectStringInput
+                              key={key}
+                              field={field}
+                              resolvedChoices={resolvedChoices}
+                              value={value}
+                              hasMinMax={hasMinMax}
+                            />
                           ) : (
                             <Input
                               id={key}
