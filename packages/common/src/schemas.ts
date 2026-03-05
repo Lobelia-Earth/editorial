@@ -88,6 +88,8 @@ export const EditorialSchemaItemFieldSchema = z.looseObject({
   optional: z.boolean().optional().default(false),
   showInSummary: z.boolean().optional(),
   choicesFixed: z.array(z.string()).optional(),
+  //backwards compatibility and will be removed in future versions
+  isMultiple: z.boolean().optional(),
   maxSelectedChoices: z.number().optional(),
   minSelectedChoices: z.number().optional(),
   isUploadedFile: z.boolean().optional(),
