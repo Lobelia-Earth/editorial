@@ -221,7 +221,7 @@ export default function ItemForm({
       } else if (
         field.type !== "boolean" &&
         field.type !== "select" &&
-        !(field.type === "string" && field.isMultiple)
+        !(field.type === "string" && field.isMultiple && field.choicesFixed)
       ) {
         // For non-boolean and non-select fields, require a value if not optional
         fieldSchema = (fieldSchema as z.ZodString).min(
@@ -326,7 +326,7 @@ export default function ItemForm({
       if (
         field.type === "select" ||
         field.type === "multiselect" ||
-        (field.type === "string" && field.isMultiple)
+        (field.type === "string" && field.isMultiple && field.choicesFixed)
       ) {
         const referencedKey = getChoicesReference(field.choicesFixed);
         if (referencedKey && allData) {
@@ -540,7 +540,9 @@ export default function ItemForm({
                       (field.value as string[])?.length ?? 0;
                     const hasMinMax =
                       (value.type === "multiselect" ||
-                        (value.type === "string" && value.isMultiple)) &&
+                        (value.type === "string" &&
+                          value.isMultiple &&
+                          value.choicesFixed)) &&
                       (value.minSelectedChoices || value.maxSelectedChoices);
 
                     return (
@@ -775,7 +777,9 @@ export default function ItemForm({
                                 </span>
                               )}
                             </div>
-                          ) : value.type === "string" && value.isMultiple ? (
+                          ) : value.type === "string" &&
+                            value.isMultiple &&
+                            value.choicesFixed ? (
                             <MultiselectStringInput
                               key={key}
                               field={field}
