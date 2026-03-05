@@ -85,12 +85,17 @@ export default function FilePicker({
     img.src = url;
   };
 
+  const resolveUrl = (url: string) => {
+    if (!url) return "";
+    if (!url.startsWith("http") && !url.startsWith("/")) {
+      return `/${url}`;
+    }
+    return url;
+  };
+
   useEffect(() => {
     if (value && isImage(value)) {
-      if (!value.startsWith("http") && !value.startsWith("/")) {
-        value = `/${value}`;
-      }
-      getImageMetadata(value);
+      getImageMetadata(resolveUrl(value));
     } else {
       setImageMetadata(null);
     }
@@ -116,7 +121,7 @@ export default function FilePicker({
                 {isImage(value) ? (
                   <div className="w-32 h-24 rounded border overflow-hidden bg-muted flex items-center justify-center">
                     <img
-                      src={value}
+                      src={resolveUrl(value)}
                       alt="Preview"
                       className="max-w-full max-h-full object-contain"
                     />
