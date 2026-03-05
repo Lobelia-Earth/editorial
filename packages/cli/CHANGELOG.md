@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.19.5
+
+### Patch Changes
+
+- 5e1246c: Ensure URL starts with http or / for image metadata fetching
+- Updated dependencies [5e1246c]
+  - @isardsat/editorial-server@6.19.5
+
 ## 6.19.4
 
 ### Patch Changes
