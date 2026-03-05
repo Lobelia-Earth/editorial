@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.19.1
+
+### Patch Changes
+
+- 7619fb6: Fix backward string multiple compatibility
+- Updated dependencies [7619fb6]
+  - @isardsat/editorial-server@6.19.1
+
 ## 6.19.0
 
 ### Minor Changes

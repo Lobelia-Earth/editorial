@@ -1,5 +1,11 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.19.1
+
+### Patch Changes
+
+- 7619fb6: Fix backward string multiple compatibility
+
 ## 6.19.0
 
 ### Minor Changes
