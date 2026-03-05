@@ -23,7 +23,7 @@ export function getChangedFields(
     const previewValue = previewItem[key];
     const productionValue = productionItem[key];
 
-    if (!deepEqual(previewValue, productionValue)) {
+    if (!deepEqual(previewValue, productionValue) && previewValue !== "") {
       changedFields.push(key);
     }
   }
