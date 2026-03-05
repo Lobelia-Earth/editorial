@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.19.2
+
+### Patch Changes
+
+- 356dd70: Exclude empty preview values from changed fields comparison
+- Updated dependencies [356dd70]
+  - @isardsat/editorial-server@6.19.2
+
 ## 6.19.1
 
 ### Patch Changes
