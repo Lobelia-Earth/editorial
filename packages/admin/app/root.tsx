@@ -40,7 +40,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {children}
           </FirebaseInitializer>
         </StoreProvider>
-        <Toaster position="bottom-right" richColors />
+        <Toaster position="bottom-right" richColors duration={2000} />
         <ScrollRestoration />
         <Scripts />
       </body>
