@@ -2,6 +2,7 @@ import type {
   EditorialData,
   EditorialDataItem,
   EditorialDataObjectWithType,
+  EditorialUpdateDataItem,
 } from "@isardsat/editorial-common";
 import {
   EditorialDataItemSchema,
@@ -22,7 +23,7 @@ export function createStorage(dataDirectory: string) {
 
   async function getSchema() {
     const schemaFile = await readFile(schemaPath, "utf-8").then((value) =>
-      parse(value)
+      parse(value),
     );
     const schema = EditorialSchemaSchema.parse(schemaFile);
 
@@ -39,7 +40,7 @@ export function createStorage(dataDirectory: string) {
   }): Promise<EditorialData> {
     const content = await readFile(
       production ? dataProdPath : dataPath,
-      "utf-8"
+      "utf-8",
     ).then((value) => EditorialDataSchema.parse(JSON.parse(value)));
 
     return content;
@@ -48,7 +49,7 @@ export function createStorage(dataDirectory: string) {
   async function getLocalisationMessages(langCode: string): Promise<any> {
     return await readFile(
       join(dataDirectory, "locales", "messages", `${langCode}.json`),
-      "utf-8"
+      "utf-8",
     ).then((value) => JSON.parse(value));
   }
 
@@ -72,7 +73,7 @@ export function createStorage(dataDirectory: string) {
 
       await writeFileSafe(
         dataProdPath,
-        JSON.stringify(EditorialDataSchema.parse(filteredContent), null, 2)
+        JSON.stringify(EditorialDataSchema.parse(filteredContent), null, 2),
       );
 
       return true;
@@ -80,7 +81,7 @@ export function createStorage(dataDirectory: string) {
 
     await writeFileSafe(
       dataPath,
-      JSON.stringify(EditorialDataSchema.parse(content), null, 2)
+      JSON.stringify(EditorialDataSchema.parse(content), null, 2),
     );
 
     return true;
@@ -94,13 +95,13 @@ export function createStorage(dataDirectory: string) {
         file,
         path: join(dir, file),
         messages: JSON.parse(await readFile(join(dir, file), "utf-8")),
-      }))
+      })),
     );
   }
 
   function pruneMessages(
     messages: Record<string, any>,
-    deletedItemKeys: string[]
+    deletedItemKeys: string[],
   ) {
     const pruned = { ...messages };
 
@@ -115,12 +116,12 @@ export function createStorage(dataDirectory: string) {
 
   async function saveLocalisationMessages(newMessages: any) {
     const productionMessages = await readFile(dataExtractedPath, "utf-8").then(
-      (value) => JSON.parse(value)
+      (value) => JSON.parse(value),
     );
 
     await writeFileSafe(
       dataExtractedPath,
-      JSON.stringify(newMessages, null, 2)
+      JSON.stringify(newMessages, null, 2),
     );
 
     /**
@@ -152,6 +153,11 @@ export function createStorage(dataDirectory: string) {
     return true;
   }
 
+  async function checkItemExists({ type, id }: { type: string; id: string }) {
+    const content = await getContent({ production: false });
+    return !!content[type]?.[id];
+  }
+
   async function createItem(item: EditorialDataObjectWithType) {
     const content = await getContent({ production: false });
     content[item.type] = content[item.type] ?? {};
@@ -165,7 +171,10 @@ export function createStorage(dataDirectory: string) {
     return parsedItem;
   }
 
-  async function updateItem(item: EditorialDataObjectWithType) {
+  async function updateItem(item: EditorialUpdateDataItem) {
+    if (!item.id) {
+      throw new Error("Item ID is required for update.");
+    }
     const content = await getContent({ production: false });
     content[item.type] = content[item.type] ?? {};
     const oldItem = content[item.type][item.id];
@@ -176,7 +185,16 @@ export function createStorage(dataDirectory: string) {
       updatedAt: new Date().toISOString(),
     });
 
-    content[item.type][item.id] = newItem;
+    // Handle ID change: if the ID has changed, we need to delete the old item and create a new one with the new ID
+    if (newItem.hasOwnProperty("newId")) {
+      delete content[item.type][item.id];
+      const newId = item.newId || item.id;
+      delete newItem.newId;
+      newItem.id = newId;
+      content[item.type][newId] = newItem;
+    } else {
+      content[item.type][item.id] = newItem;
+    }
 
     // TODO: Use superjson to safely encode different types.
     await writeFileSafe(dataPath, JSON.stringify(content, null, 2));
@@ -200,6 +218,7 @@ export function createStorage(dataDirectory: string) {
     getLocalisationMessages,
     saveLocalisationMessages,
     createItem,
+    checkItemExists,
     updateItem,
     deleteItem,
     saveContent,
