@@ -7,17 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "./ui/alert-dialog";
 
 import {
   useDeleteObjectMutation,
@@ -43,6 +32,7 @@ import {
   ArrowUp,
   ArrowUpDown,
   CalendarIcon,
+  Check,
   Circle,
   CircleCheck,
   CircleCheckIcon,
@@ -53,6 +43,7 @@ import {
   ListChecksIcon,
   ListIcon,
   Trash,
+  X,
 } from "lucide-react";
 
 import React, { useMemo, useState, type FunctionComponent } from "react";
@@ -134,67 +125,76 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "updatedAt", desc: true },
   ]);
-  const [trigger] = useDeleteObjectMutation();
+  const [triggerDelete, deleteState] = useDeleteObjectMutation();
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const startDelete = (id: string) => setDeleteTarget(id);
+  const cancelDelete = () => setDeleteTarget(null);
+
+  const confirmDelete = async (id: string) => {
+    try {
+      await triggerDelete({ type: itemType, id }).unwrap();
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
+  };
 
   const actionColumn = useMemo(() => {
     return columnHelper.display({
       id: "actions",
       header: () => <span className="flex justify-end ml-auto"></span>,
       cell(props) {
+        const isDeletingHere = deleteTarget === props.row.original.id;
+
         return (
-          <div
-            className="flex gap-2 justify-end"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+          <div className="flex gap-2 justify-end">
+            {!isDeletingHere ? (
+              <button
+                className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  startDelete(props.row.original.id);
+                }}
+              >
+                <Trash size={16} className="group-hover:text-red-400" />
+                <span className="sr-only">Delete entry</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1">
                 <button
-                  className="hover:text-red-500 p-1 hover:bg-muted rounded-sm"
-                  title="Delete entry"
+                  className="p-1 hover:bg-muted rounded-sm text-red-600 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    confirmDelete(props.row.original.id);
+                  }}
+                  disabled={deleteState.isLoading}
                 >
-                  <Trash size={16} />
-                  <span className="sr-only">Delete entry</span>
+                  <Check size={16} />
+                  <span className="sr-only">Confirm delete</span>
                 </button>
-              </AlertDialogTrigger>
 
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Delete <i>{props.row.original.id}</i>?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    this object.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="cursor-pointer">
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-red-600 hover:bg-red-700 cursor-pointer"
-                    onClick={() =>
-                      trigger({
-                        type: itemType,
-                        id: props.row.original.id,
-                      })
-                    }
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                <button
+                  className="p-1 hover:bg-muted rounded-sm cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    cancelDelete();
+                  }}
+                  disabled={deleteState.isLoading}
+                >
+                  <X size={16} />
+                  <span className="sr-only">Cancel delete</span>
+                </button>
+              </div>
+            )}
           </div>
         );
       },
       enableSorting: false,
     });
-  }, [itemType, trigger]);
+  }, [deleteTarget, deleteState.isLoading, itemType, triggerDelete]);
 
   const columns = useMemo(() => {
     if (!schema) return baseColumns;
@@ -463,6 +463,8 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                 className={cn(
                   "grid",
                   row.original.isDraft && "bg-orange-50 hover:bg-orange-100",
+                  deleteTarget === row.original.id &&
+                    "bg-red-50 hover:bg-red-50",
                 )}
                 style={{
                   gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
