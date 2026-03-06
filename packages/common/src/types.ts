@@ -8,6 +8,7 @@ import type {
   EditorialSchemaItemFieldSchema,
   EditorialSchemaItemSchema,
   EditorialSchemaSchema,
+  EditorialUpdateDataItemSchema,
 } from "./schemas.js";
 
 export interface LargeFileHandler {
@@ -20,6 +21,9 @@ export type EditorialConfig = z.infer<typeof EditorialConfigSchema>;
 export type EditorialData = z.infer<typeof EditorialDataSchema>;
 export type EditorialDataType = z.infer<typeof EditorialDataTypeSchema>;
 export type EditorialDataItem = z.infer<typeof EditorialDataItemSchema>;
+export type EditorialUpdateDataItem = z.infer<
+  typeof EditorialUpdateDataItemSchema
+>;
 export type EditorialDataObjectWithType = z.infer<
   typeof EditorialDataObjectWithTypeSchema
 >;
