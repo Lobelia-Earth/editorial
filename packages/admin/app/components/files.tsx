@@ -7,7 +7,6 @@ import {
 } from "@/lib/store/slices/editorialApi";
 import { cn, formatFileSize } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
-import clsx from "clsx";
 import {
   Check,
   ChevronDown,
@@ -205,7 +204,7 @@ const TreeNode = ({
       <Comp
         to={`/${node.relativePath}`}
         target="_blank"
-        className={clsx(
+        className={cn(
           "flex items-center gap-2 h-10 p-2 group hover:bg-muted/50 cursor-pointer",
           isConfirmingDeleteHere && "bg-red-50 hover:bg-red-50",
         )}
@@ -298,7 +297,7 @@ const TreeNode = ({
             )}
 
             <button
-              className={clsx(
+              className={cn(
                 "hover:text-yellow-500 p-1 hover:bg-muted rounded-sm cursor-pointer",
                 isDirectory && "hidden",
               )}
