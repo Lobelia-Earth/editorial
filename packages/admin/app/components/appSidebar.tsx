@@ -47,12 +47,9 @@ import {
 export default function AppSidebar() {
   const dispatch = useAppDispatch();
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
-  const [publish] = usePublishMutation();
-  const [pull] = usePullMutation();
-  const [push] = usePushMutation();
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isPulling, setIsPulling] = useState(false);
-  const [isPushing, setIsPushing] = useState(false);
+  const [publish, publishState] = usePublishMutation();
+  const [pull, pullingState] = usePullMutation();
+  const [push, pushingState] = usePushMutation();
 
   const { data: config } = useGetConfigQuery();
   const { data: schema } = useGetSchemaQuery();
@@ -70,8 +67,6 @@ export default function AppSidebar() {
   const user = useAppSelector((state) => state.auth.user);
 
   const handlePublish = async (author: string) => {
-    setIsPublishing(true);
-
     try {
       const result = await publish({ author }).unwrap();
       if (result) {
@@ -82,14 +77,10 @@ export default function AppSidebar() {
     } catch (err) {
       toast.error("Publishing failed.");
       console.error(err);
-    } finally {
-      setIsPublishing(false);
     }
   };
 
   const handlePull = async () => {
-    setIsPulling(true);
-
     try {
       const result = await pull().unwrap();
       if (result) {
@@ -100,14 +91,10 @@ export default function AppSidebar() {
     } catch (err) {
       toast.error("Pulling content failed.");
       console.error(err);
-    } finally {
-      setIsPulling(false);
     }
   };
 
   const handlePush = async (options: { author: string }) => {
-    setIsPushing(true);
-
     try {
       const result = await push(options).unwrap();
       if (result) {
@@ -118,8 +105,6 @@ export default function AppSidebar() {
     } catch (err) {
       toast.error("Pushing content failed.");
       console.error(err);
-    } finally {
-      setIsPushing(false);
     }
   };
 
@@ -209,7 +194,7 @@ export default function AppSidebar() {
                     className="cursor-pointer"
                     onClick={() => handlePull()}
                   >
-                    {isPulling ? (
+                    {pullingState.isLoading ? (
                       <Loader2 className="animate-spin" />
                     ) : (
                       <ArrowDown />
@@ -222,7 +207,7 @@ export default function AppSidebar() {
                     className="cursor-pointer"
                     onClick={() => handlePush({ author: user.email })}
                   >
-                    {isPushing ? (
+                    {pushingState.isLoading ? (
                       <Loader2 className="animate-spin" />
                     ) : (
                       <ArrowUp />
@@ -241,7 +226,7 @@ export default function AppSidebar() {
                     handlePublish(user.email);
                   }}
                 >
-                  {isPublishing ? (
+                  {publishState.isLoading ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     <Upload />
