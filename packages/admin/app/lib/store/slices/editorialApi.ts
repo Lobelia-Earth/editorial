@@ -9,6 +9,7 @@ import type {
   EditorialFilesResponse,
   EditorialSchema,
   EditorialSchemaItem,
+  EditorialUpdateDataItem,
 } from "@isardsat/editorial-common";
 import type {
   BaseQueryFn,
@@ -212,16 +213,15 @@ export const editorialApi = createApi({
         invalidatesTags: () => [{ type: "files" }],
       },
     ),
-    updateObject: builder.mutation<
-      EditorialDataItem,
-      Partial<EditorialDataItem>
-    >({
-      query: ({ id, type, ...patch }) => ({
+    updateObject: builder.mutation<EditorialDataItem, EditorialUpdateDataItem>({
+      query: ({ id, type, newId, ...patch }) => ({
         url: `/data/${type}/${id}`,
         method: "PATCH",
-        body: { id, type, ...patch },
+        body: { id, type, newId, ...patch },
       }),
-      invalidatesTags: () => [{ type: "data" }, { type: "dataDiff" }],
+      invalidatesTags: (_result, error) =>
+        // Only invalidate if there is no error
+        error ? [] : [{ type: "data" }, { type: "dataDiff" }],
     }),
     createObject: builder.mutation<
       EditorialDataItem,

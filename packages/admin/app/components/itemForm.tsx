@@ -73,6 +73,7 @@ export default function ItemForm({
 
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
+
   const { data: allData } = useGetDataQuery();
 
   const isFieldChanged = (fieldKey: string) => changedFields.includes(fieldKey);
@@ -283,29 +284,42 @@ export default function ItemForm({
       // multiselect values are already arrays, no conversion needed
     });
 
-    if (isNew) {
-      try {
-        const payload = await createItem(processedValues);
+    try {
+      if (isNew) {
+        const payload = await createItem(processedValues).unwrap();
+        toast.success("Item created successfully.");
+        navigate(`/admin/dashboard/${itemType}/${payload.id}`);
+        return;
+      }
 
-        if (!("error" in payload)) {
-          toast.success("Item created successfully.");
-          navigate(`/admin/dashboard/${itemType}/${payload.data.id}`);
-        } else {
-          toast.error("Failed to create item.");
-        }
-      } catch (err) {
-        toast.error("Failed to create item.");
-        console.error(err);
+      const currentId = data?.id;
+      const newId = processedValues.id;
+      const idChanged = currentId !== newId;
+      if (!currentId) return;
+
+      const payload = await updateItem({
+        ...processedValues,
+        id: currentId,
+        type: itemType,
+        newId: idChanged ? newId : undefined,
+      }).unwrap();
+
+      toast.success("Item updated successfully.");
+      if (idChanged) {
+        navigate(`/admin/dashboard/${itemType}/${payload.id}`);
+        return;
       }
-    } else {
-      try {
-        await updateItem(processedValues);
-        toast.success("Item updated successfully.");
-        form.reset(values);
-      } catch (err) {
-        toast.error("Failed to update item.");
-        console.error(err);
+
+      form.reset(values);
+    } catch (err: any) {
+      if (err.status === 409) {
+        form.setError("id", {
+          type: "manual",
+          message: "An item with this ID already exists.",
+        });
       }
+      toast.error(isNew ? "Failed to create item." : "Failed to update item.");
+      console.error(err);
     }
   }
 

@@ -4,6 +4,7 @@ import {
   EditorialDataSchema,
   EditorialDiffResponseSchema,
   EditorialSchemaSchema,
+  EditorialUpdateDataItemSchema,
   type EditorialConfig,
   type EditorialData,
   type EditorialDiffResponse,
@@ -15,7 +16,8 @@ import { getChangedFields } from "../lib/utils/diff.js";
 import {
   resolveCollectionReferences,
   resolveReferences,
-} from "../lib/utils/resolve.js";
+  updateOrRemoveReferences,
+} from "../lib/utils/references.js";
 import { generateMetaSchema } from "../lib/utils/schema.js";
 
 export function createDataRoutes(config: EditorialConfig, storage: Storage) {
@@ -369,7 +371,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     createRoute({
       method: "put",
       path: "/data/{itemType}/{id}",
-      summary: "Create or update object data by type and id",
+      summary: "Create object data by type and id",
       request: {
         params: z.object({
           itemType: z.string().openapi({
@@ -399,6 +401,9 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           },
           description: "Create a new object",
         },
+        409: {
+          description: "Item with this type and id already exists",
+        },
       },
       tags: ["Data"],
       middleware: [firebaseAuth(config.firebase?.projectId || "")],
@@ -406,6 +411,16 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     }),
     async (c) => {
       const itemAtts = await c.req.json();
+      const itemExists = await storage.checkItemExists({
+        type: itemAtts.type,
+        id: itemAtts.id,
+      });
+      if (itemExists) {
+        return c.json(
+          { error: "Item with this type and id already exists" },
+          409,
+        );
+      }
       const newItem = await storage.createItem(itemAtts);
 
       cache.invalidateContent();
@@ -433,7 +448,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
         body: {
           content: {
             "application/json": {
-              schema: EditorialDataItemSchema,
+              schema: EditorialUpdateDataItemSchema,
             },
           },
           required: true,
@@ -448,18 +463,61 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           },
           description: "Update object",
         },
+        409: {
+          description: "Item with this type and id already exists",
+        },
       },
       tags: ["Data"],
       middleware: [firebaseAuth(config.firebase?.projectId || "")],
       security: [{ bearerAuth: [] }],
     }),
     async (c) => {
+      const { itemType, id } = c.req.valid("param");
       const itemAtts = await c.req.json();
-      const newItem = await storage.updateItem(itemAtts);
+
+      if (itemAtts.newId) {
+        const itemWithNewIdExists = await storage.checkItemExists({
+          type: itemAtts.type,
+          id: itemAtts.newId,
+        });
+        if (itemWithNewIdExists) {
+          return c.json(
+            { error: "Item with this type and this new id already exists" },
+            409,
+          );
+        }
+      }
+
+      const oldId = id;
+      const newId = itemAtts.newId || itemAtts.id || id;
+      const renamed = oldId !== newId;
+
+      // Update renamed item first
+      const updatedItem = await storage.updateItem({
+        ...itemAtts,
+        type: itemType,
+        id: oldId,
+      });
+
+      // Repair references if needed
+      if (renamed) {
+        const [schema, content] = await Promise.all([
+          storage.getSchema(),
+          storage.getContent({ production: false }), // preview/content being edited
+        ]);
+
+        await updateOrRemoveReferences({
+          schema,
+          content,
+          storage,
+          targetType: itemType,
+          oldId,
+          newId,
+        });
+      }
 
       cache.invalidateContent();
-
-      return c.json(newItem);
+      return c.json(updatedItem);
     },
   );
 
@@ -496,7 +554,23 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
     }),
     async (c) => {
       const { itemType, id } = c.req.valid("param");
+
       await storage.deleteItem({ type: itemType, id });
+
+      // Remove references to the deleted item
+      const [schema, content] = await Promise.all([
+        storage.getSchema(),
+        storage.getContent({ production: false }),
+      ]);
+
+      await updateOrRemoveReferences({
+        schema,
+        content,
+        storage,
+        targetType: itemType,
+        oldId: id,
+        newId: null,
+      });
 
       cache.invalidateContent();
 

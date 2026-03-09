@@ -34,6 +34,12 @@ export const EditorialDataItemSchema = z.looseObject({
   updatedAt: z.iso.datetime().default(() => new Date().toISOString()),
 });
 
+export const EditorialUpdateDataItemSchema =
+  EditorialDataItemSchema.partial().extend({
+    type: z.string(),
+    newId: z.string().optional(),
+  });
+
 export const EditorialDataTypeSchema = z.record(
   z.string(),
   EditorialDataItemSchema,
