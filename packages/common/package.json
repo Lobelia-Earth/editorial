@@ -1,6 +1,6 @@
 {
   "name": "@isardsat/editorial-common",
-  "version": "6.19.5",
+  "version": "6.20.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

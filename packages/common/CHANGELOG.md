@@ -1,5 +1,13 @@
 # @isardsat/editorial-common
 
+## 6.20.0
+
+### Minor Changes
+
+- 812bf92: M
+  - Update delete item UI
+  - Fix IDs collision
+
 ## 6.19.5
 
 ### Patch Changes

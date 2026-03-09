@@ -1,5 +1,19 @@
 # @isardsat/editorial-server
 
+## 6.20.0
+
+### Minor Changes
+
+- 812bf92: M
+  - Update delete item UI
+  - Fix IDs collision
+
+### Patch Changes
+
+- Updated dependencies [812bf92]
+  - @isardsat/editorial-admin@6.20.0
+  - @isardsat/editorial-common@6.20.0
+
 ## 6.19.5
 
 ### Patch Changes

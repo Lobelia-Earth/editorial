@@ -1,6 +1,6 @@
 {
   "name": "@isardsat/editorial-react-toolkit",
-  "version": "6.19.5",
+  "version": "6.20.0",
   "type": "module",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.es.js",
