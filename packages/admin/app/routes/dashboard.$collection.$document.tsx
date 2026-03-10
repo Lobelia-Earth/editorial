@@ -4,7 +4,10 @@ import {
   useGetDataObjectQuery,
   useGetSchemaTypeQuery,
 } from "@/lib/store/slices/editorialApi";
-import type { EditorialDataItemStatus } from "@isardsat/editorial-common";
+import type {
+  EditorialDataItem,
+  EditorialDataItemStatus,
+} from "@isardsat/editorial-common";
 import { useMemo, useState } from "react";
 import type { Route } from "./+types/dashboard.$collection.$document";
 
@@ -23,7 +26,10 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
   const { data: diffData } = useGetDataDiffQuery();
 
   const changedFields = useMemo(() => {
-    if (!diffData) return [];
+    if (!diffData) {
+      setItemStatus(undefined);
+      return [];
+    }
 
     // Check if it's a singleton
     const single = diffData.singles[collectionId];
@@ -34,7 +40,10 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
 
     // Check collections
     const collection = diffData.collections[collectionId];
-    if (!collection) return [];
+    if (!collection) {
+      setItemStatus(undefined);
+      return [];
+    }
 
     const modifiedItem = collection.modified.find((m) => m.id === documentId);
     if (modifiedItem) {
@@ -45,7 +54,26 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
     if (collection.added.find((m) => m.id === documentId)) {
       setItemStatus("added");
     }
+    return [];
+  }, [diffData, collectionId, documentId]);
 
+  const productionData = useMemo(() => {
+    if (!diffData) return [];
+
+    // Check if it's a singleton
+    const single = diffData.singles[collectionId];
+    if (single?.production) {
+      return single.production;
+    }
+
+    // Check collections
+    const collection = diffData.collections[collectionId];
+    if (!collection) return [];
+
+    const modifiedItem = collection.modified.find((m) => m.id === documentId);
+    if (modifiedItem) {
+      return modifiedItem.production;
+    }
     return [];
   }, [diffData, collectionId, documentId]);
 
@@ -63,6 +91,7 @@ export default function CollectionItemPage({ params }: Route.ComponentProps) {
           data={item ?? undefined}
           isSingleton={schema.singleton}
           changedFields={changedFields}
+          productionData={productionData as EditorialDataItem}
           itemStatus={itemStatus}
         />
       </div>
