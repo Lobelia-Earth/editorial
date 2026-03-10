@@ -675,7 +675,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
             const previewItem = previewCollection[singletonKey];
             const productionItem = productionCollection[singletonKey];
 
-            if (previewItem && !productionItem) {
+            if (previewItem && !previewItem.isDraft && !productionItem) {
               // Singleton exists in preview but not in production = added
               result.singles[itemType] = {
                 status: "added",
@@ -691,7 +691,10 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
                 status: "deleted",
                 production: productionItem,
               };
-            } else if (previewItem?.updatedAt !== productionItem?.updatedAt) {
+            } else if (
+              productionItem &&
+              previewItem?.updatedAt !== productionItem?.updatedAt
+            ) {
               // Singleton has different updatedAt = modified
               const changedFields = getChangedFields(
                 previewItem,
@@ -724,14 +727,17 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
           for (const [id, previewItem] of Object.entries(previewCollection)) {
             const productionItem = productionCollection[id];
 
-            if (!productionItem) {
+            if (!previewItem.isDraft && !productionItem) {
               // Item exists in preview but not in production = added
               added.push({
                 id,
                 item: previewItem,
                 updatedAt: previewItem.updatedAt,
               });
-            } else if (previewItem.updatedAt !== productionItem.updatedAt) {
+            } else if (
+              productionItem &&
+              previewItem.updatedAt !== productionItem.updatedAt
+            ) {
               // Item has different updatedAt = modified (not yet published)
               const changedFields = getChangedFields(
                 previewItem,
