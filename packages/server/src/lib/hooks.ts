@@ -15,7 +15,7 @@ export async function createHooks(configDirectory: string) {
     } catch (error) {
       if (error instanceof Error) {
         console.error(
-          `Failed to load hook (${name}) with error: ${error.message}`
+          `Failed to load hook (${name}) with error: ${error.message}`,
         );
       }
 
@@ -64,7 +64,16 @@ export async function createHooks(configDirectory: string) {
     return executeHook("onPush", author);
   }
 
-  return { onPublish, onLocalize, onLocalizeEnd, onPull, onPush };
+  async function onUpgrade() {
+    if (process.env.NODE_ENV !== "production") {
+      console.info("Dropping onUpgrade hook event in development environment");
+      return;
+    }
+
+    return executeHook("onUpgrade");
+  }
+
+  return { onPublish, onLocalize, onLocalizeEnd, onPull, onPush, onUpgrade };
 }
 
 export type Hooks = Awaited<ReturnType<typeof createHooks>>;

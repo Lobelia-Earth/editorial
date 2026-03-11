@@ -184,6 +184,11 @@ export const EditorialDiffResponseSchema = z.object({
   ),
 });
 
+export const EditorialVersionResponseSchema = z.object({
+  current: z.string(),
+  latest: z.string(),
+});
+
 export type EditorialFile = z.infer<typeof EditorialFileSchema>;
 export type EditorialFiles = z.infer<typeof EditorialFilesSchema>;
 export type EditorialFilesResponse = z.infer<
@@ -191,3 +196,6 @@ export type EditorialFilesResponse = z.infer<
 >;
 export type EditorialDiffResponse = z.infer<typeof EditorialDiffResponseSchema>;
 export type EditorialDataItemStatus = (typeof itemStatus)[number];
+export type EditorialVersionResponse = z.infer<
+  typeof EditorialVersionResponseSchema
+>;

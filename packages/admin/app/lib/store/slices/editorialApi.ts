@@ -10,6 +10,7 @@ import type {
   EditorialSchema,
   EditorialSchemaItem,
   EditorialUpdateDataItem,
+  EditorialVersionResponse,
 } from "@isardsat/editorial-common";
 import type {
   BaseQueryFn,
@@ -244,6 +245,9 @@ export const editorialApi = createApi({
       }),
       invalidatesTags: () => [{ type: "data" }, { type: "dataDiff" }],
     }),
+    appVersionCheck: builder.query<EditorialVersionResponse, void>({
+      query: () => "/version",
+    }),
   }),
 });
 
@@ -267,4 +271,5 @@ export const {
   usePushMutation,
   useUpdateObjectMutation,
   useUploadFilesMutation,
+  useAppVersionCheckQuery,
 } = editorialApi;

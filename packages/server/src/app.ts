@@ -12,6 +12,7 @@ import { createAdminRoutes } from "./routes/admin.js";
 import { createConfigRoutes } from "./routes/config.js";
 import { createDataRoutes } from "./routes/data.js";
 import { createFilesRoutes } from "./routes/files.js";
+import { createVersionRoutes } from "./routes/version.js";
 
 export const BASE_EDITORIAL_PATH = "./editorial";
 
@@ -49,6 +50,7 @@ export async function createEditorialServer({
   app.route("/api/v1", createDataRoutes(config, storage));
   app.route("/api/v1", await createFilesRoutes(config));
   app.route("/api/v1", createActionRoutes(config, storage, hooks));
+  app.route("/api/v1", createVersionRoutes(hooks));
   app.route("/", createAdminRoutes(config));
 
   app.doc("/doc", {
