@@ -22,7 +22,7 @@ export default function InfoCard({
     >
       <h3 className="text-xs text-muted-foreground">{title}</h3>
       {isLoading ? (
-        <Skeleton className="h-[2.25rem] w-16" />
+        <Skeleton className="h-[1.125rem] sm:h-[1.875rem] w-16" />
       ) : (
         <p className="text-lg sm:text-3xl font-bold leading-none">{value}</p>
       )}
