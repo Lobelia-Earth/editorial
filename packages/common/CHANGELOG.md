@@ -1,5 +1,11 @@
 # @isardsat/editorial-common
 
+## 6.21.0
+
+### Minor Changes
+
+- 5afd9bc: Adds buttons to restore unpublished and modified fields to its published values
+
 ## 6.20.0
 
 ### Minor Changes
