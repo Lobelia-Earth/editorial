@@ -3,7 +3,10 @@
   "private": true,
   "scripts": {
     "compile": "pnpm --recursive --parallel compile",
-    "compile:watch": "pnpm run --recursive --parallel compile:watch"
+    "compile:watch": "pnpm run --recursive --parallel compile:watch",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.4"
