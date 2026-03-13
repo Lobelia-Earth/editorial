@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,8 +43,8 @@ import {
   type EditorialDataItemStatus,
   type EditorialSchemaItem,
 } from "@isardsat/editorial-common";
-import { Loader2, Save, X } from "lucide-react";
-import React, { useEffect, useMemo } from "react";
+import { Loader2, RotateCcw, Save, X } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
@@ -54,6 +64,7 @@ export interface SinglesPageProps {
   fields: EditorialSchemaItem["fields"];
   isSingleton?: boolean;
   data?: EditorialDataItem;
+  productionData?: EditorialDataItem;
   isNew?: boolean;
   changedFields?: string[];
   itemStatus?: EditorialDataItemStatus;
@@ -64,6 +75,7 @@ export default function ItemForm({
   fields,
   isSingleton,
   data,
+  productionData,
   isNew,
   changedFields = [],
   itemStatus,
@@ -75,6 +87,10 @@ export default function ItemForm({
   const [updateItem] = useUpdateObjectMutation();
 
   const { data: allData } = useGetDataQuery();
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMode, setConfirmMode] = useState<"single" | "all" | null>(null);
+  const [pendingFieldKey, setPendingFieldKey] = useState<string | null>(null);
 
   const isFieldChanged = (fieldKey: string) => changedFields.includes(fieldKey);
 
@@ -254,21 +270,84 @@ export default function ItemForm({
     }
   }, [form]);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-        event.preventDefault();
-        if (form.formState.isDirty || isNew) {
-          form.handleSubmit(onSubmit)();
-        }
+  const applyRestoreFieldToProduction = React.useCallback(
+    (fieldKey: string) => {
+      if (!productionData) {
+        toast.error("Production values are not available.");
+        return;
       }
-    };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [form, isNew, onSubmit]);
+      const prodRaw = (productionData as Record<string, unknown>)[fieldKey];
 
-  async function onSubmit(values: Record<string, string | string[]>) {
+      form.setValue(fieldKey, prodRaw as any, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      form.trigger(fieldKey);
+
+      toast.success(
+        `Restored "${fields[fieldKey]?.displayName ?? fieldKey}" to published value.`,
+      );
+    },
+    [productionData, form, fields],
+  );
+
+  const applyRestoreAllChangedToProduction = React.useCallback(() => {
+    if (!productionData) {
+      toast.error("Production values are not available.");
+      return;
+    }
+
+    if (!changedFields.length) return;
+
+    changedFields.forEach((fieldKey) => {
+      const prodRaw = (productionData as Record<string, unknown>)[fieldKey];
+
+      form.setValue(fieldKey, prodRaw as any, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    });
+
+    toast.success("Restored modified fields to published values.");
+  }, [productionData, changedFields, form]);
+
+  const requestRestoreField = React.useCallback((fieldKey: string) => {
+    setPendingFieldKey(fieldKey);
+    setConfirmMode("single");
+    setConfirmOpen(true);
+  }, []);
+
+  const requestRestoreAll = React.useCallback(() => {
+    setPendingFieldKey(null);
+    setConfirmMode("all");
+    setConfirmOpen(true);
+  }, []);
+
+  const onConfirmRestore = React.useCallback(() => {
+    if (confirmMode === "single" && pendingFieldKey) {
+      applyRestoreFieldToProduction(pendingFieldKey);
+    } else if (confirmMode === "all") {
+      applyRestoreAllChangedToProduction();
+    }
+
+    setConfirmOpen(false);
+    setConfirmMode(null);
+    setPendingFieldKey(null);
+    onSubmit(form.getValues(), false);
+  }, [
+    confirmMode,
+    pendingFieldKey,
+    applyRestoreFieldToProduction,
+    applyRestoreAllChangedToProduction,
+  ]);
+
+  async function onSubmit(
+    values: Record<string, string | string[]>,
+    showNotification = true,
+  ) {
     // Convert field values to their proper types
     const processedValues: Record<string, any> = {
       ...values,
@@ -287,7 +366,9 @@ export default function ItemForm({
     try {
       if (isNew) {
         const payload = await createItem(processedValues).unwrap();
-        toast.success("Item created successfully.");
+        if (showNotification) {
+          toast.success("Item created successfully.");
+        }
         navigate(`/admin/dashboard/${itemType}/${payload.id}`);
         return;
       }
@@ -303,8 +384,9 @@ export default function ItemForm({
         type: itemType,
         newId: idChanged ? newId : undefined,
       }).unwrap();
-
-      toast.success("Item updated successfully.");
+      if (showNotification) {
+        toast.success("Item updated successfully.");
+      }
       if (idChanged) {
         navigate(`/admin/dashboard/${itemType}/${payload.id}`);
         return;
@@ -322,6 +404,20 @@ export default function ItemForm({
       console.error(err);
     }
   }
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+        if (form.formState.isDirty || isNew) {
+          form.handleSubmit((values) => onSubmit(values))();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [form, isNew, onSubmit]);
 
   const flagFields = useMemo(
     () =>
@@ -362,8 +458,21 @@ export default function ItemForm({
   const changedFieldStyles =
     "outline outline-1 outline-yellow-400 outline-offset-4 rounded-sm";
 
-  const ModifiedMessage = () => (
-    <span className="text-yellow-800 text-xs">(modified)</span>
+  const ModifiedMessage = ({ fieldKey }: { fieldKey: string }) => (
+    <span className="inline-flex items-center gap-1 text-yellow-800 text-xs">
+      (modified)
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-4 w-4"
+        onClick={() => requestRestoreField(fieldKey)}
+        title="Restore published value"
+      >
+        <RotateCcw size={12} className="text-black" />
+        <span className="sr-only">Restore {fieldKey} to production</span>
+      </Button>
+    </span>
   );
 
   return (
@@ -383,12 +492,27 @@ export default function ItemForm({
             <Badge className={cn("capitalize", statusColors[itemStatus])}>
               {itemStatus}
             </Badge>
+            {changedFields.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={requestRestoreAll}
+                title="Restore all fields to published values"
+              >
+                <RotateCcw size={14} />
+                <span className="sr-only">
+                  Restore all modified fields to published values
+                </span>
+              </Button>
+            )}
           </div>
         )}
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit((values) => onSubmit(values))}
           className="space-y-4 max-w-[800px] w-[800px]"
         >
           <FormField
@@ -406,7 +530,7 @@ export default function ItemForm({
                 >
                   <FormLabel className="flex gap-1 items-baseline">
                     ID
-                    {isFieldChanged("id") && <ModifiedMessage />}
+                    {isFieldChanged("id") && <ModifiedMessage fieldKey="id" />}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -468,7 +592,7 @@ export default function ItemForm({
                     Draft
                     {isFieldChanged("isDraft") && (
                       <span className="text-yellow-600 text-xs">
-                        <ModifiedMessage />
+                        <ModifiedMessage fieldKey="isDraft" />
                       </span>
                     )}
                   </FormLabel>
@@ -515,7 +639,7 @@ export default function ItemForm({
                               {value.displayName}
                               {isFieldChanged(key) && (
                                 <span className="text-yellow-800 text-xs">
-                                  <ModifiedMessage />
+                                  <ModifiedMessage fieldKey={key} />
                                 </span>
                               )}
                             </FormLabel>
@@ -573,7 +697,7 @@ export default function ItemForm({
                           )}
                           {isFieldChanged(key) && (
                             <span className="text-yellow-600 text-xs">
-                              <ModifiedMessage />
+                              <ModifiedMessage fieldKey={key} />
                             </span>
                           )}
                         </FormLabel>
@@ -849,6 +973,29 @@ export default function ItemForm({
           }
         />
       </Form>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmMode === "all"
+                ? "Restore all modified fields?"
+                : "Restore this field?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmMode === "all"
+                ? `This will restore ${changedFields.length} modified ${changedFields.length === 1 ? "field" : "fields"} to published values.`
+                : `This will restore "${pendingFieldKey ? (fields[pendingFieldKey]?.displayName ?? pendingFieldKey) : "field"}" to its published value.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={onConfirmRestore}>
+              Restore
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
