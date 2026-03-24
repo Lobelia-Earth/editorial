@@ -1,5 +1,14 @@
 # @isardsat/editorial-server
 
+## 6.21.1
+
+### Patch Changes
+
+- 9a46a5b: Fix create new singleton item
+- Updated dependencies [9a46a5b]
+  - @isardsat/editorial-admin@6.21.1
+  - @isardsat/editorial-common@6.21.1
+
 ## 6.21.0
 
 ### Minor Changes

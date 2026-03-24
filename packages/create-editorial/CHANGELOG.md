@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.21.1
+
+### Patch Changes
+
+- 9a46a5b: Fix create new singleton item
+
 ## 6.21.0
 
 ### Minor Changes
