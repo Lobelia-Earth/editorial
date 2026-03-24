@@ -364,7 +364,9 @@ export default function ItemForm({
     });
 
     try {
-      if (isNew) {
+      // New singletons are created in the page dashboard.$collection.$document.tsx,
+      // so isNew is not passed for singletons, we determine creation vs update based on presence of data
+      if (isNew || (isSingleton && !data)) {
         const payload = await createItem(processedValues).unwrap();
         if (showNotification) {
           toast.success("Item created successfully.");
