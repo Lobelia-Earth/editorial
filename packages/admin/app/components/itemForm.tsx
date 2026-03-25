@@ -12,6 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   Form,
   FormControl,
   FormDescription,
@@ -21,6 +29,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -43,7 +56,7 @@ import {
   type EditorialDataItemStatus,
   type EditorialSchemaItem,
 } from "@isardsat/editorial-common";
-import { Loader2, RotateCcw, Save, X } from "lucide-react";
+import { ChevronsUpDown, Loader2, RotateCcw, Save, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
@@ -91,6 +104,12 @@ export default function ItemForm({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMode, setConfirmMode] = useState<"single" | "all" | null>(null);
   const [pendingFieldKey, setPendingFieldKey] = useState<string | null>(null);
+  const [multiselectOpenState, setMultiselectOpenState] = useState<
+    Record<string, boolean>
+  >({});
+  const [multiselectInputState, setMultiselectInputState] = useState<
+    Record<string, string>
+  >({});
 
   const isFieldChanged = (fieldKey: string) => changedFields.includes(fieldKey);
 
@@ -460,6 +479,39 @@ export default function ItemForm({
   const changedFieldStyles =
     "outline outline-1 outline-yellow-400 outline-offset-4 rounded-sm";
 
+  const addMultiselectValue = React.useCallback(
+    (
+      currentValues: string[],
+      rawValue: string,
+      maxSelectedChoices?: number,
+    ) => {
+      const nextValue = rawValue.trim();
+
+      if (!nextValue) return currentValues;
+      if (currentValues.includes(nextValue)) return currentValues;
+      if (maxSelectedChoices && currentValues.length >= maxSelectedChoices) {
+        return currentValues;
+      }
+
+      return [...currentValues, nextValue];
+    },
+    [],
+  );
+
+  const updateMultiselectInput = React.useCallback(
+    (fieldKey: string, value: string) => {
+      setMultiselectInputState((prev) => ({ ...prev, [fieldKey]: value }));
+    },
+    [],
+  );
+
+  const updateMultiselectOpen = React.useCallback(
+    (fieldKey: string, open: boolean) => {
+      setMultiselectOpenState((prev) => ({ ...prev, [fieldKey]: open }));
+    },
+    [],
+  );
+
   const ModifiedMessage = ({ fieldKey }: { fieldKey: string }) => (
     <span className="inline-flex items-center gap-1 text-yellow-800 text-xs">
       (modified)
@@ -678,6 +730,36 @@ export default function ItemForm({
                   render={({ field }) => {
                     const selectedCount =
                       (field.value as string[])?.length ?? 0;
+                    const selectedValues = (field.value as string[]) ?? [];
+                    const allowFreeInput =
+                      value.type === "multiselect" &&
+                      value.allowFreeInput === true;
+                    const hasChoicesConfigured =
+                      value.type === "multiselect" &&
+                      Array.isArray(value.choicesFixed) &&
+                      value.choicesFixed.length > 0;
+                    const shouldShowOnlyDropdown =
+                      value.type === "multiselect" && !allowFreeInput;
+                    const shouldShowMixedDropdown =
+                      value.type === "multiselect" &&
+                      allowFreeInput &&
+                      hasChoicesConfigured;
+                    const shouldShowOnlyTyping =
+                      value.type === "multiselect" &&
+                      allowFreeInput &&
+                      !hasChoicesConfigured;
+                    const availableChoices = resolvedChoices.filter(
+                      (choice) => !selectedValues.includes(choice),
+                    );
+                    const inputText = multiselectInputState[key] ?? "";
+                    const filteredChoices = availableChoices.filter((choice) =>
+                      choice.toLowerCase().includes(inputText.toLowerCase()),
+                    );
+                    const canCreateFromInput =
+                      inputText.trim().length > 0 &&
+                      !selectedValues.includes(inputText.trim()) &&
+                      (!value.maxSelectedChoices ||
+                        selectedValues.length < value.maxSelectedChoices);
                     const hasMinMax =
                       (value.type === "multiselect" ||
                         (value.type === "string" &&
@@ -829,73 +911,202 @@ export default function ItemForm({
                           ) : value.type === "multiselect" ? (
                             <div className="flex flex-col gap-2">
                               <div className="flex flex-wrap gap-2 min-h-[38px] p-2 border rounded-md bg-background">
-                                {(field.value as string[])?.length > 0 ? (
-                                  (field.value as string[]).map(
-                                    (selectedValue) => (
-                                      <span
-                                        key={selectedValue}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-black-800"
-                                      >
-                                        {selectedValue}
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            const newValues = (
-                                              field.value as string[]
-                                            ).filter(
+                                {selectedValues.length > 0 ? (
+                                  selectedValues.map((selectedValue) => (
+                                    <span
+                                      key={selectedValue}
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-black-800"
+                                    >
+                                      {selectedValue}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newValues =
+                                            selectedValues.filter(
                                               (v) => v !== selectedValue,
                                             );
-                                            field.onChange(newValues);
-                                          }}
-                                          className="hover:bg-gray-200 rounded-sm p-0.5"
-                                        >
-                                          <X size={14} />
-                                          <span className="sr-only">
-                                            Remove {selectedValue}
-                                          </span>
-                                        </button>
-                                      </span>
-                                    ),
-                                  )
+                                          field.onChange(newValues);
+                                        }}
+                                        className="hover:bg-gray-200 rounded-sm p-0.5"
+                                      >
+                                        <X size={14} />
+                                        <span className="sr-only">
+                                          Remove {selectedValue}
+                                        </span>
+                                      </button>
+                                    </span>
+                                  ))
                                 ) : (
                                   <span className="text-muted-foreground text-sm">
-                                    {value.placeholder ?? "Select items..."}
+                                    {value.placeholder ?? "Add items..."}
                                   </span>
                                 )}
                               </div>
                               {(!value.maxSelectedChoices ||
                                 selectedCount < value.maxSelectedChoices) && (
-                                <Select
-                                  value=""
-                                  onValueChange={(newValue) => {
-                                    const currentValues =
-                                      (field.value as string[]) || [];
-                                    if (!currentValues.includes(newValue)) {
-                                      field.onChange([
-                                        ...currentValues,
-                                        newValue,
-                                      ]);
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger id={key} className="w-full">
-                                    <SelectValue placeholder="Add item..." />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {resolvedChoices
-                                      .filter(
-                                        (choice) =>
-                                          !(field.value as string[])?.includes(
-                                            choice,
-                                          ),
-                                      )
-                                      .map((choice) => (
-                                        <SelectItem key={choice} value={choice}>
-                                          {choice}
-                                        </SelectItem>
-                                      ))}
-                                  </SelectContent>
-                                </Select>
+                                <>
+                                  {shouldShowOnlyDropdown && (
+                                    <Select
+                                      value=""
+                                      onValueChange={(newValue) => {
+                                        const currentValues = selectedValues;
+                                        const nextValues = addMultiselectValue(
+                                          currentValues,
+                                          newValue,
+                                          value.maxSelectedChoices,
+                                        );
+
+                                        if (nextValues !== currentValues) {
+                                          field.onChange(nextValues);
+                                        }
+                                      }}
+                                    >
+                                      <SelectTrigger
+                                        id={key}
+                                        className="w-full"
+                                      >
+                                        <SelectValue
+                                          placeholder={
+                                            value.placeholder ??
+                                            "Select item..."
+                                          }
+                                        />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {availableChoices.map((choice) => (
+                                          <SelectItem
+                                            key={choice}
+                                            value={choice}
+                                          >
+                                            {choice}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+
+                                  {shouldShowMixedDropdown && (
+                                    <Popover
+                                      open={multiselectOpenState[key] ?? false}
+                                      onOpenChange={(open) =>
+                                        updateMultiselectOpen(key, open)
+                                      }
+                                    >
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          role="combobox"
+                                          aria-expanded={
+                                            multiselectOpenState[key] ?? false
+                                          }
+                                          className="w-full justify-between"
+                                        >
+                                          {value.placeholder ?? "Add item..."}
+                                          <ChevronsUpDown className="opacity-50" />
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+                                        <Command>
+                                          <CommandInput
+                                            value={inputText}
+                                            onValueChange={(newValue) =>
+                                              updateMultiselectInput(
+                                                key,
+                                                newValue,
+                                              )
+                                            }
+                                            onKeyDown={(event) => {
+                                              if (event.key !== "Enter") return;
+
+                                              event.preventDefault();
+                                              if (!canCreateFromInput) return;
+
+                                              const nextValues =
+                                                addMultiselectValue(
+                                                  selectedValues,
+                                                  inputText,
+                                                  value.maxSelectedChoices,
+                                                );
+
+                                              if (
+                                                nextValues !== selectedValues
+                                              ) {
+                                                field.onChange(nextValues);
+                                                updateMultiselectInput(key, "");
+                                              }
+                                            }}
+                                            placeholder="Select or type to add..."
+                                          />
+                                          <CommandList>
+                                            <CommandEmpty>
+                                              {canCreateFromInput
+                                                ? `Press Enter to add \"${inputText.trim()}\"`
+                                                : "No available items"}
+                                            </CommandEmpty>
+                                            <CommandGroup>
+                                              {filteredChoices.map((choice) => (
+                                                <CommandItem
+                                                  key={choice}
+                                                  value={choice}
+                                                  onSelect={() => {
+                                                    const nextValues =
+                                                      addMultiselectValue(
+                                                        selectedValues,
+                                                        choice,
+                                                        value.maxSelectedChoices,
+                                                      );
+
+                                                    if (
+                                                      nextValues !==
+                                                      selectedValues
+                                                    ) {
+                                                      field.onChange(
+                                                        nextValues,
+                                                      );
+                                                    }
+                                                    updateMultiselectInput(
+                                                      key,
+                                                      "",
+                                                    );
+                                                  }}
+                                                >
+                                                  {choice}
+                                                </CommandItem>
+                                              ))}
+                                            </CommandGroup>
+                                          </CommandList>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
+                                  )}
+
+                                  {shouldShowOnlyTyping && (
+                                    <Input
+                                      id={`${key}-custom-item`}
+                                      placeholder={
+                                        value.placeholder ??
+                                        "Type an item and press Enter"
+                                      }
+                                      onKeyDown={(event) => {
+                                        if (event.key !== "Enter") return;
+
+                                        event.preventDefault();
+                                        const currentValues = selectedValues;
+                                        const nextValues = addMultiselectValue(
+                                          currentValues,
+                                          event.currentTarget.value,
+                                          value.maxSelectedChoices,
+                                        );
+
+                                        if (nextValues !== currentValues) {
+                                          field.onChange(nextValues);
+                                          event.currentTarget.value = "";
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </>
                               )}
                               {hasMinMax && (
                                 <span
