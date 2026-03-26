@@ -1,5 +1,11 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.22.0
+
+### Minor Changes
+
+- c8b059c: Adds allowFreeInput option to schema, allowing users to enter custom items in select and multiselect inputs.
+
 ## 6.21.1
 
 ### Patch Changes

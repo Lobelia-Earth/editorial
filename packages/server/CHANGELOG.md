@@ -1,5 +1,17 @@
 # @isardsat/editorial-server
 
+## 6.22.0
+
+### Minor Changes
+
+- c8b059c: Adds allowFreeInput option to schema, allowing users to enter custom items in select and multiselect inputs.
+
+### Patch Changes
+
+- Updated dependencies [c8b059c]
+  - @isardsat/editorial-admin@6.22.0
+  - @isardsat/editorial-common@6.22.0
+
 ## 6.21.1
 
 ### Patch Changes
