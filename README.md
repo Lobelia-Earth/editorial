@@ -47,9 +47,15 @@ This monorepo contains the following packages:
 
 ## Development
 
-Running `pnpm -w compile:watch` for all packages apart from the admin panel. You can then run `pnpm dev` in the `packages/admin` directory and run `pnpm editorial` in one of the [examples](./examples/) for dummy data.
+Run `pnpm dev` from the root. It compiles all packages, then watches them for changes and starts the admin panel dev server at http://localhost:5173/admin/. The Editorial server isn't included: run `pnpm editorial` in one of the [examples](./examples/) for dummy data, or in a project implementing Editorial.
 
-Alternatively, if you need to develop alongside a project implementing Editorial, you can simply "link" your local repo of editorial to the project and run the same `pnpm -w compile:watch` command as above.
+Other root scripts:
+
+- `pnpm typecheck`: compiles the packages and typechecks every workspace project
+- `pnpm lint`: runs the packages' `lint` scripts
+- `pnpm format` / `pnpm format:check`: formats or checks the whole repo with Prettier
+
+Alternatively, if you need to develop alongside a project implementing Editorial, you can simply "link" your local repo of editorial to the project and run `pnpm dev`, or `pnpm compile:watch` if you don't need the admin dev server.
 
 ## Publishing
 

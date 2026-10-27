@@ -2,14 +2,21 @@
   "name": "editorial",
   "private": true,
   "scripts": {
-    "compile": "pnpm --recursive --parallel compile",
+    "dev": "pnpm compile && concurrently --kill-others --names packages,admin --prefix-colors blue,magenta \"pnpm compile:watch\" \"pnpm --filter @isardsat/editorial-admin dev\"",
+    "compile": "pnpm --recursive compile",
     "compile:watch": "pnpm run --recursive --parallel compile:watch",
+    "typecheck": "pnpm compile && pnpm --recursive typecheck",
+    "lint": "pnpm --recursive lint",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.4"
+    "@changesets/cli": "^2.29.4",
+    "concurrently": "^10.0.6",
+    "prettier": "catalog:"
   },
   "engines": {
     "node": ">=20",
