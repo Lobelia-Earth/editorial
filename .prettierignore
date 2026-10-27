@@ -1,0 +1,6 @@
+# Generated
+build/
+.react-router/
+docs/.docusaurus/
+CHANGELOG.md
+pnpm-lock.yaml

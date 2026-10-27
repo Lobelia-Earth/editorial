@@ -21,7 +21,8 @@
     "build": "vite build && tsc -p tsconfig.build.json",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "typecheck": "tsc -b"
   },
   "peerDependencies": {
     "react": "^18",
