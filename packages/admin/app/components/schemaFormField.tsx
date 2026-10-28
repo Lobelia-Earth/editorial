@@ -5,9 +5,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import type { FieldFormValue, SchemaField } from "@/lib/fieldUtils";
+import type { FieldInputFormValues, SchemaField } from "@/lib/fieldUtils";
 import type { ReactNode } from "react";
 import { useFormContext } from "react-hook-form";
+import BlocksField from "./blocksField";
 import FieldInput from "./fieldInput";
 
 export interface SchemaFormFieldProps {
@@ -31,7 +32,18 @@ export default function SchemaFormField({
   className,
   labelExtra,
 }: SchemaFormFieldProps) {
-  const form = useFormContext<Record<string, FieldFormValue>>();
+  const form = useFormContext<FieldInputFormValues>();
+
+  if (schemaField.type === "blocks") {
+    return (
+      <BlocksField
+        name={name}
+        schemaField={schemaField}
+        className={className}
+        labelExtra={labelExtra}
+      />
+    );
+  }
 
   return (
     <FormField
