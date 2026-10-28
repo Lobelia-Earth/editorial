@@ -7,6 +7,8 @@
     "compile:watch": "pnpm run --recursive --parallel compile:watch",
     "typecheck": "pnpm compile && pnpm --recursive typecheck",
     "lint": "pnpm --recursive lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "changeset": "changeset",
@@ -17,7 +19,8 @@
   "devDependencies": {
     "@changesets/cli": "^2.29.4",
     "concurrently": "^10.0.6",
-    "prettier": "catalog:"
+    "prettier": "catalog:",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=20",
