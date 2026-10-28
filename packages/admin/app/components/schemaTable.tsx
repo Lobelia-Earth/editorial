@@ -31,6 +31,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  BlocksIcon,
   CalendarIcon,
   Check,
   Circle,
@@ -50,6 +51,7 @@ import React, { useMemo, useState, type FunctionComponent } from "react";
 import { Link } from "react-router";
 
 const TypeIconMap: Record<string, FunctionComponent> = {
+  blocks: BlocksIcon,
   boolean: CircleCheckIcon,
   date: CalendarIcon,
   datetime: CalendarIcon,
@@ -322,6 +324,17 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
                       )}
                     </span>
                   );
+                case "blocks": {
+                  const blockCount = Array.isArray(cellValue)
+                    ? cellValue.length
+                    : 0;
+
+                  return (
+                    <span className="text-nowrap text-muted-foreground">
+                      {blockCount} {blockCount === 1 ? "block" : "blocks"}
+                    </span>
+                  );
+                }
                 case "markdown":
                 case "string":
                   if (value.isUploadedFile) {
