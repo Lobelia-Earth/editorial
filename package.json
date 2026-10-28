@@ -11,7 +11,8 @@
     "format:check": "prettier . --check",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "ship": "bash scripts/release.sh"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.4",
