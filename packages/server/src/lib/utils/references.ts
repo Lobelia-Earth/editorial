@@ -1,34 +1,157 @@
 import {
+  getBlockSchema,
   getChoicesReference,
   type EditorialData,
   type EditorialDataItem,
   type EditorialSchema,
+  type EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 
 import { type Storage } from "../storage.js";
+
+type SchemaFields = EditorialSchemaItem["fields"];
+
 /**
- * Resolves uploaded file paths to full URLs for an item.
+ * Prefixes uploaded file paths with the files origin.
  */
-function resolveFileUrls(
+function resolveFileUrlFields(
+  values: Record<string, unknown>,
+  fields: SchemaFields,
+  origin: string,
+): Record<string, unknown> {
+  const resolvedValues = { ...values };
+
+  for (const [key, value] of Object.entries(resolvedValues)) {
+    const fieldConfig = fields[key];
+    if (!fieldConfig) continue;
+
+    if (fieldConfig.type === "blocks") {
+      if (!Array.isArray(value)) continue;
+
+      resolvedValues[key] = value.map((block) => {
+        const blockSchema = getBlockSchema(fieldConfig, block);
+        if (!blockSchema) return block;
+
+        return resolveFileUrlFields(block, blockSchema.fields, origin);
+      });
+      continue;
+    }
+
+    if (!fieldConfig.isUploadedFile) continue;
+    if (typeof value !== "string") continue;
+    if (value.startsWith("http")) continue;
+
+    resolvedValues[key] = `${origin}/${value}`;
+  }
+
+  return resolvedValues;
+}
+
+/**
+ * Resolves uploaded file paths to full URLs for an item, including the
+ * uploaded files inside "blocks" fields.
+ */
+export function resolveFileUrls(
   item: EditorialDataItem,
   schema: EditorialSchema,
   itemType: string,
   origin: string,
 ): EditorialDataItem {
-  const resolvedItem = { ...item };
   const itemSchema = schema[itemType];
 
-  if (!itemSchema) return resolvedItem;
+  if (!itemSchema) return { ...item };
 
-  for (const [key, value] of Object.entries(resolvedItem)) {
-    if (!itemSchema.fields[key]?.isUploadedFile) continue;
-    if (typeof value !== "string") continue;
-    if (value.startsWith("http")) continue;
+  return resolveFileUrlFields(
+    item,
+    itemSchema.fields,
+    origin,
+  ) as EditorialDataItem;
+}
 
-    resolvedItem[key] = `${origin}/${value}`;
+/**
+ * Replaces referenced IDs with full objects in the given values.
+ * Values of "blocks" fields are resolved block by block.
+ */
+function resolveReferenceFields(
+  values: Record<string, unknown>,
+  fields: SchemaFields,
+  schema: EditorialSchema,
+  content: EditorialData,
+  origin: string,
+  resolvedIds: Set<string>,
+): Record<string, unknown> {
+  const resolvedValues = { ...values };
+
+  for (const [fieldKey, fieldConfig] of Object.entries(fields)) {
+    const fieldValue = values[fieldKey];
+
+    if (fieldConfig.type === "blocks") {
+      if (!Array.isArray(fieldValue)) continue;
+
+      resolvedValues[fieldKey] = fieldValue.map((block) => {
+        const blockSchema = getBlockSchema(fieldConfig, block);
+        if (!blockSchema) return block;
+
+        return resolveReferenceFields(
+          block,
+          blockSchema.fields,
+          schema,
+          content,
+          origin,
+          resolvedIds,
+        );
+      });
+      continue;
+    }
+
+    if (fieldConfig.type !== "select" && fieldConfig.type !== "multiselect") {
+      continue;
+    }
+
+    const referencedType = getChoicesReference(fieldConfig.choicesFixed);
+    if (!referencedType) continue;
+
+    const referencedCollection = content[referencedType];
+    if (!referencedCollection) continue;
+
+    if (fieldConfig.type === "select" && typeof fieldValue === "string") {
+      // Single reference - replace ID with full object
+      const referencedItem = referencedCollection[fieldValue];
+      if (referencedItem) {
+        // Recursively resolve nested references
+        resolvedValues[fieldKey] = resolveReferences(
+          referencedItem,
+          schema,
+          referencedType,
+          content,
+          origin,
+          new Set(resolvedIds),
+        );
+      }
+    } else if (
+      fieldConfig.type === "multiselect" &&
+      Array.isArray(fieldValue)
+    ) {
+      // Multiple references - replace IDs with full objects
+      resolvedValues[fieldKey] = fieldValue
+        .map((id) => {
+          const referencedItem = referencedCollection[id];
+          if (!referencedItem) return null;
+          // Recursively resolve nested references
+          return resolveReferences(
+            referencedItem,
+            schema,
+            referencedType,
+            content,
+            origin,
+            new Set(resolvedIds),
+          );
+        })
+        .filter(Boolean);
+    }
   }
 
-  return resolvedItem;
+  return resolvedValues;
 }
 
 /**
@@ -53,62 +176,19 @@ export function resolveReferences(
   resolvedIds.add(itemIdentifier);
 
   // First resolve file URLs for the current item
-  let resolvedItem = resolveFileUrls(item, schema, itemType, origin);
+  const resolvedItem = resolveFileUrls(item, schema, itemType, origin);
   const itemSchema = schema[itemType];
 
   if (!itemSchema) return resolvedItem;
 
-  for (const [fieldKey, fieldConfig] of Object.entries(itemSchema.fields)) {
-    if (fieldConfig.type !== "select" && fieldConfig.type !== "multiselect") {
-      continue;
-    }
-
-    const referencedType = getChoicesReference(fieldConfig.choicesFixed);
-    if (!referencedType) continue;
-
-    const referencedCollection = content[referencedType];
-    if (!referencedCollection) continue;
-
-    const fieldValue = item[fieldKey];
-
-    if (fieldConfig.type === "select" && typeof fieldValue === "string") {
-      // Single reference - replace ID with full object
-      const referencedItem = referencedCollection[fieldValue];
-      if (referencedItem) {
-        // Recursively resolve nested references
-        resolvedItem[fieldKey] = resolveReferences(
-          referencedItem,
-          schema,
-          referencedType,
-          content,
-          origin,
-          new Set(resolvedIds),
-        );
-      }
-    } else if (
-      fieldConfig.type === "multiselect" &&
-      Array.isArray(fieldValue)
-    ) {
-      // Multiple references - replace IDs with full objects
-      resolvedItem[fieldKey] = fieldValue
-        .map((id) => {
-          const referencedItem = referencedCollection[id];
-          if (!referencedItem) return null;
-          // Recursively resolve nested references
-          return resolveReferences(
-            referencedItem,
-            schema,
-            referencedType,
-            content,
-            origin,
-            new Set(resolvedIds),
-          );
-        })
-        .filter(Boolean);
-    }
-  }
-
-  return resolvedItem;
+  return resolveReferenceFields(
+    resolvedItem,
+    itemSchema.fields,
+    schema,
+    content,
+    origin,
+    resolvedIds,
+  ) as EditorialDataItem;
 }
 
 /**
@@ -136,6 +216,80 @@ export function resolveCollectionReferences(
   return resolvedCollection;
 }
 
+/**
+ * Renames or removes references to `oldId` in the given values.
+ * Returns the patched values, or null if nothing changed.
+ */
+function patchReferenceFields(
+  values: Record<string, any>,
+  fields: Record<string, any>,
+  targetType: string,
+  oldId: string,
+  newId?: string | null,
+): Record<string, any> | null {
+  let changed = false;
+  const patchedValues: Record<string, any> = { ...values };
+
+  for (const [fieldKey, fieldConfig] of Object.entries(fields)) {
+    const value = patchedValues[fieldKey];
+
+    if (fieldConfig.type === "blocks") {
+      if (!Array.isArray(value)) continue;
+
+      let blocksChanged = false;
+      const nextBlocks = value.map((block) => {
+        const blockSchema = getBlockSchema(fieldConfig, block);
+        if (!blockSchema) return block;
+
+        const patchedBlock = patchReferenceFields(
+          block,
+          blockSchema.fields,
+          targetType,
+          oldId,
+          newId,
+        );
+        if (!patchedBlock) return block;
+
+        blocksChanged = true;
+        return patchedBlock;
+      });
+
+      if (blocksChanged) {
+        patchedValues[fieldKey] = nextBlocks;
+        changed = true;
+      }
+      continue;
+    }
+
+    if (fieldConfig.type !== "select" && fieldConfig.type !== "multiselect") {
+      continue;
+    }
+    if (getChoicesReference(fieldConfig.choicesFixed) !== targetType) {
+      continue;
+    }
+
+    if (fieldConfig.type === "select") {
+      if (value === oldId) {
+        patchedValues[fieldKey] = newId ?? null; // rename or remove
+        changed = true;
+      }
+    } else if (Array.isArray(value)) {
+      let next: string[];
+      if (newId != null) {
+        next = value.map((v) => (v === oldId ? newId : v));
+      } else {
+        next = value.filter((v) => v !== oldId); // remove
+      }
+      if (next.length !== value.length || next.some((v, i) => v !== value[i])) {
+        patchedValues[fieldKey] = next;
+        changed = true;
+      }
+    }
+  }
+
+  return changed ? patchedValues : null;
+}
+
 export async function updateOrRemoveReferences(params: {
   schema: any;
   content: Record<string, Record<string, any>>;
@@ -150,52 +304,16 @@ export async function updateOrRemoveReferences(params: {
     const fields = (containerSchema as any).fields || {};
     const collection = content[containerType] || {};
 
-    // Find fields in this type that reference the target type
-    const referenceFields = Object.entries(fields).filter(
-      ([, fieldConfig]: any) => {
-        if (
-          fieldConfig.type !== "select" &&
-          fieldConfig.type !== "multiselect"
-        ) {
-          return false;
-        }
-        return getChoicesReference(fieldConfig.choicesFixed) === targetType;
-      },
-    );
-
-    if (referenceFields.length === 0) continue;
-
     for (const [itemId, item] of Object.entries(collection)) {
-      let changed = false;
-      const patchedItem: any = { ...item };
+      const patchedItem = patchReferenceFields(
+        item,
+        fields,
+        targetType,
+        oldId,
+        newId,
+      );
 
-      for (const [fieldKey, fieldConfig] of referenceFields as any[]) {
-        if (fieldConfig.type === "select") {
-          if (patchedItem[fieldKey] === oldId) {
-            patchedItem[fieldKey] = newId ?? null; // rename or remove
-            changed = true;
-          }
-        } else if (fieldConfig.type === "multiselect") {
-          const value = patchedItem[fieldKey];
-          if (Array.isArray(value)) {
-            let next: string[];
-            if (newId != null) {
-              next = value.map((v) => (v === oldId ? newId : v));
-            } else {
-              next = value.filter((v) => v !== oldId); // remove
-            }
-            if (
-              next.length !== value.length ||
-              next.some((v, i) => v !== value[i])
-            ) {
-              patchedItem[fieldKey] = next;
-              changed = true;
-            }
-          }
-        }
-      }
-
-      if (changed) {
+      if (patchedItem) {
         await storage.updateItem({
           ...patchedItem,
           type: containerType,
