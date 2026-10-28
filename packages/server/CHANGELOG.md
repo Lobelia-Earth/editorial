@@ -1,5 +1,17 @@
 # @isardsat/editorial-server
 
+## 6.23.0
+
+### Minor Changes
+
+- f0c4bda: Adds drag-and-drop reordering of selected items in multiselect inputs, with touch and keyboard support. The new order is saved to the data files.
+
+### Patch Changes
+
+- Updated dependencies [f0c4bda]
+  - @isardsat/editorial-admin@6.23.0
+  - @isardsat/editorial-common@6.23.0
+
 ## 6.22.0
 
 ### Minor Changes
