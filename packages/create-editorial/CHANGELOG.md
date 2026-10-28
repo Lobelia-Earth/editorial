@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.24.0
+
+### Minor Changes
+
+- d405f9e: Adds the `blocks` field type: an ordered list of blocks of different types, each with its own fields, stored inline in the item. Editors can add, reorder (drag and drop), collapse and remove blocks. The server resolves uploaded files and references inside blocks, and renames or removes references inside blocks when the referenced item changes.
+
 ## 6.23.0
 
 ### Minor Changes
