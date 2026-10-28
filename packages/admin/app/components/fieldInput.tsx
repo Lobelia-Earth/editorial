@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormControl } from "@/components/ui/form";
 import {
   Command,
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FieldFormValue, SchemaField } from "@/lib/fieldUtils";
+import type { FieldInputFormValues, SchemaField } from "@/lib/fieldUtils";
 import { cn } from "@/lib/utils";
 import { ChevronsUpDown, X } from "lucide-react";
 import React, { useState } from "react";
@@ -120,7 +121,7 @@ export interface FieldInputProps {
   /** Form path of the field, also used as the input id */
   name: string;
   schemaField: SchemaField;
-  field: ControllerRenderProps<Record<string, FieldFormValue>, string>;
+  field: ControllerRenderProps<FieldInputFormValues, string>;
   resolvedChoices: string[];
 }
 
@@ -134,7 +135,7 @@ export default function FieldInput({
   field,
   resolvedChoices,
 }: FieldInputProps) {
-  const form = useFormContext<Record<string, FieldFormValue>>();
+  const form = useFormContext<FieldInputFormValues>();
 
   const [selectOpen, setSelectOpen] = useState(false);
   const [selectInputText, setSelectInputText] = useState("");
@@ -158,11 +159,19 @@ export default function FieldInput({
 
   return (
     <FormControl>
-      {schemaField.type === "markdown" ? (
+      {schemaField.type === "boolean" ? (
+        <Checkbox
+          id={name}
+          checked={field.value === "true"}
+          onCheckedChange={(newCheckedState) => {
+            field.onChange(newCheckedState === true ? "true" : "false");
+          }}
+        />
+      ) : schemaField.type === "markdown" ? (
         <MarkdownEditor
           id={name}
           name={name}
-          register={form.register}
+          editorRef={field.ref}
           className="h-52"
           markdown={field.value as string}
           onChange={(value, initialChange) => {

@@ -7,6 +7,7 @@ export {
 } from "./errors.js";
 export type {
   ClientOptions,
+  EditorialBlockValue,
   EditorialClientInterface,
   EditorialConfig,
   EditorialData,

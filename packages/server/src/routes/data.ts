@@ -15,6 +15,7 @@ import type { Storage } from "../lib/storage.js";
 import { getChangedFields } from "../lib/utils/diff.js";
 import {
   resolveCollectionReferences,
+  resolveFileUrls,
   resolveReferences,
   updateOrRemoveReferences,
 } from "../lib/utils/references.js";
@@ -207,16 +208,17 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       }
 
       // Apply file URL resolution for non-resolved requests
+      const resolvedCollection: typeof collection = {};
       for (const [itemKey, itemValue] of Object.entries(collection)) {
-        for (const [key, value] of Object.entries(itemValue)) {
-          if (!schema[itemType].fields[key]?.isUploadedFile) continue;
-          if ((value as string).startsWith("http")) continue;
-
-          collection[itemKey][key] = `${origin}/${value}`;
-        }
+        resolvedCollection[itemKey] = resolveFileUrls(
+          itemValue,
+          schema,
+          itemType,
+          origin,
+        );
       }
 
-      return c.json(collection);
+      return c.json(resolvedCollection);
     },
   );
 
@@ -356,14 +358,7 @@ export function createDataRoutes(config: EditorialConfig, storage: Storage) {
       }
 
       // Apply file URL resolution for non-resolved requests
-      for (const [key, value] of Object.entries(item)) {
-        if (!schema[itemType].fields[key]?.isUploadedFile) continue;
-        if ((value as string).startsWith("http")) continue;
-
-        item[key] = `${origin}/${value}`;
-      }
-
-      return c.json(item);
+      return c.json(resolveFileUrls(item, schema, itemType, origin));
     },
   );
 

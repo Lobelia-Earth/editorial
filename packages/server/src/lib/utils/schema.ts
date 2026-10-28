@@ -71,6 +71,8 @@ export function generateMetaSchema(options: GenerateMetaSchemaOptions = {}) {
         };
       } else if (innerField instanceof z.ZodArray) {
         properties[key] = { type: "array", items: { type: "string" } };
+      } else if (innerField instanceof z.ZodRecord) {
+        properties[key] = { type: "object" };
       } else if (innerField instanceof z.ZodEnum) {
         properties[key] = {
           type: "string",
@@ -102,6 +104,40 @@ export function generateMetaSchema(options: GenerateMetaSchemaOptions = {}) {
   }
 
   const fieldDefinition = generateDefinition(EditorialSchemaItemFieldSchema);
+  fieldDefinition.properties.blocks = {
+    type: "object",
+    additionalProperties: { $ref: "#/definitions/Block" },
+  };
+
+  // Fields inside blocks accept every field type except nested blocks
+  const { blocks: _blocks, ...blockFieldProperties } =
+    fieldDefinition.properties;
+  const blockFieldDefinition = {
+    ...fieldDefinition,
+    properties: {
+      ...blockFieldProperties,
+      type: {
+        type: "string",
+        enum: EditorialSchemaItemFieldType.options.filter(
+          (type) => type !== "blocks",
+        ),
+      },
+    },
+  };
+
+  const blockDefinition = {
+    type: "object",
+    properties: {
+      displayName: { type: "string" },
+      fields: {
+        type: "object",
+        additionalProperties: { $ref: "#/definitions/BlockField" },
+      },
+    },
+    required: ["displayName", "fields"],
+    additionalProperties: false,
+  };
+
   const schemaItemDefinition = generateDefinition(EditorialSchemaItemSchema);
   schemaItemDefinition.properties.fields = {
     type: "object",
@@ -116,6 +152,8 @@ export function generateMetaSchema(options: GenerateMetaSchemaOptions = {}) {
     definitions: {
       SchemaItem: schemaItemDefinition,
       Field: fieldDefinition,
+      Block: blockDefinition,
+      BlockField: blockFieldDefinition,
     },
   };
 }

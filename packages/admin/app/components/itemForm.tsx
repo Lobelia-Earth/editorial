@@ -31,6 +31,7 @@ import { cn, statusColors } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   getFieldDefaultValue,
+  getFieldStoredValue,
   getFieldValidationSchema,
   hasFieldChoices,
   resolveFieldChoices,
@@ -145,6 +146,21 @@ export default function ItemForm({
     }
   }, [form]);
 
+  // Published value of a field, converted to the form format
+  const getProductionFormValue = React.useCallback(
+    (fieldKey: string) => {
+      const prodRaw = (productionData as Record<string, unknown> | undefined)?.[
+        fieldKey
+      ];
+      const field = fields[fieldKey];
+
+      return field?.type === "blocks"
+        ? getFieldDefaultValue(field, prodRaw)
+        : prodRaw;
+    },
+    [productionData, fields],
+  );
+
   const applyRestoreFieldToProduction = React.useCallback(
     (fieldKey: string) => {
       if (!productionData) {
@@ -152,9 +168,7 @@ export default function ItemForm({
         return;
       }
 
-      const prodRaw = (productionData as Record<string, unknown>)[fieldKey];
-
-      form.setValue(fieldKey, prodRaw as any, {
+      form.setValue(fieldKey, getProductionFormValue(fieldKey) as any, {
         shouldDirty: true,
         shouldTouch: true,
         shouldValidate: true,
@@ -165,7 +179,7 @@ export default function ItemForm({
         `Restored "${fields[fieldKey]?.displayName ?? fieldKey}" to published value.`,
       );
     },
-    [productionData, form, fields],
+    [productionData, form, fields, getProductionFormValue],
   );
 
   const applyRestoreAllChangedToProduction = React.useCallback(() => {
@@ -177,9 +191,7 @@ export default function ItemForm({
     if (!changedFields.length) return;
 
     changedFields.forEach((fieldKey) => {
-      const prodRaw = (productionData as Record<string, unknown>)[fieldKey];
-
-      form.setValue(fieldKey, prodRaw as any, {
+      form.setValue(fieldKey, getProductionFormValue(fieldKey) as any, {
         shouldDirty: true,
         shouldTouch: true,
         shouldValidate: true,
@@ -187,7 +199,7 @@ export default function ItemForm({
     });
 
     toast.success("Restored modified fields to published values.");
-  }, [productionData, changedFields, form]);
+  }, [productionData, changedFields, form, getProductionFormValue]);
 
   const requestRestoreField = React.useCallback((fieldKey: string) => {
     setPendingFieldKey(fieldKey);
@@ -230,12 +242,9 @@ export default function ItemForm({
       type: itemType,
     };
 
-    // Convert number fields from strings to numbers
+    // Convert form values (e.g. "true"/"false" strings) to stored values
     Object.entries(fields).forEach(([key, field]) => {
-      if (field.type === "boolean") {
-        processedValues[key] = values[key] === "true";
-      }
-      // multiselect values are already arrays, no conversion needed
+      processedValues[key] = getFieldStoredValue(field, values[key]);
     });
 
     try {

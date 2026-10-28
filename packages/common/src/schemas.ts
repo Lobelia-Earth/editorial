@@ -62,6 +62,7 @@ export const EditorialSchemaItemFieldType = z.enum([
   "url",
   "select",
   "multiselect",
+  "blocks",
 ]);
 
 export const RGBColorSchema = z
@@ -86,7 +87,7 @@ export const RGBColorSchema = z
     );
   }, "RGB values must be between 0 and 255");
 
-export const EditorialSchemaItemFieldSchema = z.looseObject({
+const EditorialSchemaItemFieldBaseSchema = z.looseObject({
   type: EditorialSchemaItemFieldType,
   displayName: z.string(),
   displayExtra: z.string().optional(),
@@ -101,6 +102,35 @@ export const EditorialSchemaItemFieldSchema = z.looseObject({
   minSelectedChoices: z.number().optional(),
   isUploadedFile: z.boolean().optional(),
 });
+
+/**
+ * A block type of a "blocks" field. Block fields accept every field type
+ * except "blocks", so blocks cannot be nested.
+ */
+export const EditorialSchemaBlockSchema = z.object({
+  displayName: z.string(),
+  fields: z.record(
+    z.string(),
+    EditorialSchemaItemFieldBaseSchema.refine(
+      (field) => field.type !== "blocks",
+      "Blocks fields cannot be nested inside blocks",
+    ),
+  ),
+});
+
+export const EditorialSchemaItemFieldSchema =
+  EditorialSchemaItemFieldBaseSchema.extend({
+    // Block types of a "blocks" field, keyed by block name
+    blocks: z.record(z.string(), EditorialSchemaBlockSchema).optional(),
+  }).refine(
+    (field) =>
+      field.type !== "blocks" ||
+      (field.blocks !== undefined && Object.keys(field.blocks).length > 0),
+    {
+      message: "Blocks fields require at least one block type",
+      path: ["blocks"],
+    },
+  );
 
 export const EditorialSchemaItemSchema = z.object({
   displayName: z.string(),

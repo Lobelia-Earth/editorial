@@ -1,14 +1,30 @@
 import {
+  getBlockSchema,
   getChoicesReference,
   RGBColorSchema,
   type EditorialData,
+  type EditorialSchemaBlock,
   type EditorialSchemaItem,
 } from "@isardsat/editorial-common";
 import { z } from "zod";
 
 export type SchemaField = EditorialSchemaItem["fields"][string];
 
-export type FieldFormValue = string | string[];
+export type FieldFormValue = string | string[] | BlockFormValue[];
+
+/**
+ * Form values as seen by single-field inputs, which never hold blocks.
+ */
+export type FieldInputFormValues = Record<string, string | string[]>;
+
+/**
+ * Form value of a block. Fields use the same string-based format as
+ * top-level fields.
+ */
+export type BlockFormValue = { _block: string } & Record<
+  string,
+  string | string[]
+>;
 
 /**
  * Whether the field is rendered as a select/multiselect with choices,
@@ -26,6 +42,12 @@ export function getFieldDefaultValue(
   field: SchemaField,
   value: unknown,
 ): FieldFormValue {
+  if (field.type === "blocks") {
+    return Array.isArray(value)
+      ? value.map((block) => getBlockFormValue(field, block))
+      : [];
+  }
+
   if (value !== undefined && value !== null) {
     if (field.type === "boolean") {
       return String(value);
@@ -45,6 +67,113 @@ export function getFieldDefaultValue(
     return [];
   }
   return "";
+}
+
+function getBlockFields(block: EditorialSchemaBlock) {
+  return Object.entries(block.fields);
+}
+
+/**
+ * Converts a stored block to the form format. Blocks whose type is not in the
+ * schema are kept as they are.
+ */
+function getBlockFormValue(field: SchemaField, block: unknown): BlockFormValue {
+  const blockSchema = getBlockSchema(field, block);
+  const values = block as BlockFormValue;
+  if (!blockSchema) return values;
+
+  return {
+    ...values,
+    ...Object.fromEntries(
+      getBlockFields(blockSchema).map(([key, blockField]) => [
+        key,
+        getFieldDefaultValue(blockField, values[key]) as string | string[],
+      ]),
+    ),
+  };
+}
+
+/**
+ * Returns the form value of a new, empty block of the given type.
+ */
+export function getNewBlockFormValue(
+  block: EditorialSchemaBlock,
+  blockType: string,
+): BlockFormValue {
+  return {
+    _block: blockType,
+    ...Object.fromEntries(
+      getBlockFields(block).map(([key, blockField]) => [
+        key,
+        getFieldDefaultValue(blockField, undefined) as string | string[],
+      ]),
+    ),
+  };
+}
+
+/**
+ * Converts a form value back to the format stored in the data files.
+ */
+export function getFieldStoredValue(
+  field: SchemaField,
+  value: unknown,
+): unknown {
+  if (field.type === "boolean") {
+    return value === "true";
+  }
+
+  if (field.type === "blocks" && Array.isArray(value)) {
+    return value.map((block) => {
+      const blockSchema = getBlockSchema(field, block);
+      if (!blockSchema) return block;
+
+      return {
+        ...block,
+        ...Object.fromEntries(
+          getBlockFields(blockSchema).map(([key, blockField]) => [
+            key,
+            getFieldStoredValue(blockField, block[key]),
+          ]),
+        ),
+      };
+    });
+  }
+
+  // Other values are already in their stored format
+  return value;
+}
+
+/**
+ * Validation schema of a "blocks" field: every block must be of a known type
+ * and pass the validation of its own fields.
+ */
+function getBlocksValidationSchema(field: SchemaField) {
+  const blockSchemas = Object.entries(field.blocks ?? {}).map(
+    ([blockType, block]) =>
+      z.looseObject({
+        _block: z.literal(blockType),
+        ...Object.fromEntries(
+          getBlockFields(block).map(([key, blockField]) => [
+            key,
+            getFieldValidationSchema(blockField),
+          ]),
+        ),
+      }),
+  );
+
+  const blockSchema =
+    blockSchemas.length > 0
+      ? z.discriminatedUnion(
+          "_block",
+          blockSchemas as [
+            (typeof blockSchemas)[number],
+            ...(typeof blockSchemas)[number][],
+          ],
+          { error: "Unknown block type, remove this block to save" },
+        )
+      : z.never();
+
+  return z.array(blockSchema);
 }
 
 export function getFieldValidationSchema(field: SchemaField): z.ZodTypeAny {
@@ -98,13 +227,24 @@ export function getFieldValidationSchema(field: SchemaField): z.ZodTypeAny {
         );
       }
       break;
+    case "blocks":
+      fieldSchema = getBlocksValidationSchema(field);
+      break;
     default:
       // Includes string fields with isMultiple (backwards compatibility),
       // which are stored as comma-separated strings
       fieldSchema = z.string();
   }
 
-  if (field.optional) {
+  if (field.type === "blocks") {
+    // An empty list is a valid value for optional blocks fields
+    if (!field.optional) {
+      fieldSchema = (fieldSchema as z.ZodArray).min(
+        1,
+        `${field.displayName} requires at least one block`,
+      );
+    }
+  } else if (field.optional) {
     if (field.type === "multiselect") {
       // Multiselect is already optional by allowing empty array
       // But if minSelectedChoices is set, it overrides optional

@@ -1,10 +1,13 @@
 import type {
+  EditorialBlockValue,
   EditorialConfig,
   EditorialData,
   EditorialDataItem,
   EditorialDataType,
   EditorialSchema,
 } from "@isardsat/editorial-common";
+
+export type { EditorialBlockValue };
 
 export interface ClientOptions {
   fetch?: typeof globalThis.fetch;
