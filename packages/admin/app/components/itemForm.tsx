@@ -12,14 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -29,18 +21,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import UnsavedChangesGuard from "@/components/unsavedChangesGuard";
 import {
   useCreateObjectMutation,
@@ -50,28 +30,24 @@ import {
 import { cn, statusColors } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  getChoicesReference,
-  RGBColorSchema,
+  getFieldDefaultValue,
+  getFieldValidationSchema,
+  hasFieldChoices,
+  resolveFieldChoices,
+} from "@/lib/fieldUtils";
+import {
   type EditorialDataItem,
   type EditorialDataItemStatus,
   type EditorialSchemaItem,
 } from "@isardsat/editorial-common";
-import { ChevronsUpDown, Loader2, RotateCcw, Save, X } from "lucide-react";
+import { Loader2, RotateCcw, Save } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import MultiselectStringInput from "./MultiselectStringInput";
-import SortableChips from "./SortableChips";
-
-const FilePicker = React.lazy(() => import("./FilePicker"));
-const MarkdownEditor = React.lazy(() => import("./markdownEditor"));
-const DatePicker = React.lazy(() => import("./ui/date-picker"));
-const DateTimePicker = React.lazy(() => import("./ui/datetime-picker"));
-const URLInput = React.lazy(() => import("./URLInput"));
-const ColorPicker = React.lazy(() => import("./ColorPicker"));
+import SchemaFormField from "./schemaFormField";
 
 export interface SinglesPageProps {
   itemType: string;
@@ -83,72 +59,6 @@ export interface SinglesPageProps {
   changedFields?: string[];
   itemStatus?: EditorialDataItemStatus;
 }
-
-type SchemaField = EditorialSchemaItem["fields"][string];
-
-const getSelectFieldState = (
-  field: SchemaField,
-  resolvedChoices: string[],
-  inputText: string,
-) => {
-  const allowFreeInput =
-    field.type === "select" && field.allowFreeInput === true;
-  const hasChoicesConfigured =
-    field.type === "select" &&
-    Array.isArray(field.choicesFixed) &&
-    field.choicesFixed.length > 0;
-
-  return {
-    shouldOnlyDropdown: field.type === "select" && !allowFreeInput,
-    shouldMixedDropdown:
-      field.type === "select" && allowFreeInput && hasChoicesConfigured,
-    shouldOnlyTyping:
-      field.type === "select" && allowFreeInput && !hasChoicesConfigured,
-    filteredChoices: resolvedChoices.filter((choice) =>
-      choice.toLowerCase().includes(inputText.toLowerCase()),
-    ),
-    canCreateFromInput: inputText.trim().length > 0,
-  };
-};
-
-const getMultiselectFieldState = (
-  field: SchemaField,
-  resolvedChoices: string[],
-  selectedValues: string[],
-  inputText: string,
-) => {
-  const allowFreeInput =
-    field.type === "multiselect" && field.allowFreeInput === true;
-  const hasChoicesConfigured =
-    field.type === "multiselect" &&
-    Array.isArray(field.choicesFixed) &&
-    field.choicesFixed.length > 0;
-  const availableChoices = resolvedChoices.filter(
-    (choice) => !selectedValues.includes(choice),
-  );
-
-  return {
-    shouldOnlyDropdown: field.type === "multiselect" && !allowFreeInput,
-    shouldMixedDropdown:
-      field.type === "multiselect" && allowFreeInput && hasChoicesConfigured,
-    shouldOnlyTyping:
-      field.type === "multiselect" && allowFreeInput && !hasChoicesConfigured,
-    availableChoices,
-    filteredChoices: availableChoices.filter((choice) =>
-      choice.toLowerCase().includes(inputText.toLowerCase()),
-    ),
-    canCreateFromInput:
-      inputText.trim().length > 0 &&
-      !selectedValues.includes(inputText.trim()) &&
-      (!field.maxSelectedChoices ||
-        selectedValues.length < field.maxSelectedChoices),
-  };
-};
-
-const hasSelectionMinMax = (field: SchemaField) =>
-  (field.type === "multiselect" ||
-    (field.type === "string" && field.isMultiple && field.choicesFixed)) &&
-  (field.minSelectedChoices || field.maxSelectedChoices);
 
 export default function ItemForm({
   itemType,
@@ -171,18 +81,6 @@ export default function ItemForm({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMode, setConfirmMode] = useState<"single" | "all" | null>(null);
   const [pendingFieldKey, setPendingFieldKey] = useState<string | null>(null);
-  const [multiselectOpenState, setMultiselectOpenState] = useState<
-    Record<string, boolean>
-  >({});
-  const [multiselectInputState, setMultiselectInputState] = useState<
-    Record<string, string>
-  >({});
-  const [selectOpenState, setSelectOpenState] = useState<
-    Record<string, boolean>
-  >({});
-  const [selectInputState, setSelectInputState] = useState<
-    Record<string, string>
-  >({});
 
   const isFieldChanged = (fieldKey: string) => changedFields.includes(fieldKey);
 
@@ -203,31 +101,10 @@ export default function ItemForm({
       id: isSingleton ? "default" : (data?.id ?? ""),
       isDraft: String(data?.isDraft ?? false),
       ...Object.fromEntries(
-        Object.keys(fields).map((key) => {
-          const fieldType = fields[key].type;
-          const value = data?.[key];
-
-          if (value !== undefined && value !== null) {
-            // Convert existing data to string format
-            if (fieldType === "boolean") {
-              return [key, String(value)];
-            }
-            if (fieldType === "multiselect") {
-              // Keep multiselect as array
-              return [key, Array.isArray(value) ? value : [value]];
-            }
-            return [key, String(value)];
-          }
-
-          // Default values for new items
-          if (fieldType === "boolean") {
-            return [key, "false"];
-          }
-          if (fieldType === "multiselect") {
-            return [key, []];
-          }
-          return [key, ""];
-        }),
+        Object.entries(fields).map(([key, field]) => [
+          key,
+          getFieldDefaultValue(field, data?.[key]),
+        ]),
       ),
     };
   }, [data, fields, isSingleton]);
@@ -245,103 +122,7 @@ export default function ItemForm({
     };
 
     Object.entries(fields).forEach(([key, field]) => {
-      let fieldSchema: z.ZodTypeAny;
-
-      switch (field.type) {
-        case "boolean":
-          fieldSchema = z.enum(["true", "false"]);
-          break;
-        case "number":
-          fieldSchema = z.number();
-          break;
-        case "url":
-          fieldSchema = z.url("Must be a valid URL");
-          break;
-        case "date":
-          fieldSchema = z.string();
-          break;
-        case "datetime":
-          fieldSchema = z.string();
-          break;
-        case "color":
-          fieldSchema = RGBColorSchema;
-          break;
-        case "select":
-          // For referenced choices, use string validation instead of enum
-          // since the choices are dynamic
-          if (field.allowFreeInput) {
-            fieldSchema = z.string();
-          } else if (getChoicesReference(field.choicesFixed)) {
-            fieldSchema = z.string();
-          } else if (field.choicesFixed && field.choicesFixed.length > 0) {
-            fieldSchema = z.enum(field.choicesFixed as [string, ...string[]]);
-          } else {
-            fieldSchema = z.string();
-          }
-          break;
-        case "multiselect":
-          fieldSchema = z.array(z.string());
-          // Apply min/max constraints
-          if (field.minSelectedChoices) {
-            fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
-              field.minSelectedChoices,
-              `${field.displayName} requires at least ${field.minSelectedChoices} selection${field.minSelectedChoices > 1 ? "s" : ""}`,
-            );
-          }
-          if (field.maxSelectedChoices) {
-            fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).max(
-              field.maxSelectedChoices,
-              `${field.displayName} allows maximum ${field.maxSelectedChoices} selection${field.maxSelectedChoices > 1 ? "s" : ""}`,
-            );
-          }
-          break;
-        case "string":
-          //backwards compatibility and will be removed in future versions
-          if (field.isMultiple) {
-            if (getChoicesReference(field.choicesFixed)) {
-              fieldSchema = z.string();
-            } else if (field.choicesFixed && field.choicesFixed.length > 0) {
-              fieldSchema = z.string();
-            } else {
-              fieldSchema = z.string();
-            }
-          } else {
-            fieldSchema = z.string();
-          }
-          break;
-        default:
-          fieldSchema = z.string();
-      }
-
-      if (field.optional) {
-        if (field.type === "multiselect") {
-          // Multiselect is already optional by allowing empty array
-          // But if minSelectedChoices is set, it overrides optional
-          if (!field.minSelectedChoices) {
-            fieldSchema = fieldSchema.optional();
-          }
-        } else {
-          fieldSchema = fieldSchema.optional().or(z.literal(""));
-        }
-      } else if (field.type === "multiselect" && !field.minSelectedChoices) {
-        // If not optional and no minSelectedChoices, require at least 1
-        fieldSchema = (fieldSchema as z.ZodArray<z.ZodString>).min(
-          1,
-          `${field.displayName} requires at least one selection`,
-        );
-      } else if (
-        field.type !== "boolean" &&
-        field.type !== "select" &&
-        !(field.type === "string" && field.isMultiple && field.choicesFixed)
-      ) {
-        // For non-boolean and non-select fields, require a value if not optional
-        fieldSchema = (fieldSchema as z.ZodString).min(
-          1,
-          `${field.displayName} is required`,
-        );
-      }
-
-      schemaShape[key] = fieldSchema;
+      schemaShape[key] = getFieldValidationSchema(field);
     });
 
     return z.object(schemaShape);
@@ -522,29 +303,12 @@ export default function ItemForm({
   );
 
   // Pre-resolve all field choices (including referenced ones)
-  // If choices reference another fields, return the ids of the referenced data items
-  // If choices are directly defined, return them as is
   const resolvedChoicesMap = useMemo(() => {
     const map: Record<string, string[]> = {};
 
     Object.entries(fields).forEach(([key, field]) => {
-      // Handle both select and multiselect, and also backwards compatibility for string fields with isMultiple
-      if (
-        field.type === "select" ||
-        field.type === "multiselect" ||
-        (field.type === "string" && field.isMultiple && field.choicesFixed)
-      ) {
-        const referencedKey = getChoicesReference(field.choicesFixed);
-        if (referencedKey && allData) {
-          const referencedData = allData[referencedKey];
-          if (referencedData) {
-            map[key] = Object.values(referencedData).map((item) => item.id);
-          } else {
-            map[key] = [];
-          }
-        } else {
-          map[key] = field.choicesFixed || [];
-        }
+      if (hasFieldChoices(field)) {
+        map[key] = resolveFieldChoices(field, allData);
       }
     });
 
@@ -553,53 +317,6 @@ export default function ItemForm({
 
   const changedFieldStyles =
     "outline outline-1 outline-yellow-400 outline-offset-4 rounded-sm";
-
-  const addMultiselectValue = React.useCallback(
-    (
-      currentValues: string[],
-      rawValue: string,
-      maxSelectedChoices?: number,
-    ) => {
-      const nextValue = rawValue.trim();
-
-      if (!nextValue) return currentValues;
-      if (currentValues.includes(nextValue)) return currentValues;
-      if (maxSelectedChoices && currentValues.length >= maxSelectedChoices) {
-        return currentValues;
-      }
-
-      return [...currentValues, nextValue];
-    },
-    [],
-  );
-
-  const updateMultiselectInput = React.useCallback(
-    (fieldKey: string, value: string) => {
-      setMultiselectInputState((prev) => ({ ...prev, [fieldKey]: value }));
-    },
-    [],
-  );
-
-  const updateMultiselectOpen = React.useCallback(
-    (fieldKey: string, open: boolean) => {
-      setMultiselectOpenState((prev) => ({ ...prev, [fieldKey]: open }));
-    },
-    [],
-  );
-
-  const updateSelectInput = React.useCallback(
-    (fieldKey: string, value: string) => {
-      setSelectInputState((prev) => ({ ...prev, [fieldKey]: value }));
-    },
-    [],
-  );
-
-  const updateSelectOpen = React.useCallback(
-    (fieldKey: string, open: boolean) => {
-      setSelectOpenState((prev) => ({ ...prev, [fieldKey]: open }));
-    },
-    [],
-  );
 
   const ModifiedMessage = ({ fieldKey }: { fieldKey: string }) => (
     <span className="inline-flex items-center gap-1 text-yellow-800 text-xs">
@@ -804,502 +521,22 @@ export default function ItemForm({
 
           {Object.entries(fields)
             .filter(([, value]) => value.type !== "boolean")
-            .map(([key, value]) => {
-              // Get resolved choices for select/multiselect fields
-              const resolvedChoices = resolvedChoicesMap[key] ?? [];
-
-              return (
-                <FormField
-                  key={key}
-                  name={key}
-                  control={form.control}
-                  rules={{
-                    required: !value.optional,
-                  }}
-                  render={({ field }) => {
-                    const selectedValues = (field.value as string[]) ?? [];
-                    const selectedCount = selectedValues.length;
-                    const selectInputText = selectInputState[key] ?? "";
-                    const selectState = getSelectFieldState(
-                      value,
-                      resolvedChoices,
-                      selectInputText,
-                    );
-                    const inputText = multiselectInputState[key] ?? "";
-                    const multiselectState = getMultiselectFieldState(
-                      value,
-                      resolvedChoices,
-                      selectedValues,
-                      inputText,
-                    );
-                    const hasMinMax = hasSelectionMinMax(value);
-
-                    return (
-                      <FormItem
-                        id={key}
-                        className={cn(
-                          isFieldChanged(key) && changedFieldStyles,
-                        )}
-                      >
-                        <FormLabel className="flex gap-1 items-baseline">
-                          {value.displayName}
-                          {value.optional && (
-                            <span className="text-gray-400">(optional)</span>
-                          )}
-                          {isFieldChanged(key) && (
-                            <span className="text-yellow-600 text-xs">
-                              <ModifiedMessage fieldKey={key} />
-                            </span>
-                          )}
-                        </FormLabel>
-                        <FormControl>
-                          {value.type === "markdown" ? (
-                            <MarkdownEditor
-                              id={key}
-                              name={key}
-                              register={form.register}
-                              className="h-52"
-                              markdown={field.value as string}
-                              onChange={(value, initialChange) => {
-                                if (initialChange) return;
-
-                                field.onChange(value);
-                              }}
-                              placeholder={value.placeholder}
-                              fieldDisplayName={value.displayName}
-                            />
-                          ) : value.type === "url" ? (
-                            <URLInput
-                              id={key}
-                              {...form.register(key)}
-                              placeholder={
-                                value.placeholder ?? "https://example.website/"
-                              }
-                              {...field}
-                              value={field.value as string}
-                            />
-                          ) : value.type === "string" &&
-                            value.isUploadedFile ? (
-                            <FilePicker
-                              id={key}
-                              name={key}
-                              register={form.register}
-                              value={field.value as string}
-                              onChange={field.onChange}
-                            />
-                          ) : value.type === "date" ? (
-                            <DatePicker
-                              id={key}
-                              {...form.register(key)}
-                              date={
-                                field.value
-                                  ? new Date(field.value as string)
-                                  : undefined
-                              }
-                              onDateChange={(date) => {
-                                field.onChange(date ? date.toISOString() : "");
-                              }}
-                              placeholder={value.placeholder ?? "Select date"}
-                              allowClear={value.optional}
-                            />
-                          ) : value.type === "datetime" ? (
-                            <div className="relative">
-                              <DateTimePicker
-                                id={key}
-                                {...form.register(key)}
-                                date={
-                                  field.value
-                                    ? new Date(field.value as string)
-                                    : undefined
-                                }
-                                onDateTimeChange={(date) => {
-                                  field.onChange(
-                                    date ? date.toISOString() : "",
-                                  );
-                                }}
-                                placeholder={
-                                  value.placeholder ?? "Select date and time"
-                                }
-                                allowClear={value.optional}
-                              />
-                            </div>
-                          ) : value.type === "color" ? (
-                            <ColorPicker
-                              id={key}
-                              value={field.value as string}
-                              onChange={field.onChange}
-                              placeholder={value.placeholder}
-                            />
-                          ) : value.type === "number" ? (
-                            <Input
-                              id={key}
-                              {...form.register(key, { valueAsNumber: true })}
-                              type="number"
-                              value={field.value as string}
-                              onChange={field.onChange}
-                              placeholder={value.placeholder}
-                            />
-                          ) : value.type === "select" ? (
-                            <div className="flex gap-2">
-                              {selectState.shouldOnlyDropdown && (
-                                <Select
-                                  value={field.value as string}
-                                  onValueChange={field.onChange}
-                                >
-                                  <SelectTrigger id={key} className="w-full">
-                                    <SelectValue
-                                      placeholder={
-                                        value.placeholder ?? "Select an item..."
-                                      }
-                                    />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {resolvedChoices.map((choice) => (
-                                      <SelectItem key={choice} value={choice}>
-                                        {choice}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              )}
-
-                              {selectState.shouldMixedDropdown && (
-                                <Popover
-                                  open={selectOpenState[key] ?? false}
-                                  onOpenChange={(open) =>
-                                    updateSelectOpen(key, open)
-                                  }
-                                >
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      id={key}
-                                      type="button"
-                                      variant="outline"
-                                      role="combobox"
-                                      aria-expanded={
-                                        selectOpenState[key] ?? false
-                                      }
-                                      className="w-full justify-between"
-                                    >
-                                      {(field.value as string) ||
-                                        value.placeholder ||
-                                        "Select or type..."}
-                                      <ChevronsUpDown className="opacity-50" />
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
-                                    <Command>
-                                      <CommandInput
-                                        value={selectInputText}
-                                        onValueChange={(newValue) =>
-                                          updateSelectInput(key, newValue)
-                                        }
-                                        onKeyDown={(event) => {
-                                          if (event.key !== "Enter") return;
-
-                                          event.preventDefault();
-                                          if (!selectState.canCreateFromInput)
-                                            return;
-
-                                          field.onChange(
-                                            selectInputText.trim(),
-                                          );
-                                          updateSelectInput(key, "");
-                                          updateSelectOpen(key, false);
-                                        }}
-                                        placeholder="Select or type to add..."
-                                      />
-                                      <CommandList>
-                                        <CommandEmpty>
-                                          {selectState.canCreateFromInput
-                                            ? `Press Enter to use \"${selectInputText.trim()}\"`
-                                            : "No available items"}
-                                        </CommandEmpty>
-                                        <CommandGroup>
-                                          {selectState.filteredChoices.map(
-                                            (choice) => (
-                                              <CommandItem
-                                                key={choice}
-                                                value={choice}
-                                                onSelect={() => {
-                                                  field.onChange(choice);
-                                                  updateSelectInput(key, "");
-                                                  updateSelectOpen(key, false);
-                                                }}
-                                              >
-                                                {choice}
-                                              </CommandItem>
-                                            ),
-                                          )}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                              )}
-
-                              {selectState.shouldOnlyTyping && (
-                                <Input
-                                  id={key}
-                                  placeholder={
-                                    value.placeholder ?? "Type a value..."
-                                  }
-                                  {...field}
-                                  value={field.value as string}
-                                />
-                              )}
-
-                              {value.optional && field.value && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => field.onChange("")}
-                                  className="shrink-0"
-                                >
-                                  <X size={16} />
-                                  <span className="sr-only">
-                                    Clear selection
-                                  </span>
-                                </Button>
-                              )}
-                            </div>
-                          ) : value.type === "multiselect" ? (
-                            <div className="flex flex-col gap-2">
-                              <SortableChips
-                                values={selectedValues}
-                                onChange={(newValues) =>
-                                  field.onChange(newValues)
-                                }
-                                placeholder={
-                                  value.placeholder ?? "Add items..."
-                                }
-                              />
-                              {(!value.maxSelectedChoices ||
-                                selectedCount < value.maxSelectedChoices) && (
-                                <>
-                                  {multiselectState.shouldOnlyDropdown && (
-                                    <Select
-                                      value=""
-                                      onValueChange={(newValue) => {
-                                        const currentValues = selectedValues;
-                                        const nextValues = addMultiselectValue(
-                                          currentValues,
-                                          newValue,
-                                          value.maxSelectedChoices,
-                                        );
-
-                                        if (nextValues !== currentValues) {
-                                          field.onChange(nextValues);
-                                        }
-                                      }}
-                                    >
-                                      <SelectTrigger
-                                        id={key}
-                                        className="w-full"
-                                      >
-                                        <SelectValue
-                                          placeholder={
-                                            value.placeholder ??
-                                            "Select item..."
-                                          }
-                                        />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {multiselectState.availableChoices.map(
-                                          (choice) => (
-                                            <SelectItem
-                                              key={choice}
-                                              value={choice}
-                                            >
-                                              {choice}
-                                            </SelectItem>
-                                          ),
-                                        )}
-                                      </SelectContent>
-                                    </Select>
-                                  )}
-
-                                  {multiselectState.shouldMixedDropdown && (
-                                    <Popover
-                                      open={multiselectOpenState[key] ?? false}
-                                      onOpenChange={(open) =>
-                                        updateMultiselectOpen(key, open)
-                                      }
-                                    >
-                                      <PopoverTrigger asChild>
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          role="combobox"
-                                          aria-expanded={
-                                            multiselectOpenState[key] ?? false
-                                          }
-                                          className="w-full justify-between"
-                                        >
-                                          {value.placeholder ?? "Add item..."}
-                                          <ChevronsUpDown className="opacity-50" />
-                                        </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
-                                        <Command>
-                                          <CommandInput
-                                            value={inputText}
-                                            onValueChange={(newValue) =>
-                                              updateMultiselectInput(
-                                                key,
-                                                newValue,
-                                              )
-                                            }
-                                            onKeyDown={(event) => {
-                                              if (event.key !== "Enter") return;
-
-                                              event.preventDefault();
-                                              if (
-                                                !multiselectState.canCreateFromInput
-                                              )
-                                                return;
-
-                                              const nextValues =
-                                                addMultiselectValue(
-                                                  selectedValues,
-                                                  inputText,
-                                                  value.maxSelectedChoices,
-                                                );
-
-                                              if (
-                                                nextValues !== selectedValues
-                                              ) {
-                                                field.onChange(nextValues);
-                                                updateMultiselectInput(key, "");
-                                              }
-                                            }}
-                                            placeholder="Select or type to add..."
-                                          />
-                                          <CommandList>
-                                            <CommandEmpty>
-                                              {multiselectState.canCreateFromInput
-                                                ? `Press Enter to add \"${inputText.trim()}\"`
-                                                : "No available items"}
-                                            </CommandEmpty>
-                                            <CommandGroup>
-                                              {multiselectState.filteredChoices.map(
-                                                (choice) => (
-                                                  <CommandItem
-                                                    key={choice}
-                                                    value={choice}
-                                                    onSelect={() => {
-                                                      const nextValues =
-                                                        addMultiselectValue(
-                                                          selectedValues,
-                                                          choice,
-                                                          value.maxSelectedChoices,
-                                                        );
-
-                                                      if (
-                                                        nextValues !==
-                                                        selectedValues
-                                                      ) {
-                                                        field.onChange(
-                                                          nextValues,
-                                                        );
-                                                      }
-                                                      updateMultiselectInput(
-                                                        key,
-                                                        "",
-                                                      );
-                                                    }}
-                                                  >
-                                                    {choice}
-                                                  </CommandItem>
-                                                ),
-                                              )}
-                                            </CommandGroup>
-                                          </CommandList>
-                                        </Command>
-                                      </PopoverContent>
-                                    </Popover>
-                                  )}
-
-                                  {multiselectState.shouldOnlyTyping && (
-                                    <Input
-                                      id={`${key}-custom-item`}
-                                      placeholder={
-                                        value.placeholder ??
-                                        "Type an item and press Enter"
-                                      }
-                                      onKeyDown={(event) => {
-                                        if (event.key !== "Enter") return;
-
-                                        event.preventDefault();
-                                        const currentValues = selectedValues;
-                                        const nextValues = addMultiselectValue(
-                                          currentValues,
-                                          event.currentTarget.value,
-                                          value.maxSelectedChoices,
-                                        );
-
-                                        if (nextValues !== currentValues) {
-                                          field.onChange(nextValues);
-                                          event.currentTarget.value = "";
-                                        }
-                                      }}
-                                    />
-                                  )}
-                                </>
-                              )}
-                              {hasMinMax && (
-                                <span
-                                  className={cn(
-                                    "text-xs",
-                                    value.minSelectedChoices &&
-                                      selectedCount < value.minSelectedChoices
-                                      ? "text-destructive"
-                                      : "text-muted-foreground",
-                                  )}
-                                >
-                                  {selectedCount}
-                                  {value.minSelectedChoices &&
-                                  value.maxSelectedChoices
-                                    ? `/${value.maxSelectedChoices} (min ${value.minSelectedChoices})`
-                                    : value.minSelectedChoices
-                                      ? ` selected (min ${value.minSelectedChoices})`
-                                      : `/${value.maxSelectedChoices} selected`}
-                                </span>
-                              )}
-                            </div>
-                          ) : value.type === "string" &&
-                            value.isMultiple &&
-                            value.choicesFixed ? (
-                            <MultiselectStringInput
-                              key={key}
-                              field={field}
-                              resolvedChoices={resolvedChoices}
-                              value={value}
-                              hasMinMax={hasMinMax}
-                            />
-                          ) : (
-                            <Input
-                              id={key}
-                              {...form.register(key)}
-                              placeholder={value.placeholder}
-                              {...field}
-                              value={field.value as string}
-                            />
-                          )}
-                        </FormControl>
-                        {value.displayExtra && (
-                          <FormDescription>
-                            {value.displayExtra}
-                          </FormDescription>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-              );
-            })}
+            .map(([key, value]) => (
+              <SchemaFormField
+                key={key}
+                name={key}
+                schemaField={value}
+                resolvedChoices={resolvedChoicesMap[key] ?? []}
+                className={cn(isFieldChanged(key) && changedFieldStyles)}
+                labelExtra={
+                  isFieldChanged(key) && (
+                    <span className="text-yellow-600 text-xs">
+                      <ModifiedMessage fieldKey={key} />
+                    </span>
+                  )
+                }
+              />
+            ))}
 
           <Button
             disabled={
