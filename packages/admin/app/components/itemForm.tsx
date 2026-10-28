@@ -64,6 +64,7 @@ import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import MultiselectStringInput from "./MultiselectStringInput";
+import SortableChips from "./SortableChips";
 
 const FilePicker = React.lazy(() => import("./FilePicker"));
 const MarkdownEditor = React.lazy(() => import("./markdownEditor"));
@@ -1065,38 +1066,15 @@ export default function ItemForm({
                             </div>
                           ) : value.type === "multiselect" ? (
                             <div className="flex flex-col gap-2">
-                              <div className="flex flex-wrap gap-2 min-h-[38px] p-2 border rounded-md bg-background">
-                                {selectedValues.length > 0 ? (
-                                  selectedValues.map((selectedValue) => (
-                                    <span
-                                      key={selectedValue}
-                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium bg-gray-100 text-black-800"
-                                    >
-                                      {selectedValue}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const newValues =
-                                            selectedValues.filter(
-                                              (v) => v !== selectedValue,
-                                            );
-                                          field.onChange(newValues);
-                                        }}
-                                        className="hover:bg-gray-200 rounded-sm p-0.5"
-                                      >
-                                        <X size={14} />
-                                        <span className="sr-only">
-                                          Remove {selectedValue}
-                                        </span>
-                                      </button>
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="text-muted-foreground text-sm">
-                                    {value.placeholder ?? "Add items..."}
-                                  </span>
-                                )}
-                              </div>
+                              <SortableChips
+                                values={selectedValues}
+                                onChange={(newValues) =>
+                                  field.onChange(newValues)
+                                }
+                                placeholder={
+                                  value.placeholder ?? "Add items..."
+                                }
+                              />
                               {(!value.maxSelectedChoices ||
                                 selectedCount < value.maxSelectedChoices) && (
                                 <>
