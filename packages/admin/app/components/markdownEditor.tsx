@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
 import type {
   CodeBlockEditorDescriptor,
+  MDXEditorMethods,
   MDXEditorProps,
 } from "@mdxeditor/editor";
 import {
@@ -32,16 +33,16 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import { Expand, Shrink } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type Ref } from "react";
 import { createPortal } from "react-dom";
-import type { UseFormRegister } from "react-hook-form";
 import styles from "./markdownEditor.module.css";
 
 export interface MarkdownEditorProps extends MDXEditorProps {
   id: string;
   className?: string;
   name: string;
-  register: UseFormRegister<Record<string, string | string[]>>;
+  /** Receives the editor methods, e.g. for react-hook-form to focus the field */
+  editorRef?: Ref<MDXEditorMethods>;
   fieldDisplayName?: string;
   fullscreenable?: boolean;
 }
@@ -93,7 +94,7 @@ export default function MarkdownEditor({
   className,
   markdown,
   name,
-  register,
+  editorRef,
   onChange,
   fieldDisplayName,
   fullscreenable = true,
@@ -179,7 +180,7 @@ export default function MarkdownEditor({
   const renderEditor = () => (
     <div id={id}>
       <MDXEditor
-        {...register(name)}
+        ref={editorRef}
         className={cn(
           "flex flex-col w-full rounded-md border border-input bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
           styles.mdxeditor,

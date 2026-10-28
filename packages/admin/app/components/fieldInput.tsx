@@ -162,7 +162,7 @@ export default function FieldInput({
         <MarkdownEditor
           id={name}
           name={name}
-          register={form.register}
+          editorRef={field.ref}
           className="h-52"
           markdown={field.value as string}
           onChange={(value, initialChange) => {
