@@ -57,6 +57,16 @@ Other root scripts:
 
 Alternatively, if you need to develop alongside a project implementing Editorial, you can simply "link" your local repo of editorial to the project and run `pnpm dev`, or `pnpm compile:watch` if you don't need the admin dev server.
 
+## Testing
+
+Tests use [Vitest](https://vitest.dev/). Run `pnpm test` from the root to run every package's tests once, or `pnpm test:watch` to rerun them on changes. Run a single package with `pnpm --filter @isardsat/editorial-server test`, or a single file with `pnpm test packages/server/src/lib/utils/diff.test.ts`.
+
+- Tests live next to the code they test as `*.test.ts(x)`, with fixtures in `__fixtures__` folders. They are excluded from the published builds.
+- `server` and `common` tests run in Node. `admin` tests run in jsdom with [Testing Library](https://testing-library.com/docs/react-testing-library/intro/); MDXEditor is replaced by a textarea (`packages/admin/test/mdxeditorMock.tsx`) because it doesn't run in jsdom.
+- `server` and `admin` import `@isardsat/editorial-common` from its build, so run `pnpm compile` first (`pnpm dev` keeps it up to date).
+
+The [Test workflow](./.github/workflows/test.yml) typechecks and tests every pull request and push to `main`.
+
 ## Publishing
 
 Run `pnpm login` to authenticate with npm repository. Afterward running `pnpm changeset`, `pnpm changeset version`, and `pnpm changeset publish` in that order.

@@ -9,9 +9,10 @@
   ],
   "scripts": {
     "prepublishOnly": "pnpm run compile",
-    "compile": "tsc",
-    "compile:watch": "tsc --watch --preserveWatchOutput",
-    "typecheck": "tsc --noEmit"
+    "compile": "tsc -p tsconfig.build.json",
+    "compile:watch": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.4",
@@ -27,7 +28,9 @@
   "devDependencies": {
     "@tsconfig/node22": "catalog:",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "ajv": "^8.20.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "volta": {
     "extends": "../../package.json"
