@@ -1,5 +1,16 @@
 # @isardsat/editorial-admin
 
+## 6.25.0
+
+### Minor Changes
+
+- 8452bf9: Add `PreviewMenu`, a framework-agnostic preview mode indicator, and support React 19
+
+### Patch Changes
+
+- Updated dependencies [8452bf9]
+  - @isardsat/editorial-common@6.25.0
+
 ## 6.24.0
 
 ### Minor Changes
