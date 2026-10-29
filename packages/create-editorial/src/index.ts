@@ -34,6 +34,8 @@ export const command = new Command()
         name: "My Editorial Site",
         publicUrl: "http://localhost:3001/",
         previewUrl: "http://localhost:3001/preview/",
+        filesUrl: "http://localhost:3001/public",
+        largeFilesUrl: "http://localhost:3001/public",
       },
       null,
       2
