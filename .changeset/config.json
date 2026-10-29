@@ -2,15 +2,7 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": true,
-  "fixed": [
-    [
-      "@isardsat/editorial-cli",
-      "@isardsat/editorial-server",
-      "@isardsat/editorial-admin",
-      "@isardsat/editorial-common",
-      "@isardsat/create-editorial"
-    ]
-  ],
+  "fixed": [["@isardsat/*"]],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
