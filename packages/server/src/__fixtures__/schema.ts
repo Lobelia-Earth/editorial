@@ -22,6 +22,13 @@ export const schema = EditorialSchemaSchema.parse({
       },
     },
   },
+  settings: {
+    displayName: "Settings",
+    singleton: true,
+    fields: {
+      siteName: { type: "string", displayName: "Site name" },
+    },
+  },
   tag: {
     displayName: "Tag",
     fields: {
@@ -85,7 +92,7 @@ export const schema = EditorialSchemaSchema.parse({
   },
 });
 
-const item = (
+export const item = (
   id: string,
   values: Record<string, unknown>,
 ): EditorialDataItem => ({

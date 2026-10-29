@@ -56,3 +56,5 @@ export function createCache() {
     },
   };
 }
+
+export type Cache = ReturnType<typeof createCache>;

@@ -9,7 +9,7 @@ import {
   type EditorialData,
   type EditorialDiffResponse,
 } from "@isardsat/editorial-common";
-import { createCache } from "../lib/cache.js";
+import type { Cache } from "../lib/cache.js";
 import { firebaseAuth } from "../lib/middleware/auth.js";
 import type { Storage } from "../lib/storage.js";
 import { getChangedFields } from "../lib/utils/diff.js";
@@ -21,9 +21,12 @@ import {
 } from "../lib/utils/references.js";
 import { generateMetaSchema } from "../lib/utils/schema.js";
 
-export function createDataRoutes(config: EditorialConfig, storage: Storage) {
+export function createDataRoutes(
+  config: EditorialConfig,
+  storage: Storage,
+  cache: Cache,
+) {
   const app = new OpenAPIHono();
-  const cache = createCache();
 
   const publicFilesUrl = config.filesUrl;
 
