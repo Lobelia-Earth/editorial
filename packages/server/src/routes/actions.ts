@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import type { EditorialConfig } from "@isardsat/editorial-common";
+import type { Cache } from "../lib/cache.js";
 import type { Hooks } from "../lib/hooks.js";
 import { firebaseAuth } from "../lib/middleware/auth.js";
 import type { Storage } from "../lib/storage.js";
@@ -12,6 +13,7 @@ export function createActionRoutes(
   config: EditorialConfig,
   storage: Storage,
   hooks: Hooks,
+  cache: Cache,
 ) {
   const app = new OpenAPIHono();
 
@@ -47,6 +49,7 @@ export function createActionRoutes(
     async (c) => {
       const { author } = c.req.valid("json");
       await storage.saveContent({ production: true });
+      cache.invalidateContent();
       const content = await storage.getContent({ production: true });
       const schema = await storage.getSchema();
 

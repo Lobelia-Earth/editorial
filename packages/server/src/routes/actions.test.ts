@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { config, createEditorialDirectory } from "../__fixtures__/editorial.js";
 import { createContent, item } from "../__fixtures__/schema.js";
+import { createCache, type Cache } from "../lib/cache.js";
 import type { Hooks } from "../lib/hooks.js";
 import { createStorage } from "../lib/storage.js";
 import { createActionRoutes } from "./actions.js";
@@ -15,6 +16,8 @@ vi.mock("../lib/middleware/auth.js", () => ({
 describe("POST /publish", () => {
   let editorial: Awaited<ReturnType<typeof createEditorialDirectory>>;
   let storage: ReturnType<typeof createStorage>;
+  // Shared with the data routes, like in the server
+  let cache: Cache;
   let hooks: { [K in keyof Hooks]: ReturnType<typeof vi.fn> };
   let app: ReturnType<typeof createActionRoutes>;
 
@@ -25,6 +28,7 @@ describe("POST /publish", () => {
 
     editorial = await createEditorialDirectory({ preview });
     storage = createStorage(editorial.directory);
+    cache = createCache();
     hooks = {
       onLocalize: vi.fn(),
       onLocalizeEnd: vi.fn(),
@@ -32,7 +36,7 @@ describe("POST /publish", () => {
       onPull: vi.fn(),
       onPush: vi.fn(),
     };
-    app = createActionRoutes(config, storage, hooks as unknown as Hooks);
+    app = createActionRoutes(config, storage, hooks as unknown as Hooks, cache);
   });
 
   afterEach(async () => {
@@ -88,11 +92,25 @@ describe("POST /publish", () => {
   });
 
   it("leaves no unpublished changes", async () => {
-    const dataApp = createDataRoutes(config, storage);
+    const dataApp = createDataRoutes(config, storage, cache);
 
     await publish();
 
     const response = await dataApp.request("/environments/diff");
     expect(await response.json()).toEqual({ collections: {}, singles: {} });
+  });
+
+  it("serves the published content in later production requests", async () => {
+    const dataApp = createDataRoutes(config, storage, cache);
+    const getTitle = async () => {
+      const response = await dataApp.request("/data/article/hello");
+      return ((await response.json()) as { title: string }).title;
+    };
+    // Fill the content cache first
+    expect(await getTitle()).toBe("Hello");
+
+    await publish();
+
+    expect(await getTitle()).toBe("Hello again");
   });
 });

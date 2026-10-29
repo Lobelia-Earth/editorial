@@ -19,6 +19,7 @@ import {
   FILES_URL,
 } from "../__fixtures__/editorial.js";
 import { createContent, item } from "../__fixtures__/schema.js";
+import { createCache } from "../lib/cache.js";
 import { createStorage } from "../lib/storage.js";
 import { createDataRoutes } from "./data.js";
 
@@ -34,7 +35,11 @@ let app: ReturnType<typeof createDataRoutes>;
 
 beforeAll(async () => {
   editorial = await createEditorialDirectory();
-  app = createDataRoutes(config, createStorage(editorial.directory));
+  app = createDataRoutes(
+    config,
+    createStorage(editorial.directory),
+    createCache(),
+  );
 });
 
 afterAll(async () => {
@@ -140,7 +145,11 @@ describe("write routes", () => {
 
   beforeEach(async () => {
     editorial = await createEditorialDirectory();
-    app = createDataRoutes(config, createStorage(editorial.directory));
+    app = createDataRoutes(
+      config,
+      createStorage(editorial.directory),
+      createCache(),
+    );
   });
 
   afterEach(async () => {
@@ -305,7 +314,11 @@ describe("GET /environments/diff", () => {
     production: EditorialData,
   ): Promise<EditorialDiffResponse> => {
     editorial = await createEditorialDirectory({ preview, production });
-    const app = createDataRoutes(config, createStorage(editorial.directory));
+    const app = createDataRoutes(
+      config,
+      createStorage(editorial.directory),
+      createCache(),
+    );
     const response = await app.request("/environments/diff");
     expect(response.status).toBe(200);
     return (await response.json()) as EditorialDiffResponse;

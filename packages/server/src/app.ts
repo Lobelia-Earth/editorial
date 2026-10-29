@@ -4,6 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import type { EditorialConfig } from "@isardsat/editorial-common";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { createCache } from "./lib/cache.js";
 import { createConfig } from "./lib/config.js";
 import { createHooks } from "./lib/hooks.js";
 import { createStorage, type Storage } from "./lib/storage.js";
@@ -35,6 +36,8 @@ export async function createEditorialServer({
   const config = await createConfig(configDirectory);
   const storage = createStorage(editorialDirectory);
   const hooks = await createHooks(configDirectory);
+  // Shared by the routes that read content and the ones that change it
+  const cache = createCache();
 
   app.use(logger());
 
@@ -46,9 +49,9 @@ export async function createEditorialServer({
     }),
   );
   app.route("/api/v1", createConfigRoutes(config));
-  app.route("/api/v1", createDataRoutes(config, storage));
+  app.route("/api/v1", createDataRoutes(config, storage, cache));
   app.route("/api/v1", await createFilesRoutes(config));
-  app.route("/api/v1", createActionRoutes(config, storage, hooks));
+  app.route("/api/v1", createActionRoutes(config, storage, hooks, cache));
   app.route("/", createAdminRoutes(config));
 
   app.doc("/doc", {
