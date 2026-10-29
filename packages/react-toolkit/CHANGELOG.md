@@ -1,5 +1,11 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.25.0
+
+### Minor Changes
+
+- f571d22: Add `PreviewMenu`, a framework-agnostic preview mode indicator, and support React 19
+
 ## 6.24.0
 
 ### Minor Changes
