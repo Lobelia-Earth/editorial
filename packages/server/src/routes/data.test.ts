@@ -1,3 +1,7 @@
+import type {
+  EditorialData,
+  EditorialDiffResponse,
+} from "@isardsat/editorial-common";
 import type { MiddlewareHandler } from "hono";
 import {
   afterAll,
@@ -14,6 +18,7 @@ import {
   createEditorialDirectory,
   FILES_URL,
 } from "../__fixtures__/editorial.js";
+import { createContent, item } from "../__fixtures__/schema.js";
 import { createStorage } from "../lib/storage.js";
 import { createDataRoutes } from "./data.js";
 
@@ -284,6 +289,136 @@ describe("write routes", () => {
       await send("DELETE", "/data/author/bob");
 
       expect(await editorial.readData("data.prod.json")).toEqual(before);
+    });
+  });
+});
+
+describe("GET /environments/diff", () => {
+  let editorial: Awaited<ReturnType<typeof createEditorialDirectory>>;
+
+  afterEach(async () => {
+    await editorial.remove();
+  });
+
+  const getDiff = async (
+    preview: EditorialData,
+    production: EditorialData,
+  ): Promise<EditorialDiffResponse> => {
+    editorial = await createEditorialDirectory({ preview, production });
+    const app = createDataRoutes(config, createStorage(editorial.directory));
+    const response = await app.request("/environments/diff");
+    expect(response.status).toBe(200);
+    return (await response.json()) as EditorialDiffResponse;
+  };
+
+  const updatedAt = "2026-02-01T00:00:00.000Z";
+
+  it("returns nothing when preview and production match", async () => {
+    expect(await getDiff(createContent(), createContent())).toEqual({
+      collections: {},
+      singles: {},
+    });
+  });
+
+  it("lists added, modified and deleted items of collections", async () => {
+    const preview = createContent();
+    const production = createContent();
+    preview.article.hello = {
+      ...preview.article.hello,
+      title: "Hello again",
+      updatedAt,
+    };
+    preview.article.fresh = item("fresh", { title: "Fresh" });
+    production.article.gone = item("gone", { title: "Gone" });
+
+    const { collections } = await getDiff(preview, production);
+
+    expect(Object.keys(collections)).toEqual(["article"]);
+    const { added, modified, deleted } = collections.article;
+    expect(added.map(({ id }) => id)).toEqual(["fresh"]);
+    expect(modified).toMatchObject([{ id: "hello", changedFields: ["title"] }]);
+    expect(deleted.map(({ id }) => id)).toEqual(["gone"]);
+  });
+
+  it("detects changes inside blocks", async () => {
+    const preview = createContent();
+    const blocks = preview.article.hello.content as Record<string, unknown>[];
+    preview.article.hello = {
+      ...preview.article.hello,
+      content: [blocks[1], blocks[0], ...blocks.slice(2)],
+      updatedAt,
+    };
+
+    const { collections } = await getDiff(preview, createContent());
+
+    expect(collections.article.modified).toMatchObject([
+      { id: "hello", changedFields: ["content"] },
+    ]);
+  });
+
+  it("ignores new drafts and items whose only change is updatedAt", async () => {
+    const preview = createContent();
+    preview.article.wip = item("wip", { title: "Draft", isDraft: true });
+    preview.tag.news = { ...preview.tag.news, updatedAt };
+
+    expect(await getDiff(preview, createContent())).toEqual({
+      collections: {},
+      singles: {},
+    });
+  });
+
+  describe("singletons", () => {
+    const settings = (values: Record<string, unknown> = {}) => ({
+      default: item("default", { siteName: "Site", ...values }),
+    });
+
+    it("lists a modified singleton with its changed fields", async () => {
+      const { singles } = await getDiff(
+        { settings: settings({ siteName: "New site", updatedAt }) },
+        { settings: settings() },
+      );
+
+      expect(singles).toEqual({
+        settings: expect.objectContaining({
+          status: "modified",
+          updatedAt,
+          changedFields: ["siteName"],
+        }),
+      });
+    });
+
+    it("lists an added singleton", async () => {
+      const { singles } = await getDiff({ settings: settings() }, {});
+
+      expect(singles.settings).toMatchObject({ status: "added" });
+      expect(singles.settings.changedFields).toContain("siteName");
+    });
+
+    it("ignores an added draft singleton", async () => {
+      const { singles } = await getDiff(
+        { settings: settings({ isDraft: true }) },
+        {},
+      );
+
+      expect(singles).toEqual({});
+    });
+
+    it("lists a deleted singleton", async () => {
+      const { singles } = await getDiff(
+        { settings: {} },
+        { settings: settings() },
+      );
+
+      expect(singles.settings).toMatchObject({ status: "deleted" });
+    });
+
+    it("ignores a singleton whose only change is updatedAt", async () => {
+      const { singles } = await getDiff(
+        { settings: settings({ updatedAt }) },
+        { settings: settings() },
+      );
+
+      expect(singles).toEqual({});
     });
   });
 });
