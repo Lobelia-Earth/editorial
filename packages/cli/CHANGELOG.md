@@ -1,5 +1,13 @@
 # @isardsat/editorial-cli
 
+## 6.27.1
+
+### Patch Changes
+
+- a326b75: Fix file picker image previews in local development
+- Updated dependencies [a326b75]
+  - @isardsat/editorial-server@6.27.1
+
 ## 6.27.0
 
 ### Minor Changes
