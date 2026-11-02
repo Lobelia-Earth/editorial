@@ -87,10 +87,13 @@ export default function FilePicker({
 
   const resolveUrl = (url: string) => {
     if (!url) return "";
-    if (!url.startsWith("http") && !url.startsWith("/")) {
-      return `/${url}`;
-    }
-    return url;
+    if (url.startsWith("http")) return url;
+    // In dev the admin runs on Vite, so public files must be loaded from the
+    // Editorial server's origin instead of the admin's.
+    const origin = import.meta.env.PROD
+      ? ""
+      : new URL(import.meta.env.VITE_EDITORIAL_BASE_URL).origin;
+    return `${origin}${url.startsWith("/") ? "" : "/"}${url}`;
   };
 
   useEffect(() => {
