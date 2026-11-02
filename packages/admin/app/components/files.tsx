@@ -5,12 +5,14 @@ import {
   useGetFilesQuery,
   useUploadFilesMutation,
 } from "@/lib/store/slices/editorialApi";
+import { getFileFieldValue, isEditableImage } from "@/lib/imageEditing";
 import { cn, formatFileSize } from "@/lib/utils";
 import type { EditorialFiles } from "@isardsat/editorial-common";
 import {
   Check,
   ChevronDown,
   Copy,
+  Crop,
   File,
   FileImage,
   FileText,
@@ -21,10 +23,12 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { Badge } from "./ui/badge";
+
+const ImageEditorDialog = React.lazy(() => import("./ImageEditorDialog"));
 
 const textFileSuffixes = ["txt", "md", "html", "pdf"] as const;
 const imageFileSuffixes = ["svg", "webp", "png", "jpeg", "jpg"] as const;
@@ -133,6 +137,7 @@ export interface TreeNodeProps {
   onChange?: (value: string) => void;
   disableActions?: boolean;
   onUpload?: (path: string, files: FileList) => void;
+  onEdit?: (value: string) => void;
 
   createTarget: CreateTarget;
   onStartCreateInDirectory: (dirRelativePath: string) => void;
@@ -153,6 +158,7 @@ const TreeNode = ({
   onChange,
   disableActions,
   onUpload,
+  onEdit,
   createTarget,
   onStartCreateInDirectory,
   onConfirmCreateInDirectory,
@@ -179,6 +185,11 @@ const TreeNode = ({
     createTarget.path === node.relativePath;
 
   const isConfirmingDeleteHere = deleteTarget === node.relativePath;
+  const fileValue = getFileFieldValue(
+    node.relativePath,
+    !!node.isLarge,
+    config?.largeFilesUrl,
+  );
 
   useEffect(() => {
     if (isCreatingHere) setDraftFolderName("");
@@ -213,12 +224,7 @@ const TreeNode = ({
           isDirectory
             ? toggleExpand
             : onChange
-              ? () =>
-                  onChange(
-                    node.isLarge
-                      ? `${config?.largeFilesUrl}/${node.relativePath}`
-                      : node.relativePath,
-                  )
+              ? () => onChange(fileValue)
               : undefined
         }
       >
@@ -294,6 +300,21 @@ const TreeNode = ({
                   </span>
                 </button>
               </>
+            )}
+
+            {!isDirectory && onEdit && isEditableImage(node.name) && (
+              <button
+                className="hover:text-blue-500 p-1 hover:bg-muted rounded-sm cursor-pointer"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onEdit(fileValue);
+                }}
+                title="Edit image"
+              >
+                <Crop size={16} />
+                <span className="sr-only">Edit image</span>
+              </button>
             )}
 
             <button
@@ -427,6 +448,7 @@ const TreeNode = ({
               onChange={onChange}
               disableActions={disableActions}
               onUpload={onUpload}
+              onEdit={onEdit}
               createTarget={createTarget}
               onStartCreateInDirectory={onStartCreateInDirectory}
               onConfirmCreateInDirectory={onConfirmCreateInDirectory}
@@ -460,6 +482,9 @@ export default function Files({ disableActions, onChange }: FilesProps) {
 
   // New: delete confirmation target (relativePath)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  // Field value of the image being edited
+  const [editTarget, setEditTarget] = useState<string | null>(null);
 
   const handleUpload = async ({
     files,
@@ -570,6 +595,8 @@ export default function Files({ disableActions, onChange }: FilesProps) {
             onChange={onChange}
             disableActions={disableActions}
             onUpload={handleDirectoryUpload}
+            // Images picked for a field are edited from the field itself
+            onEdit={onChange ? undefined : setEditTarget}
             createTarget={createTarget}
             onStartCreateInDirectory={(dirRelativePath) =>
               setCreateTarget({ kind: "directory", path: dirRelativePath })
@@ -645,6 +672,15 @@ export default function Files({ disableActions, onChange }: FilesProps) {
       )}
 
       {fileList}
+
+      {editTarget && (
+        <React.Suspense fallback={null}>
+          <ImageEditorDialog
+            value={editTarget}
+            onClose={() => setEditTarget(null)}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 }
