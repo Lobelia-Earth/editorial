@@ -17,6 +17,7 @@ import {
   useGetFilesQuery,
   useUploadFilesMutation,
 } from "@/lib/store/slices/editorialApi";
+import { formatFileSize, formatSizeChange } from "@/lib/utils";
 import { parseAspectRatio } from "@isardsat/editorial-common";
 import { RotateCcw, RotateCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -45,6 +46,9 @@ import { Spinner } from "./ui/spinner";
 
 const aspectPresets = ["original", "1:1", "4:3", "3:2", "16:9", "3:4", "2:3"];
 
+// Wait for the settings to settle before encoding the image to show its size
+const PREVIEW_DELAY = 400;
+
 export interface ImageEditorDialogProps {
   // Uploaded file field value of the image to edit
   value: string;
@@ -69,6 +73,7 @@ export default function ImageEditorDialog({
   const [source, setSource] = useState<{
     url: string;
     bitmap: ImageBitmap;
+    size: number;
   } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -83,6 +88,10 @@ export default function ImageEditorDialog({
   const [quality, setQuality] = useState(85);
   const [baseNameInput, setBaseNameInput] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  // Encoded image for the current settings, identified by renderKey
+  const [preview, setPreview] = useState<
+    { key: string; blob: Blob } | { key: string; error: string } | null
+  >(null);
 
   const relativePath = getRelativeFilePath(value, config?.largeFilesUrl);
   const { directory, baseName } = splitFilePath(relativePath);
@@ -113,7 +122,7 @@ export default function ImageEditorDialog({
         });
         objectUrl = URL.createObjectURL(blob);
 
-        if (!cancelled) setSource({ url: objectUrl, bitmap });
+        if (!cancelled) setSource({ url: objectUrl, bitmap, size: blob.size });
       } catch (error) {
         console.error("Error loading image for editing:", error);
         if (!cancelled) {
@@ -158,24 +167,60 @@ export default function ImageEditorDialog({
     ? getConstraintIssues(output, { aspectRatio, maxWidth })
     : [];
 
+  const renderOptions =
+    cropPixels && output
+      ? {
+          crop: cropPixels,
+          rotation,
+          width: output.width,
+          height: output.height,
+          format,
+          quality: quality / 100,
+        }
+      : null;
+  const renderKey = renderOptions ? JSON.stringify(renderOptions) : null;
+  const currentPreview = preview?.key === renderKey ? preview : null;
+
+  useEffect(() => {
+    if (!source || !renderOptions || !renderKey) return;
+
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      try {
+        const blob = await renderEditedImage(source.bitmap, renderOptions);
+        if (!cancelled) setPreview({ key: renderKey, blob });
+      } catch (error) {
+        if (!cancelled) {
+          setPreview({
+            key: renderKey,
+            error:
+              error instanceof Error ? error.message : "Image encoding failed",
+          });
+        }
+      }
+    }, PREVIEW_DELAY);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+    // renderKey identifies renderOptions, which is a new object every render
+  }, [source, renderKey]);
+
   const rotate = (degrees: number) =>
     setRotation(
       (current) => ((((current + degrees + 180) % 360) + 360) % 360) - 180,
     );
 
   const handleSave = async () => {
-    if (!source || !cropPixels || !output) return;
+    if (!source || !renderOptions) return;
 
     setIsSaving(true);
     try {
-      const blob = await renderEditedImage(source.bitmap, {
-        crop: cropPixels,
-        rotation,
-        width: output.width,
-        height: output.height,
-        format,
-        quality: quality / 100,
-      });
+      const blob =
+        currentPreview && "blob" in currentPreview
+          ? currentPreview.blob
+          : await renderEditedImage(source.bitmap, renderOptions);
       const file = new File([blob], outputFileName, { type: blob.type });
 
       await uploadFiles({ files: [file], path: directory }).unwrap();
@@ -378,15 +423,37 @@ export default function ImageEditorDialog({
         </div>
 
         <DialogFooter className="sm:items-center">
-          <p className="text-sm text-muted-foreground sm:mr-auto">
-            {output && `Output: ${output.width} × ${output.height} px`}
-            {outputIssues.length > 0 && (
-              <span className="text-amber-600">
-                {" "}
-                · {outputIssues.join(", ")}
-              </span>
+          <div className="text-sm text-muted-foreground sm:mr-auto">
+            {source && (
+              <p>
+                Original: {source.bitmap.width} × {source.bitmap.height} px ·{" "}
+                {formatFileSize(source.size)}
+              </p>
             )}
-          </p>
+            {output && (
+              <p>
+                Edited: {output.width} × {output.height} px ·{" "}
+                {!currentPreview ? (
+                  "calculating size..."
+                ) : "blob" in currentPreview ? (
+                  `${formatFileSize(currentPreview.blob.size)} (${formatSizeChange(
+                    source?.size ?? 0,
+                    currentPreview.blob.size,
+                  )})`
+                ) : (
+                  <span className="text-destructive">
+                    {currentPreview.error}
+                  </span>
+                )}
+                {outputIssues.length > 0 && (
+                  <span className="text-amber-600">
+                    {" "}
+                    · {outputIssues.join(", ")}
+                  </span>
+                )}
+              </p>
+            )}
+          </div>
           <Button
             type="button"
             variant="outline"
@@ -398,7 +465,13 @@ export default function ImageEditorDialog({
           <Button
             type="button"
             onClick={handleSave}
-            disabled={!source || !cropPixels || !isValidName || isSaving}
+            disabled={
+              !source ||
+              !renderOptions ||
+              !isValidName ||
+              isSaving ||
+              (!!currentPreview && "error" in currentPreview)
+            }
           >
             {isSaving ? "Saving..." : "Save copy"}
           </Button>
