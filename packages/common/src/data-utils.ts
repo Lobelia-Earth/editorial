@@ -4,6 +4,12 @@ import type {
 } from "./types.js";
 
 /**
+ * Uploaded files of this size or bigger (in bytes) are stored by the large
+ * file handler instead of the public directory.
+ */
+export const LARGE_FILE_SIZE = 1e6;
+
+/**
  * Checks if the choicesFixed value is a reference to another field.
  * References are in the format $key_field
  */
