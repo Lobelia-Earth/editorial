@@ -14,7 +14,7 @@ import type {
 
 export interface LargeFileHandler {
   list: () => Promise<object[]>;
-  delete: () => Promise<void>;
+  delete: (path: string) => Promise<void>;
   upload: (file: unknown, options?: unknown) => Promise<void>;
 }
 

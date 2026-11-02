@@ -211,13 +211,30 @@ export async function createFilesRoutes(config: EditorialConfig) {
           .catch(() => false);
 
         if (!exists) {
-          return c.json({ error: "File not found" }, 404);
+          // Not stored locally, so it may be a large file in the remote provider.
+          try {
+            await largeFilesHandler.delete(rel);
+            return c.json(true, 200);
+          } catch (err) {
+            if ((err as NodeJS.ErrnoException)?.code === "ENOENT") {
+              return c.json({ error: "File not found" }, 404);
+            }
+            throw err;
+          }
         }
 
+        const isDirectory = statSync(absoluteSource).isDirectory();
         const absoluteTarget = normalize(join(deletedDirPath, rel));
 
         await mkdir(dirname(absoluteTarget), { recursive: true });
         await rename(absoluteSource, absoluteTarget);
+
+        if (isDirectory) {
+          // Directories are merged with the remote tree, so remove its remote counterpart too.
+          await largeFilesHandler.delete(rel).catch((err) => {
+            if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") throw err;
+          });
+        }
 
         return c.json(true, 200);
       } catch (err) {
