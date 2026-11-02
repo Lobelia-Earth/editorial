@@ -197,6 +197,8 @@ export default function FieldInput({
           register={form.register}
           value={field.value as string}
           onChange={field.onChange}
+          aspectRatio={schemaField.aspectRatio}
+          maxWidth={schemaField.maxWidth}
         />
       ) : schemaField.type === "date" ? (
         <DatePicker
