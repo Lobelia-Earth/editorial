@@ -101,6 +101,15 @@ const EditorialSchemaItemFieldBaseSchema = z.looseObject({
   maxSelectedChoices: z.number().optional(),
   minSelectedChoices: z.number().optional(),
   isUploadedFile: z.boolean().optional(),
+  // Image constraints of uploaded file fields, applied by the image editor
+  aspectRatio: z
+    .string()
+    .regex(
+      /^\d+(\.\d+)?:\d+(\.\d+)?$/,
+      'Must be an aspect ratio in the format "width:height", e.g. "16:9"',
+    )
+    .optional(),
+  maxWidth: z.number().int().positive().optional(),
 });
 
 /**

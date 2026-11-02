@@ -10,6 +10,18 @@ import type {
 export const LARGE_FILE_SIZE = 1e6;
 
 /**
+ * Parses an aspect ratio in the format "width:height" into its numeric value,
+ * or null if it is missing or invalid.
+ */
+export function parseAspectRatio(aspectRatio: string | undefined) {
+  const match = aspectRatio?.match(/^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/);
+  if (!match) return null;
+
+  const ratio = Number(match[1]) / Number(match[2]);
+  return Number.isFinite(ratio) && ratio > 0 ? ratio : null;
+}
+
+/**
  * Checks if the choicesFixed value is a reference to another field.
  * References are in the format $key_field
  */
