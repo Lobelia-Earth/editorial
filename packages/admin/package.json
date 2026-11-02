@@ -1,6 +1,6 @@
 {
   "name": "@isardsat/editorial-admin",
-  "version": "6.25.0",
+  "version": "6.27.0",
   "type": "module",
   "exports": {
     ".": {

@@ -1,5 +1,11 @@
 # @isardsat/create-editorial
 
+## 6.27.0
+
+### Minor Changes
+
+- 416c5dc: Delete large files through the large file handler
+
 ## 6.25.0
 
 ### Minor Changes

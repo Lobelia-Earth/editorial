@@ -1,5 +1,16 @@
 # @isardsat/editorial-cli
 
+## 6.27.0
+
+### Minor Changes
+
+- 416c5dc: Delete large files through the large file handler
+
+### Patch Changes
+
+- Updated dependencies [416c5dc]
+  - @isardsat/editorial-server@6.27.0
+
 ## 6.25.0
 
 ### Minor Changes

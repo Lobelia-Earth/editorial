@@ -1,5 +1,11 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.27.0
+
+### Minor Changes
+
+- 416c5dc: Delete large files through the large file handler
+
 ## 6.26.0
 
 ### Minor Changes
