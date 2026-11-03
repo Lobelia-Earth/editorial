@@ -63,8 +63,13 @@ export async function createEditorialServer({
   });
   app.get("/doc/ui", swaggerUI({ url: "/doc" }));
 
+  // Public files are fetched by the admin's image editor, which runs on a
+  // different origin in development
   app.use(
     "/*",
+    cors({
+      origin: "*",
+    }),
     serveStatic({
       root: config.publicDir,
       rewriteRequestPath: (path) => path.replace(/^\/public/, ""),

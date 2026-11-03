@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getBlockSchema, getChoicesReference } from "./data-utils.js";
+import {
+  getBlockSchema,
+  getChoicesReference,
+  parseAspectRatio,
+} from "./data-utils.js";
 import type { EditorialSchemaItemField } from "./types.js";
 
 describe("getChoicesReference", () => {
@@ -63,4 +67,21 @@ describe("getBlockSchema", () => {
 
     expect(getBlockSchema(stringField, { _block: "text" })).toBeNull();
   });
+});
+
+describe("parseAspectRatio", () => {
+  it.each([
+    ["16:9", 16 / 9],
+    ["1:1", 1],
+    ["1.91:1", 1.91],
+  ])("parses %s", (aspectRatio, expected) => {
+    expect(parseAspectRatio(aspectRatio)).toBeCloseTo(expected);
+  });
+
+  it.each([undefined, "", "16/9", "16:0", "wide"])(
+    "returns null for %s",
+    (aspectRatio) => {
+      expect(parseAspectRatio(aspectRatio)).toBeNull();
+    },
+  );
 });

@@ -1,12 +1,27 @@
+import {
+  getConstraintIssues,
+  isEditableImage,
+  resolveFileUrl,
+} from "@/lib/imageEditing";
 import { useGetFilesQuery } from "@/lib/store/slices/editorialApi";
 import { cn } from "@/lib/utils";
-import { ExternalLink, FileIcon, Pencil, Upload, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  Crop,
+  ExternalLink,
+  FileIcon,
+  Pencil,
+  TriangleAlert,
+  Upload,
+  X,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 import type { UseFormRegister } from "react-hook-form";
 import { Link } from "react-router";
 import Files from "./files";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+
+const ImageEditorDialog = React.lazy(() => import("./ImageEditorDialog"));
 
 export interface FilePickerProps {
   id?: string;
@@ -14,6 +29,9 @@ export interface FilePickerProps {
   name: string;
   register: UseFormRegister<Record<string, string | string[]>>;
   onChange: (value: string) => void;
+  // Image constraints of the field, see EditorialSchemaItemFieldSchema
+  aspectRatio?: string;
+  maxWidth?: number;
 }
 
 export default function FilePicker({
@@ -22,9 +40,12 @@ export default function FilePicker({
   name,
   register,
   onChange,
+  aspectRatio,
+  maxWidth,
 }: FilePickerProps) {
   const { isLoading } = useGetFilesQuery();
   const [isFilesModalOpen, setFilesModalOpen] = useState(false);
+  const [isEditorOpen, setEditorOpen] = useState(false);
   const [imageMetadata, setImageMetadata] = useState<{
     width?: number;
     height?: number;
@@ -85,24 +106,21 @@ export default function FilePicker({
     img.src = url;
   };
 
-  const resolveUrl = (url: string) => {
-    if (!url) return "";
-    if (url.startsWith("http")) return url;
-    // In dev the admin runs on Vite, so public files must be loaded from the
-    // Editorial server's origin instead of the admin's.
-    const origin = import.meta.env.PROD
-      ? ""
-      : new URL(import.meta.env.VITE_EDITORIAL_BASE_URL).origin;
-    return `${origin}${url.startsWith("/") ? "" : "/"}${url}`;
-  };
-
   useEffect(() => {
     if (value && isImage(value)) {
-      getImageMetadata(resolveUrl(value));
+      getImageMetadata(resolveFileUrl(value));
     } else {
       setImageMetadata(null);
     }
   }, [value]);
+
+  const constraintIssues =
+    imageMetadata?.width && imageMetadata.height
+      ? getConstraintIssues(
+          { width: imageMetadata.width, height: imageMetadata.height },
+          { aspectRatio, maxWidth },
+        )
+      : [];
 
   const handleClear = () => {
     onChange("");
@@ -124,7 +142,7 @@ export default function FilePicker({
                 {isImage(value) ? (
                   <div className="w-32 h-24 rounded border overflow-hidden bg-muted flex items-center justify-center">
                     <img
-                      src={resolveUrl(value)}
+                      src={resolveFileUrl(value)}
                       alt="Preview"
                       className="max-w-full max-h-full object-contain"
                     />
@@ -158,6 +176,20 @@ export default function FilePicker({
                         )}
                       </div>
                     )}
+
+                    {isEditableImage(value) && constraintIssues.length > 0 && (
+                      <div className="flex items-center gap-2 mt-2 text-xs text-amber-600">
+                        <TriangleAlert className="h-3.5 w-3.5 shrink-0" />
+                        <span>{constraintIssues.join(", ")}.</span>
+                        <button
+                          type="button"
+                          className="underline cursor-pointer"
+                          onClick={() => setEditorOpen(true)}
+                        >
+                          Edit image
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Button
@@ -172,6 +204,20 @@ export default function FilePicker({
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>
+
+                    {isEditableImage(value) && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        title="Edit Image"
+                        className="h-8 w-8 shrink-0 cursor-pointer"
+                        onClick={() => setEditorOpen(true)}
+                        disabled={isLoading}
+                      >
+                        <Crop className="h-4 w-4" />
+                      </Button>
+                    )}
 
                     <Button
                       type="button"
@@ -227,6 +273,18 @@ export default function FilePicker({
             <Input id={id} {...register(name)} type="hidden" value="" />
           </div>
         </div>
+      )}
+
+      {isEditorOpen && (
+        <React.Suspense fallback={null}>
+          <ImageEditorDialog
+            value={value}
+            aspectRatio={aspectRatio}
+            maxWidth={maxWidth}
+            onClose={() => setEditorOpen(false)}
+            onSaved={onChange}
+          />
+        </React.Suspense>
       )}
 
       {isFilesModalOpen && (

@@ -184,25 +184,26 @@ export const editorialApi = createApi({
       }),
       invalidatesTags: () => [{ type: "files" }],
     }),
-    uploadFiles: builder.mutation<string[], { files: FileList; path?: string }>(
-      {
-        query: ({ files, path }) => {
-          const formData = new FormData();
-          Array.from(files).forEach((file) => {
-            formData.append("files", file);
-          });
-          if (path) {
-            formData.append("path", path);
-          }
-          return {
-            url: `/files`,
-            method: "PUT",
-            body: formData,
-          };
-        },
-        invalidatesTags: () => [{ type: "files" }],
+    uploadFiles: builder.mutation<
+      string[],
+      { files: FileList | File[]; path?: string }
+    >({
+      query: ({ files, path }) => {
+        const formData = new FormData();
+        Array.from(files).forEach((file) => {
+          formData.append("files", file);
+        });
+        if (path) {
+          formData.append("path", path);
+        }
+        return {
+          url: `/files`,
+          method: "PUT",
+          body: formData,
+        };
       },
-    ),
+      invalidatesTags: () => [{ type: "files" }],
+    }),
     createDirectory: builder.mutation<boolean, { name: string; path?: string }>(
       {
         query: ({ name, path }) => ({

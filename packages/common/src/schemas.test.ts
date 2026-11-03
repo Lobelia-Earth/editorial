@@ -154,3 +154,36 @@ describe("EditorialSchemaSchema", () => {
     expect(result.page.fields.title.optional).toBe(false);
   });
 });
+
+describe("image constraints of uploaded file fields", () => {
+  const schemaWith = (field: Record<string, unknown>) => ({
+    page: {
+      displayName: "Page",
+      fields: {
+        cover: {
+          type: "string",
+          displayName: "Cover",
+          isUploadedFile: true,
+          ...field,
+        },
+      },
+    },
+  });
+
+  it("accepts an aspect ratio and a max width", () => {
+    expect(
+      getIssues(schemaWith({ aspectRatio: "16:9", maxWidth: 1600 })),
+    ).toEqual([]);
+  });
+
+  it.each(["16/9", "wide", "16:"])(
+    "rejects the aspect ratio %s",
+    (aspectRatio) => {
+      expect(getIssues(schemaWith({ aspectRatio }))).not.toEqual([]);
+    },
+  );
+
+  it.each([0, -100, 12.5])("rejects the max width %s", (maxWidth) => {
+    expect(getIssues(schemaWith({ maxWidth }))).not.toEqual([]);
+  });
+});

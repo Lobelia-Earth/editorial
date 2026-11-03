@@ -32,6 +32,18 @@ export function formatFileSize(bytes: number, decimals = 1) {
   return `${parseFloat(value.toFixed(decimals))} ${FileSizeSuffixes[i]}`;
 }
 
+/**
+ * Formats the change from one file size to another as a percentage,
+ * e.g. "−92%" or "+15%".
+ */
+export function formatSizeChange(originalBytes: number, newBytes: number) {
+  if (originalBytes === 0) return "";
+
+  const change = Math.round((newBytes / originalBytes - 1) * 100);
+  if (change === 0) return "same size";
+  return change > 0 ? `+${change}%` : `−${-change}%`;
+}
+
 const msPerMinute = 60 * 1000;
 const msPerHour = msPerMinute * 60;
 const msPerDay = msPerHour * 24;

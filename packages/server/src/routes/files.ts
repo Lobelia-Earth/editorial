@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   EditorialFilesResponseSchema,
+  LARGE_FILE_SIZE,
   type EditorialConfig,
   type EditorialFile,
   type EditorialFiles,
@@ -319,7 +320,7 @@ export async function createFilesRoutes(config: EditorialConfig) {
 
         for (const file of fileArray) {
           if (file instanceof File) {
-            if (file.size >= 1e6) {
+            if (file.size >= LARGE_FILE_SIZE) {
               await largeFilesHandler.upload(file, { path: targetPath });
               uploadedFiles.push(file.name);
               continue;
