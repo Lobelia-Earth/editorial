@@ -1,5 +1,17 @@
 # @isardsat/editorial-server
 
+## 6.28.0
+
+### Minor Changes
+
+- 2a41b1f: Edit uploaded images (crop, rotate, resize, format and quality) from the admin, saving the result as a copy. Uploaded file fields accept `aspectRatio` and `maxWidth` to constrain the editor.
+
+### Patch Changes
+
+- Updated dependencies [2a41b1f]
+  - @isardsat/editorial-admin@6.28.0
+  - @isardsat/editorial-common@6.28.0
+
 ## 6.27.1
 
 ### Patch Changes
