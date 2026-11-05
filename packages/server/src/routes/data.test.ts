@@ -300,6 +300,61 @@ describe("write routes", () => {
       expect(await editorial.readData("data.prod.json")).toEqual(before);
     });
   });
+
+  describe("concurrent writes", () => {
+    it("keeps the changes of parallel updates to different items", async () => {
+      const responses = await Promise.all([
+        send("PATCH", "/data/tag/news", { type: "tag", name: "News 2" }),
+        send("PATCH", "/data/tag/tech", { type: "tag", name: "Tech 2" }),
+        send("PATCH", "/data/author/bob", { type: "author", name: "Bob 2" }),
+        send("PUT", "/data/tag/science", {
+          type: "tag",
+          id: "science",
+          name: "Science",
+        }),
+      ]);
+
+      expect(responses.map((response) => response.status)).toEqual([
+        200, 200, 200, 200,
+      ]);
+      const { tag, author } = await editorial.readData();
+      expect(tag.news.name).toBe("News 2");
+      expect(tag.tech.name).toBe("Tech 2");
+      expect(tag.science.name).toBe("Science");
+      expect(author.bob.name).toBe("Bob 2");
+    });
+
+    it("keeps an update made while references are repaired", async () => {
+      const [rename, update] = await Promise.all([
+        send("PATCH", "/data/author/ada", {
+          type: "author",
+          newId: "ada-lovelace",
+        }),
+        send("PATCH", "/data/article/hello", {
+          type: "article",
+          title: "Hello again",
+        }),
+      ]);
+
+      expect(rename.status).toBe(200);
+      expect(update.status).toBe(200);
+      const { author, article } = await editorial.readData();
+      expect(author.bob.mentor).toBe("ada-lovelace");
+      expect(article.hello.title).toBe("Hello again");
+    });
+
+    it("creates an item only once when the same id is created in parallel", async () => {
+      const body = { type: "tag", id: "science", name: "Science" };
+
+      const responses = await Promise.all([
+        send("PUT", "/data/tag/science", body),
+        send("PUT", "/data/tag/science", { ...body, name: "Other" }),
+      ]);
+
+      expect(responses.map((response) => response.status)).toEqual([200, 409]);
+      expect((await editorial.readData()).tag.science.name).toBe("Science");
+    });
+  });
 });
 
 describe("GET /environments/diff", () => {

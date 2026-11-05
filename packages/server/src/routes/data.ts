@@ -409,21 +409,25 @@ export function createDataRoutes(
     }),
     async (c) => {
       const itemAtts = await c.req.json();
-      const itemExists = await storage.checkItemExists({
-        type: itemAtts.type,
-        id: itemAtts.id,
+
+      // Check and create in one step, so a parallel request can't take the id
+      return storage.withWriteLock(async () => {
+        const itemExists = await storage.checkItemExists({
+          type: itemAtts.type,
+          id: itemAtts.id,
+        });
+        if (itemExists) {
+          return c.json(
+            { error: "Item with this type and id already exists" },
+            409,
+          );
+        }
+        const newItem = await storage.createItem(itemAtts);
+
+        cache.invalidateContent();
+
+        return c.json(newItem);
       });
-      if (itemExists) {
-        return c.json(
-          { error: "Item with this type and id already exists" },
-          409,
-        );
-      }
-      const newItem = await storage.createItem(itemAtts);
-
-      cache.invalidateContent();
-
-      return c.json(newItem);
     },
   );
 
@@ -473,49 +477,53 @@ export function createDataRoutes(
       const { itemType, id } = c.req.valid("param");
       const itemAtts = await c.req.json();
 
-      if (itemAtts.newId) {
-        const itemWithNewIdExists = await storage.checkItemExists({
-          type: itemAtts.type,
-          id: itemAtts.newId,
-        });
-        if (itemWithNewIdExists) {
-          return c.json(
-            { error: "Item with this type and this new id already exists" },
-            409,
-          );
+      // The update and the reference repair run as one step, so a parallel
+      // write can't land between them and be overwritten
+      return storage.withWriteLock(async () => {
+        if (itemAtts.newId) {
+          const itemWithNewIdExists = await storage.checkItemExists({
+            type: itemAtts.type,
+            id: itemAtts.newId,
+          });
+          if (itemWithNewIdExists) {
+            return c.json(
+              { error: "Item with this type and this new id already exists" },
+              409,
+            );
+          }
         }
-      }
 
-      const oldId = id;
-      const newId = itemAtts.newId || itemAtts.id || id;
-      const renamed = oldId !== newId;
+        const oldId = id;
+        const newId = itemAtts.newId || itemAtts.id || id;
+        const renamed = oldId !== newId;
 
-      // Update renamed item first
-      const updatedItem = await storage.updateItem({
-        ...itemAtts,
-        type: itemType,
-        id: oldId,
-      });
-
-      // Repair references if needed
-      if (renamed) {
-        const [schema, content] = await Promise.all([
-          storage.getSchema(),
-          storage.getContent({ production: false }), // preview/content being edited
-        ]);
-
-        await updateOrRemoveReferences({
-          schema,
-          content,
-          storage,
-          targetType: itemType,
-          oldId,
-          newId,
+        // Update renamed item first
+        const updatedItem = await storage.updateItem({
+          ...itemAtts,
+          type: itemType,
+          id: oldId,
         });
-      }
 
-      cache.invalidateContent();
-      return c.json(updatedItem);
+        // Repair references if needed
+        if (renamed) {
+          const [schema, content] = await Promise.all([
+            storage.getSchema(),
+            storage.getContent({ production: false }), // preview/content being edited
+          ]);
+
+          await updateOrRemoveReferences({
+            schema,
+            content,
+            storage,
+            targetType: itemType,
+            oldId,
+            newId,
+          });
+        }
+
+        cache.invalidateContent();
+        return c.json(updatedItem);
+      });
     },
   );
 
@@ -553,26 +561,30 @@ export function createDataRoutes(
     async (c) => {
       const { itemType, id } = c.req.valid("param");
 
-      await storage.deleteItem({ type: itemType, id });
+      // The delete and the reference repair run as one step, so a parallel
+      // write can't land between them and be overwritten
+      return storage.withWriteLock(async () => {
+        await storage.deleteItem({ type: itemType, id });
 
-      // Remove references to the deleted item
-      const [schema, content] = await Promise.all([
-        storage.getSchema(),
-        storage.getContent({ production: false }),
-      ]);
+        // Remove references to the deleted item
+        const [schema, content] = await Promise.all([
+          storage.getSchema(),
+          storage.getContent({ production: false }),
+        ]);
 
-      await updateOrRemoveReferences({
-        schema,
-        content,
-        storage,
-        targetType: itemType,
-        oldId: id,
-        newId: null,
+        await updateOrRemoveReferences({
+          schema,
+          content,
+          storage,
+          targetType: itemType,
+          oldId: id,
+          newId: null,
+        });
+
+        cache.invalidateContent();
+
+        return c.json(true, 200);
       });
-
-      cache.invalidateContent();
-
-      return c.json(true, 200);
     },
   );
 
