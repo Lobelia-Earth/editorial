@@ -1,5 +1,7 @@
 # @isardsat/create-editorial
 
+## 6.28.1
+
 ## 6.28.0
 
 ### Minor Changes

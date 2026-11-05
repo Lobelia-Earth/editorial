@@ -1,5 +1,11 @@
 # @isardsat/editorial-client
 
+## 6.28.1
+
+### Patch Changes
+
+- @isardsat/editorial-common@6.28.1
+
 ## 6.28.0
 
 ### Minor Changes

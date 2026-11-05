@@ -1,5 +1,13 @@
 # @isardsat/editorial-server
 
+## 6.28.1
+
+### Patch Changes
+
+- ba165f2: Run content writes one at a time, so editors saving at the same time no longer lose each other's changes or get an error
+  - @isardsat/editorial-admin@6.28.1
+  - @isardsat/editorial-common@6.28.1
+
 ## 6.28.0
 
 ### Minor Changes
