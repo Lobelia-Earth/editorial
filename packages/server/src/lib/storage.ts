@@ -9,6 +9,7 @@ import {
   EditorialDataSchema,
   EditorialSchemaSchema,
 } from "@isardsat/editorial-common";
+import { AsyncLocalStorage } from "async_hooks";
 import { readFile, readdir } from "fs/promises";
 import { join } from "path";
 import { parse } from "yaml";
@@ -20,6 +21,35 @@ export function createStorage(dataDirectory: string) {
   const dataProdPath = join(dataDirectory, "data.prod.json");
   const dataExtractedPath = join(dataDirectory, "data.messages.json");
   const localesPath = join(dataDirectory, "locales", "messages");
+
+  /**
+   * Writes read a whole file, change it and write it back, so two writes
+   * running at the same time would drop each other's changes. They are queued
+   * to run one at a time instead.
+   */
+  let writeQueue: Promise<unknown> = Promise.resolve();
+  const writeLockContext = new AsyncLocalStorage<boolean>();
+
+  /**
+   * Runs `fn` once the previous writes have finished, and holds back later
+   * writes until it finishes. Writes called from inside `fn` run directly, so
+   * a route can make several writes as a single step.
+   */
+  function withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+    if (writeLockContext.getStore()) return fn();
+
+    const result = writeQueue.then(() => writeLockContext.run(true, fn));
+    // A failed write must not block the ones queued after it
+    writeQueue = result.catch(() => {});
+
+    return result;
+  }
+
+  function locked<Args extends unknown[], T>(
+    fn: (...args: Args) => Promise<T>,
+  ) {
+    return (...args: Args) => withWriteLock(() => fn(...args));
+  }
 
   async function getSchema() {
     const schemaFile = await readFile(schemaPath, "utf-8").then((value) =>
@@ -216,12 +246,13 @@ export function createStorage(dataDirectory: string) {
     getSchema,
     getContent,
     getLocalisationMessages,
-    saveLocalisationMessages,
-    createItem,
+    saveLocalisationMessages: locked(saveLocalisationMessages),
+    createItem: locked(createItem),
     checkItemExists,
-    updateItem,
-    deleteItem,
-    saveContent,
+    updateItem: locked(updateItem),
+    deleteItem: locked(deleteItem),
+    saveContent: locked(saveContent),
+    withWriteLock,
   };
 }
 export type Storage = ReturnType<typeof createStorage>;
