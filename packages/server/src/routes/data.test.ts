@@ -255,6 +255,41 @@ describe("write routes", () => {
       expect(await editorial.readData()).toEqual(before);
     });
 
+    it("returns 404 for a missing item and doesn't create it", async () => {
+      const before = await editorial.readData();
+
+      const missingItem = await send("PATCH", "/data/tag/missing", {
+        type: "tag",
+        name: "Missing",
+      });
+      const unknownType = await send("PATCH", "/data/unknown/missing", {
+        type: "unknown",
+        name: "Missing",
+      });
+
+      expect(missingItem.status).toBe(404);
+      expect(unknownType.status).toBe(404);
+      expect(await editorial.readData()).toEqual(before);
+    });
+
+    it("returns 404 when saving an item someone else renamed", async () => {
+      await send("PATCH", "/data/author/ada", {
+        type: "author",
+        newId: "ada-lovelace",
+      });
+      const afterRename = await editorial.readData();
+
+      // A form opened before the rename still saves to the old id
+      const response = await send("PATCH", "/data/author/ada", {
+        type: "author",
+        id: "ada",
+        name: "Ada",
+      });
+
+      expect(response.status).toBe(404);
+      expect(await editorial.readData()).toEqual(afterRename);
+    });
+
     it("returns the updated item in later GET requests", async () => {
       // Fill the content cache first
       const { hello } = await getJson("/data/article?preview=true");
@@ -290,6 +325,17 @@ describe("write routes", () => {
       expect(article.hello.tags).toEqual(["news", "missing"]);
       const blocks = article.hello.content as Record<string, unknown>[];
       expect(blocks[3].tags).toEqual(["missing"]);
+    });
+
+    it("returns 404 for a missing item and changes nothing", async () => {
+      const before = await editorial.readData();
+
+      const missingItem = await send("DELETE", "/data/tag/missing");
+      const unknownType = await send("DELETE", "/data/unknown/missing");
+
+      expect(missingItem.status).toBe(404);
+      expect(unknownType.status).toBe(404);
+      expect(await editorial.readData()).toEqual(before);
     });
 
     it("leaves production data untouched", async () => {

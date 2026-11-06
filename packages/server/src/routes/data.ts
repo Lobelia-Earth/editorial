@@ -465,6 +465,9 @@ export function createDataRoutes(
           },
           description: "Update object",
         },
+        404: {
+          description: "Item not found",
+        },
         409: {
           description: "Item with this type and id already exists",
         },
@@ -480,6 +483,15 @@ export function createDataRoutes(
       // The update and the reference repair run as one step, so a parallel
       // write can't land between them and be overwritten
       return storage.withWriteLock(async () => {
+        // Updating a renamed or deleted item would bring it back
+        const itemExists = await storage.checkItemExists({
+          type: itemType,
+          id,
+        });
+        if (!itemExists) {
+          return c.json({ error: "Item not found" }, 404);
+        }
+
         if (itemAtts.newId) {
           const itemWithNewIdExists = await storage.checkItemExists({
             type: itemAtts.type,
@@ -553,6 +565,9 @@ export function createDataRoutes(
           },
           description: "Delete object",
         },
+        404: {
+          description: "Item not found",
+        },
       },
       tags: ["Data"],
       middleware: [firebaseAuth(config.firebase?.projectId || "")],
@@ -564,6 +579,14 @@ export function createDataRoutes(
       // The delete and the reference repair run as one step, so a parallel
       // write can't land between them and be overwritten
       return storage.withWriteLock(async () => {
+        const itemExists = await storage.checkItemExists({
+          type: itemType,
+          id,
+        });
+        if (!itemExists) {
+          return c.json({ error: "Item not found" }, 404);
+        }
+
         await storage.deleteItem({ type: itemType, id });
 
         // Remove references to the deleted item

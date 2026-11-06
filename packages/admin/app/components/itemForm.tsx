@@ -280,6 +280,13 @@ export default function ItemForm({
 
       form.reset(values);
     } catch (err: any) {
+      if (err.status === 404 && !isNew) {
+        toast.error(
+          "This item no longer exists. Someone else renamed or deleted it.",
+        );
+        console.error(err);
+        return;
+      }
       if (err.status === 409) {
         form.setError("id", {
           type: "manual",
