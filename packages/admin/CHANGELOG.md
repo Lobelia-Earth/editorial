@@ -1,5 +1,12 @@
 # @isardsat/editorial-admin
 
+## 6.28.2
+
+### Patch Changes
+
+- def6453: Return 404 when updating or deleting an item that doesn't exist, instead of recreating it on update. Saving an item that someone else renamed or deleted no longer brings it back, and the admin says why the save failed
+  - @isardsat/editorial-common@6.28.2
+
 ## 6.28.1
 
 ### Patch Changes

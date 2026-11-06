@@ -1,5 +1,7 @@
 # @isardsat/editorial-common
 
+## 6.28.2
+
 ## 6.28.1
 
 ## 6.28.0
