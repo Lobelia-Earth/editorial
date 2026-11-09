@@ -1,5 +1,12 @@
 # @isardsat/editorial-admin
 
+## 6.29.0
+
+### Patch Changes
+
+- Updated dependencies [1f3572b]
+  - @isardsat/editorial-common@6.29.0
+
 ## 6.28.2
 
 ### Patch Changes

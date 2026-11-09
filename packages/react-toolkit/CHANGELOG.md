@@ -1,5 +1,7 @@
 # @isardsat/editorial-react-toolkit
 
+## 6.29.0
+
 ## 6.28.2
 
 ## 6.28.1
