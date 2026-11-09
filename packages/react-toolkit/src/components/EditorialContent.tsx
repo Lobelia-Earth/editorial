@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { EDITION_MODE_STORAGE_KEY } from "@isardsat/editorial-common/preview";
 import { useLocalStorage } from "../hooks/use-local-storage/use-local-storage";
 import styles from "./EditorialContent.module.css";
 import { useEditorialReactConfig } from "./providers/EditorialReactConfigContext";
@@ -137,7 +138,7 @@ export const EditorialContent = ({
   const { isPreview, editorialUrl } = useEditorialReactConfig();
 
   const [isEditionMode] = useLocalStorage({
-    key: "isEditionMode",
+    key: EDITION_MODE_STORAGE_KEY,
     defaultValue: false,
   });
 

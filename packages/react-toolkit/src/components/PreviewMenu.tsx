@@ -1,3 +1,7 @@
+import {
+  ALWAYS_SHOW_PREVIEW_INDICATOR_STORAGE_KEY,
+  EDITION_MODE_STORAGE_KEY,
+} from "@isardsat/editorial-common/preview";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useLocalStorage } from "../hooks/use-local-storage/use-local-storage";
 import styles from "./PreviewMenu.module.css";
@@ -86,13 +90,13 @@ export const PreviewMenu = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [isEditionMode, setIsEditionMode] = useLocalStorage({
-    key: "isEditionMode",
+    key: EDITION_MODE_STORAGE_KEY,
     defaultValue: false,
   });
 
   const [alwaysShowPreviewIndicator, setAlwaysShowPreviewIndicator] =
     useLocalStorage({
-      key: "alwaysShowPreviewIndicator",
+      key: ALWAYS_SHOW_PREVIEW_INDICATOR_STORAGE_KEY,
       defaultValue: false,
     });
 
