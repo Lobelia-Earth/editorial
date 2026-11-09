@@ -1,0 +1,103 @@
+.indicator {
+  position: fixed;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: black;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 40em;
+}
+
+.indicatorActive {
+  background-color: wheat;
+}
+
+.toggleButton {
+  padding: 0 8px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 22px;
+  color: black;
+  background: transparent;
+  border: 1px solid black;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toggleButton:hover {
+  background-color: #0000000d;
+}
+
+.menu {
+  position: relative;
+  display: flex;
+}
+
+.menuTarget {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.menuTarget:hover {
+  background-color: #0000000d;
+}
+
+.dropdown {
+  position: absolute;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: max-content;
+  padding: 4px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px #0000001f;
+}
+
+.dropdownUp {
+  bottom: calc(100% + 8px);
+}
+
+.dropdownDown {
+  top: calc(100% + 8px);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  font: inherit;
+  font-size: 14px;
+  color: black;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.item:hover {
+  background-color: #f5f5f5;
+}
+
+.itemIcon {
+  display: flex;
+  width: 15px;
+}

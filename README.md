@@ -36,6 +36,10 @@ This monorepo contains the following packages:
   
   React toolkit providing components, hooks, and utilities for integrating Editorial CMS into React applications. Available as both ES modules and CommonJS.
 
+- **[@isardsat/editorial-vue-toolkit](./packages/vue-toolkit)**
+  
+  Vue 3 toolkit with the same components as the React toolkit (`EditorialContent`, `PreviewMenu`, config provider). Available as both ES modules and CommonJS.
+
 - **[@isardsat/editorial-common](./packages/common)**
   
   Shared types, schemas and utilities used across Editorial packages.
