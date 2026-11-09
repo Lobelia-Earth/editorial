@@ -21,7 +21,7 @@
     "build": "vite build && tsc -p tsconfig.build.json",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prepublishOnly": "pnpm run build",
+    "prepublishOnly": "pnpm --filter @isardsat/editorial-common compile && pnpm run build",
     "typecheck": "tsc -b"
   },
   "peerDependencies": {
@@ -29,6 +29,7 @@
     "react-dom": "^18 || ^19"
   },
   "devDependencies": {
+    "@isardsat/editorial-common": "workspace:^",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@types/react": "^18.2.7",
