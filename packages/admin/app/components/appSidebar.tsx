@@ -10,7 +10,6 @@ import {
 import {
   ArrowDown,
   ArrowUp,
-  Blocks,
   ChevronDown,
   ExternalLink,
   Files,
@@ -20,8 +19,8 @@ import {
   Square,
   Upload,
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router";
 import { toast } from "sonner";
 import { Modal } from "./modal";
 import SidebarSchemaItems from "./sidebarSchemaItems";
@@ -65,6 +64,21 @@ export default function AppSidebar() {
   );
 
   const user = useAppSelector((state) => state.auth.user);
+
+  // Open the group that contains the current route, e.g. after a reload
+  const { pathname } = useLocation();
+  const activeEntry = useMemo(() => {
+    const key = pathname.match(/^\/admin\/dashboard\/([^/]+)/)?.[1];
+    return key ? schema?.[key] : undefined;
+  }, [pathname, schema]);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
+  const [singlesOpen, setSinglesOpen] = useState(false);
+
+  useEffect(() => {
+    if (!activeEntry) return;
+    if (activeEntry.singleton) setSinglesOpen(true);
+    else setCollectionsOpen(true);
+  }, [activeEntry]);
 
   const handlePublish = async (author: string) => {
     try {
@@ -131,6 +145,8 @@ export default function AppSidebar() {
               <Collapsible
                 className="group/collapsible"
                 disabled={!hasCollections}
+                open={collectionsOpen}
+                onOpenChange={setCollectionsOpen}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -147,7 +163,12 @@ export default function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
-              <Collapsible className="group/collapsible" disabled={!hasSingles}>
+              <Collapsible
+                className="group/collapsible"
+                disabled={!hasSingles}
+                open={singlesOpen}
+                onOpenChange={setSinglesOpen}
+              >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">
@@ -164,19 +185,16 @@ export default function AppSidebar() {
               </Collapsible>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/admin/dashboard/files">
-                    <Files />
-                    <span>Files</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton disabled>
-                  <Blocks />
-                  <span>Components</span>
-                </SidebarMenuButton>
+                <NavLink to="/admin/dashboard/files">
+                  {({ isActive }) => (
+                    <SidebarMenuButton isActive={isActive} asChild>
+                      <div>
+                        <Files />
+                        <span>Files</span>
+                      </div>
+                    </SidebarMenuButton>
+                  )}
+                </NavLink>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
