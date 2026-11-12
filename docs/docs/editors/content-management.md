@@ -21,3 +21,11 @@ Some fields let you compose content from blocks, for example an article made of 
 - Use the bin icon to remove a block.
 
 Blocks with errors stay expanded and are outlined in red until the errors are fixed.
+
+## Editing at the Same Time as Someone Else
+
+Only one person can edit an item at a time. When you change something in an item, it is locked for you until you save it, leave the page, or are inactive for 5 minutes.
+
+If someone else is editing an item you open, a message shows who it is and when they were last active, and the item can't be changed or deleted. Once they are done, it reloads with their changes and you can edit it. The same happens if you have the item open in another browser tab.
+
+If you are inactive for 5 minutes with unsaved changes, someone else can start editing the item. If they do, or if they save it, your changes can't be saved anymore: copy anything you want to keep, then use **Reload** to see the latest version.
