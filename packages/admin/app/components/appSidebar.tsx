@@ -58,6 +58,7 @@ export default function AppSidebar() {
   const dispatch = useAppDispatch();
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [publish, publishState] = usePublishMutation();
   const [pull, pullingState] = usePullMutation();
   const [push, pushingState] = usePushMutation();
@@ -155,6 +156,23 @@ export default function AppSidebar() {
               onClick={() => user && handlePublish(user.email)}
             >
               Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will need to sign in again to keep editing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => dispatch(signOut())}>
+              Log out
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -307,7 +325,7 @@ export default function AppSidebar() {
           </SidebarMenu>
         )}
 
-        <div className="flex items-center gap-2 px-2 py-1">
+        <div className="flex items-center gap-2 py-1 pl-2">
           <div className="grid flex-1 text-sm leading-tight">
             <span className="truncate font-medium">{user?.email}</span>
             <span className="truncate text-xs capitalize text-sidebar-foreground/70">
@@ -320,7 +338,7 @@ export default function AppSidebar() {
             className="size-8 cursor-pointer"
             title="Log out"
             aria-label="Log out"
-            onClick={() => dispatch(signOut())}
+            onClick={() => setLogoutConfirmOpen(true)}
           >
             <LogOut />
           </Button>
