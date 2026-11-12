@@ -1,5 +1,7 @@
 # @isardsat/editorial-vue-toolkit
 
+## 6.30.0
+
 ## 6.29.0
 
 ### Minor Changes

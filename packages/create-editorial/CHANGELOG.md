@@ -1,5 +1,7 @@
 # @isardsat/create-editorial
 
+## 6.30.0
+
 ## 6.29.0
 
 ## 6.28.2

@@ -1,5 +1,12 @@
 # @isardsat/editorial-cli
 
+## 6.30.0
+
+### Patch Changes
+
+- Updated dependencies [1433de8]
+  - @isardsat/editorial-server@6.30.0
+
 ## 6.29.0
 
 ### Patch Changes

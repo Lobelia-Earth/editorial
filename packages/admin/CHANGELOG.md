@@ -1,5 +1,16 @@
 # @isardsat/editorial-admin
 
+## 6.30.0
+
+### Minor Changes
+
+- 1433de8: Lock items while they are being edited. The first change to an item locks it, and others see who is editing it while the form stays read-only. The lock is kept while you are active and released when you save or leave
+
+### Patch Changes
+
+- Updated dependencies [1433de8]
+  - @isardsat/editorial-common@6.30.0
+
 ## 6.29.0
 
 ### Patch Changes
