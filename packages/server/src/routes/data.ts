@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
+  EDITORIAL_SESSION_HEADER,
   EditorialDataItemSchema,
   EditorialDataSchema,
   EditorialDiffResponseSchema,
@@ -10,6 +11,7 @@ import {
   type EditorialDiffResponse,
 } from "@isardsat/editorial-common";
 import type { Cache } from "../lib/cache.js";
+import type { Locks } from "../lib/locks.js";
 import { firebaseAuth } from "../lib/middleware/auth.js";
 import type { Storage } from "../lib/storage.js";
 import { getChangedFields } from "../lib/utils/diff.js";
@@ -20,11 +22,13 @@ import {
   updateOrRemoveReferences,
 } from "../lib/utils/references.js";
 import { generateMetaSchema } from "../lib/utils/schema.js";
+import { lockedResponse } from "./locks.js";
 
 export function createDataRoutes(
   config: EditorialConfig,
   storage: Storage,
   cache: Cache,
+  locks: Locks,
 ) {
   const app = new OpenAPIHono();
 
@@ -471,6 +475,7 @@ export function createDataRoutes(
         409: {
           description: "Item with this type and id already exists",
         },
+        423: lockedResponse,
       },
       tags: ["Data"],
       middleware: [firebaseAuth(config.firebase?.projectId || "")],
@@ -490,6 +495,18 @@ export function createDataRoutes(
         });
         if (!itemExists) {
           return c.json({ error: "Item not found" }, 404);
+        }
+
+        const lock = locks.heldByOther(
+          itemType,
+          id,
+          c.req.header(EDITORIAL_SESSION_HEADER),
+        );
+        if (lock) {
+          return c.json(
+            { error: "Another session is editing the item", lock },
+            423,
+          );
         }
 
         if (itemAtts.newId) {
@@ -518,6 +535,8 @@ export function createDataRoutes(
 
         // Repair references if needed
         if (renamed) {
+          locks.move(itemType, oldId, newId);
+
           const [schema, content] = await Promise.all([
             storage.getSchema(),
             storage.getContent({ production: false }), // preview/content being edited
@@ -568,6 +587,7 @@ export function createDataRoutes(
         404: {
           description: "Item not found",
         },
+        423: lockedResponse,
       },
       tags: ["Data"],
       middleware: [firebaseAuth(config.firebase?.projectId || "")],
@@ -587,7 +607,20 @@ export function createDataRoutes(
           return c.json({ error: "Item not found" }, 404);
         }
 
+        const lock = locks.heldByOther(
+          itemType,
+          id,
+          c.req.header(EDITORIAL_SESSION_HEADER),
+        );
+        if (lock) {
+          return c.json(
+            { error: "Another session is editing the item", lock },
+            423,
+          );
+        }
+
         await storage.deleteItem({ type: itemType, id });
+        locks.remove(itemType, id);
 
         // Remove references to the deleted item
         const [schema, content] = await Promise.all([

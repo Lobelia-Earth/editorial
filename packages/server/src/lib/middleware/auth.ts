@@ -1,6 +1,30 @@
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
+
+export interface AuthUser {
+  id: string;
+  name: string | null;
+}
+
+declare module "hono" {
+  interface ContextVariableMap {
+    /** The user of the verified token, set by `firebaseAuth` */
+    user: AuthUser;
+  }
+}
+
+/** Reads the user from a verified Firebase token */
+export function getTokenUser(payload: JWTPayload): AuthUser {
+  const name =
+    typeof payload.name === "string"
+      ? payload.name
+      : typeof payload.email === "string"
+        ? payload.email
+        : null;
+
+  return { id: payload.sub ?? "", name };
+}
 
 /**
  * Google public keys for Firebase token verification
@@ -39,6 +63,8 @@ export const firebaseAuth = (projectId: string) =>
       if (!payload || typeof payload !== "object") {
         throw new Error("Invalid token payload");
       }
+
+      c.set("user", getTokenUser(payload));
 
       await next();
     } catch (error) {

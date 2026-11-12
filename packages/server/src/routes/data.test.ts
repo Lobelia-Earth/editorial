@@ -20,6 +20,7 @@ import {
 } from "../__fixtures__/editorial.js";
 import { createContent, item } from "../__fixtures__/schema.js";
 import { createCache } from "../lib/cache.js";
+import { createLocks, type Locks } from "../lib/locks.js";
 import { createStorage } from "../lib/storage.js";
 import { createDataRoutes } from "./data.js";
 
@@ -39,6 +40,7 @@ beforeAll(async () => {
     config,
     createStorage(editorial.directory),
     createCache(),
+    createLocks(),
   );
 });
 
@@ -141,14 +143,17 @@ describe("GET /data/:itemType/:id", () => {
 
 describe("write routes", () => {
   let editorial: Awaited<ReturnType<typeof createEditorialDirectory>>;
+  let locks: Locks;
   let app: ReturnType<typeof createDataRoutes>;
 
   beforeEach(async () => {
     editorial = await createEditorialDirectory();
+    locks = createLocks();
     app = createDataRoutes(
       config,
       createStorage(editorial.directory),
       createCache(),
+      locks,
     );
   });
 
@@ -156,10 +161,18 @@ describe("write routes", () => {
     await editorial.remove();
   });
 
-  const send = (method: string, path: string, body?: unknown) =>
+  const send = (
+    method: string,
+    path: string,
+    body?: unknown,
+    session?: string,
+  ) =>
     app.request(path, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(session ? { "Editorial-Session": session } : {}),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
 
@@ -347,6 +360,86 @@ describe("write routes", () => {
     });
   });
 
+  describe("locked items", () => {
+    const alice = { id: "alice", name: "Alice" };
+
+    beforeEach(() => {
+      locks.acquire("author", "ada", "tab-a", alice);
+    });
+
+    it("rejects updates and deletes from other sessions", async () => {
+      const before = await editorial.readData();
+
+      const update = await send(
+        "PATCH",
+        "/data/author/ada",
+        { type: "author", name: "Overwritten" },
+        "tab-b",
+      );
+      const remove = await send(
+        "DELETE",
+        "/data/author/ada",
+        undefined,
+        "tab-b",
+      );
+
+      expect(update.status).toBe(423);
+      expect(await update.json()).toMatchObject({ lock: { user: alice } });
+      expect(remove.status).toBe(423);
+      expect(await editorial.readData()).toEqual(before);
+    });
+
+    it("accepts updates from the session holding the lock", async () => {
+      const response = await send(
+        "PATCH",
+        "/data/author/ada",
+        { type: "author", name: "Ada Lovelace" },
+        "tab-a",
+      );
+
+      expect(response.status).toBe(200);
+      expect((await editorial.readData()).author.ada.name).toBe("Ada Lovelace");
+    });
+
+    it("accepts writes without a session, as API clients send them", async () => {
+      const response = await send("PATCH", "/data/author/ada", {
+        type: "author",
+        name: "From a script",
+      });
+
+      expect(response.status).toBe(200);
+      expect((await editorial.readData()).author.ada.name).toBe(
+        "From a script",
+      );
+    });
+
+    it("moves the lock when the holder renames the item", async () => {
+      await send(
+        "PATCH",
+        "/data/author/ada",
+        { type: "author", newId: "ada-lovelace" },
+        "tab-a",
+      );
+
+      expect(locks.get("author", "ada")).toBeNull();
+      expect(locks.get("author", "ada-lovelace")).toMatchObject({
+        user: alice,
+      });
+    });
+
+    it("removes the lock when the holder deletes the item", async () => {
+      const response = await send(
+        "DELETE",
+        "/data/author/ada",
+        undefined,
+        "tab-a",
+      );
+
+      expect(response.status).toBe(200);
+      expect(locks.get("author", "ada")).toBeNull();
+    });
+  });
+
   describe("concurrent writes", () => {
     it("keeps the changes of parallel updates to different items", async () => {
       const responses = await Promise.all([
@@ -419,6 +512,7 @@ describe("GET /environments/diff", () => {
       config,
       createStorage(editorial.directory),
       createCache(),
+      createLocks(),
     );
     const response = await app.request("/environments/diff");
     expect(response.status).toBe(200);
