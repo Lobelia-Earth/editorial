@@ -116,7 +116,7 @@ export default function AppSidebar() {
         <SidebarGroup>
           <Link
             to="/admin/dashboard"
-            className="text-3xl font-semibold tracking-tight transition-colors"
+            className="truncate text-lg font-semibold tracking-tight text-sidebar-foreground transition-colors hover:text-sidebar-foreground/70"
           >
             {config?.name}
           </Link>
