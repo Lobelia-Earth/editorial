@@ -11,9 +11,11 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
+  ChevronsUpDown,
   ExternalLink,
   Files,
   Grid,
+  Info,
   Loader2,
   LogOut,
   Square,
@@ -23,6 +25,15 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { toast } from "sonner";
 import { Modal } from "./modal";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import SidebarSchemaItems from "./sidebarSchemaItems";
 import {
   Collapsible,
@@ -41,10 +52,25 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "./ui/sidebar";
+
+// "jane.doe@example.com" -> "JD"
+function getInitials(email?: string) {
+  if (!email) return "?";
+  const parts = email
+    .split("@")[0]
+    .split(/[._-]+/)
+    .filter(Boolean);
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
+}
 
 export default function AppSidebar() {
   const dispatch = useAppDispatch();
+  const { isMobile } = useSidebar();
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [publish, publishState] = usePublishMutation();
   const [pull, pullingState] = usePullMutation();
@@ -202,86 +228,127 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarGroupLabel>Actions</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {user?.role === "developer" && (
-              <>
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel>Actions</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {user?.role === "developer" && (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="cursor-pointer"
+                      disabled={pullingState.isLoading}
+                      onClick={() => handlePull()}
+                    >
+                      {pullingState.isLoading ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <ArrowDown />
+                      )}
+                      <span>Pull from repo</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="cursor-pointer"
+                      disabled={pushingState.isLoading}
+                      onClick={() => handlePush({ author: user.email })}
+                    >
+                      {pushingState.isLoading ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <ArrowUp />
+                      )}
+                      <span>Push to repo</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
+              {user && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="cursor-pointer"
-                    onClick={() => handlePull()}
+                    disabled={publishState.isLoading}
+                    onClick={() => handlePublish(user.email)}
                   >
-                    {pullingState.isLoading ? (
+                    {publishState.isLoading ? (
                       <Loader2 className="animate-spin" />
                     ) : (
-                      <ArrowDown />
+                      <Upload />
                     )}
-                    <span>Pull from repo</span>
+                    <span>Publish</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => handlePush({ author: user.email })}
-                  >
-                    {pushingState.isLoading ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <ArrowUp />
-                    )}
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-                    <span>Push to repo</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </>
-            )}
-            {user && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="cursor-pointer"
-                  onClick={() => {
-                    handlePublish(user.email);
-                  }}
-                >
-                  {publishState.isLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <Upload />
-                  )}
-                  <span>Publish</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
+        <SidebarSeparator className="mx-0" />
+
+        {config?.previewUrl && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href={config.previewUrl} target="_blank" rel="noreferrer">
+                  <span>Preview</span>
+                  <ExternalLink className="ml-auto" />
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
-        </SidebarGroupContent>
-        <SidebarSeparator />
-        <SidebarMenuButton asChild>
-          <Link to={config?.previewUrl as string}>
-            Preview
-            <ExternalLink className="ml-auto" />
-          </Link>
-        </SidebarMenuButton>
-        <SidebarMenuButton
-          className="cursor-pointer"
-          onClick={() => setAboutModalOpen(true)}
-        >
-          About
-        </SidebarMenuButton>
-        <SidebarMenuButton
-          className="cursor-pointer"
-          onClick={() => dispatch(signOut())}
-        >
-          <LogOut />
-          Log out
-        </SidebarMenuButton>
-        <div
-          data-slot="sidebar-group-label"
-          data-sidebar="group-label"
-          className="text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0 group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0"
-        >
-          Editorial v{__APP_VERSION__}
-        </div>
+        )}
+
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <Avatar className="size-8 rounded-lg">
+                    <AvatarFallback className="rounded-lg text-xs">
+                      {getInitials(user?.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">{user?.email}</span>
+                    <span className="truncate text-xs capitalize text-sidebar-foreground/70">
+                      {user?.role}
+                    </span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side={isMobile ? "bottom" : "right"}
+                align="end"
+                sideOffset={4}
+                className="min-w-56 rounded-lg"
+              >
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                  Editorial v{__APP_VERSION__}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={() => setAboutModalOpen(true)}
+                >
+                  <Info />
+                  About
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={() => dispatch(signOut())}
+                >
+                  <LogOut />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
