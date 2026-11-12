@@ -11,11 +11,9 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
-  ChevronsUpDown,
   ExternalLink,
   Files,
   Grid,
-  Info,
   Loader2,
   LogOut,
   Square,
@@ -25,15 +23,17 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { toast } from "sonner";
 import { Modal } from "./modal";
-import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { Button } from "./ui/button";
 import SidebarSchemaItems from "./sidebarSchemaItems";
 import {
   Collapsible,
@@ -52,26 +52,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-  useSidebar,
 } from "./ui/sidebar";
-
-// "jane.doe@example.com" -> "JD"
-function getInitials(email?: string) {
-  if (!email) return "?";
-  const parts = email
-    .split("@")[0]
-    .split(/[._-]+/)
-    .filter(Boolean);
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join("");
-}
 
 export default function AppSidebar() {
   const dispatch = useAppDispatch();
-  const { isMobile } = useSidebar();
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
+  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
   const [publish, publishState] = usePublishMutation();
   const [pull, pullingState] = usePullMutation();
   const [push, pushingState] = usePushMutation();
@@ -151,6 +137,28 @@ export default function AppSidebar() {
   return (
     <Sidebar className="z-50">
       <Modal isOpen={aboutModalOpen} setOpen={setAboutModalOpen} />
+
+      <AlertDialog
+        open={publishConfirmOpen}
+        onOpenChange={setPublishConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Publish content?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All unpublished changes will go live on the site.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => user && handlePublish(user.email)}
+            >
+              Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <SidebarHeader className="h-14 justify-center">
         <SidebarGroup>
@@ -269,7 +277,7 @@ export default function AppSidebar() {
                   <SidebarMenuButton
                     className="cursor-pointer"
                     disabled={publishState.isLoading}
-                    onClick={() => handlePublish(user.email)}
+                    onClick={() => setPublishConfirmOpen(true)}
                   >
                     {publishState.isLoading ? (
                       <Loader2 className="animate-spin" />
@@ -299,56 +307,32 @@ export default function AppSidebar() {
           </SidebarMenu>
         )}
 
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="size-8 rounded-lg">
-                    <AvatarFallback className="rounded-lg text-xs">
-                      {getInitials(user?.email)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user?.email}</span>
-                    <span className="truncate text-xs capitalize text-sidebar-foreground/70">
-                      {user?.role}
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side={isMobile ? "bottom" : "right"}
-                align="end"
-                sideOffset={4}
-                className="min-w-56 rounded-lg"
-              >
-                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                  Editorial v{__APP_VERSION__}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onSelect={() => setAboutModalOpen(true)}
-                >
-                  <Info />
-                  About
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onSelect={() => dispatch(signOut())}
-                >
-                  <LogOut />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="flex items-center gap-2 px-2 py-1">
+          <div className="grid flex-1 text-sm leading-tight">
+            <span className="truncate font-medium">{user?.email}</span>
+            <span className="truncate text-xs capitalize text-sidebar-foreground/70">
+              {user?.role}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 cursor-pointer"
+            title="Log out"
+            aria-label="Log out"
+            onClick={() => dispatch(signOut())}
+          >
+            <LogOut />
+          </Button>
+        </div>
+
+        <button
+          type="button"
+          className="cursor-pointer self-start px-2 text-xs text-sidebar-foreground/50 transition-colors hover:text-sidebar-foreground"
+          onClick={() => setAboutModalOpen(true)}
+        >
+          Editorial v{__APP_VERSION__}
+        </button>
       </SidebarFooter>
     </Sidebar>
   );
