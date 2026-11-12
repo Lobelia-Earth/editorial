@@ -4,6 +4,7 @@ import { config, createEditorialDirectory } from "../__fixtures__/editorial.js";
 import { createContent, item } from "../__fixtures__/schema.js";
 import { createCache, type Cache } from "../lib/cache.js";
 import type { Hooks } from "../lib/hooks.js";
+import { createLocks } from "../lib/locks.js";
 import { createStorage } from "../lib/storage.js";
 import { createActionRoutes } from "./actions.js";
 import { createDataRoutes } from "./data.js";
@@ -92,7 +93,7 @@ describe("POST /publish", () => {
   });
 
   it("leaves no unpublished changes", async () => {
-    const dataApp = createDataRoutes(config, storage, cache);
+    const dataApp = createDataRoutes(config, storage, cache, createLocks());
 
     await publish();
 
@@ -101,7 +102,7 @@ describe("POST /publish", () => {
   });
 
   it("serves the published content in later production requests", async () => {
-    const dataApp = createDataRoutes(config, storage, cache);
+    const dataApp = createDataRoutes(config, storage, cache, createLocks());
     const getTitle = async () => {
       const response = await dataApp.request("/data/article/hello");
       return ((await response.json()) as { title: string }).title;

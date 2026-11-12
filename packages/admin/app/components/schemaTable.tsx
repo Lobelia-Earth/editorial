@@ -13,6 +13,7 @@ import {
   useGetDataQuery,
   useGetSchemaTypeQuery,
 } from "@/lib/store/slices/editorialApi";
+import { isLockedError } from "@/hooks/use-item-lock";
 import { cn, formatTime } from "@/lib/utils";
 import type { EditorialDataItem } from "@isardsat/editorial-common";
 import type { SortingFn } from "@tanstack/react-table";
@@ -49,6 +50,7 @@ import {
 
 import React, { useMemo, useState, type FunctionComponent } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 const TypeIconMap: Record<string, FunctionComponent> = {
   blocks: BlocksIcon,
@@ -137,6 +139,12 @@ export default function SchemaTable({ itemType }: SchemaTableProps) {
       await triggerDelete({ type: itemType, id }).unwrap();
       setDeleteTarget(null);
     } catch (error) {
+      if (isLockedError(error)) {
+        const name = error.data.lock.user.name ?? "Someone else";
+        toast.error(`${name} is editing this item, so it can't be deleted.`);
+        setDeleteTarget(null);
+        return;
+      }
       console.error("Delete failed:", error);
     }
   };

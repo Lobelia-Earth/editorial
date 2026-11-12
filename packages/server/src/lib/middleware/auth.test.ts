@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { firebaseAuth } from "./auth.js";
+import { firebaseAuth, getTokenUser } from "./auth.js";
 
 const createApp = () => {
   const handler = vi.fn(() => new Response("ok"));
@@ -52,5 +52,18 @@ describe("firebaseAuth", () => {
     expect(handler).not.toHaveBeenCalled();
     expect(consoleError).toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("getTokenUser", () => {
+  it("uses the name, then the email, of the token", () => {
+    expect(
+      getTokenUser({ sub: "u1", name: "Ada", email: "ada@example.com" }),
+    ).toEqual({ id: "u1", name: "Ada" });
+    expect(getTokenUser({ sub: "u1", email: "ada@example.com" })).toEqual({
+      id: "u1",
+      name: "ada@example.com",
+    });
+    expect(getTokenUser({ sub: "u1" })).toEqual({ id: "u1", name: null });
   });
 });

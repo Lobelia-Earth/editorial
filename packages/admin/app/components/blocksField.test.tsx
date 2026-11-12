@@ -11,6 +11,7 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { stubApi } from "../../test/apiMock";
 
 // MDXEditor doesn't run in jsdom, see test/mdxeditorMock.tsx
 vi.mock("@mdxeditor/editor", () => import("../../test/mdxeditorMock"));
@@ -75,15 +76,10 @@ const getBlockToggles = () =>
         !button.hasAttribute("aria-haspopup"),
     );
 
-let fetchMock: ReturnType<typeof vi.fn>;
+let api: ReturnType<typeof stubApi>;
 let consoleError: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
-  // Saving goes through fetch. Echo the request body back as the saved item.
-  fetchMock = vi.fn(async (request: Request) =>
-    Response.json(await request.clone().json()),
-  );
-  vi.stubGlobal("fetch", fetchMock);
   consoleError = vi.spyOn(console, "error");
 });
 
@@ -95,6 +91,8 @@ afterEach(() => {
 });
 
 async function renderItemForm(data: EditorialDataItem) {
+  // Saving goes through fetch, see test/apiMock.ts
+  api = stubApi(data);
   const store = createStore();
   const allData: EditorialData = { page: { home: data } };
   // Seed the API cache so nothing is fetched on render
@@ -130,8 +128,8 @@ async function renderItemForm(data: EditorialDataItem) {
 }
 
 const getSavedItem = async () => {
-  await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-  const request = fetchMock.mock.calls[0][0] as Request;
+  await waitFor(() => expect(api.writes()).toHaveLength(1));
+  const [request] = api.writes();
   return {
     method: request.method,
     url: request.url,
@@ -226,7 +224,7 @@ describe("ItemForm with a blocks field", () => {
     const [first] = getBlockToggles();
     await user.click(first);
     expect(first).toHaveAttribute("aria-expanded", "true");
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(api.writes()).toHaveLength(0);
   });
 
   it("asks to remove blocks of unknown types before saving", async () => {
@@ -245,7 +243,7 @@ describe("ItemForm with a blocks field", () => {
     expect(
       await screen.findByText("Unknown block type, remove this block to save"),
     ).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(api.writes()).toHaveLength(0);
 
     await user.click(screen.getByRole("button", { name: "Remove video" }));
     await user.click(screen.getByRole("button", { name: "Save" }));

@@ -7,12 +7,14 @@ import { logger } from "hono/logger";
 import { createCache } from "./lib/cache.js";
 import { createConfig } from "./lib/config.js";
 import { createHooks } from "./lib/hooks.js";
+import { createLocks } from "./lib/locks.js";
 import { createStorage, type Storage } from "./lib/storage.js";
 import { createActionRoutes } from "./routes/actions.js";
 import { createAdminRoutes } from "./routes/admin.js";
 import { createConfigRoutes } from "./routes/config.js";
 import { createDataRoutes } from "./routes/data.js";
 import { createFilesRoutes } from "./routes/files.js";
+import { createLockRoutes } from "./routes/locks.js";
 
 export const BASE_EDITORIAL_PATH = "./editorial";
 
@@ -38,6 +40,7 @@ export async function createEditorialServer({
   const hooks = await createHooks(configDirectory);
   // Shared by the routes that read content and the ones that change it
   const cache = createCache();
+  const locks = createLocks();
 
   app.use(logger());
 
@@ -49,7 +52,8 @@ export async function createEditorialServer({
     }),
   );
   app.route("/api/v1", createConfigRoutes(config));
-  app.route("/api/v1", createDataRoutes(config, storage, cache));
+  app.route("/api/v1", createDataRoutes(config, storage, cache, locks));
+  app.route("/api/v1", createLockRoutes(config, storage, locks));
   app.route("/api/v1", await createFilesRoutes(config));
   app.route("/api/v1", createActionRoutes(config, storage, hooks, cache));
   app.route("/", createAdminRoutes(config));

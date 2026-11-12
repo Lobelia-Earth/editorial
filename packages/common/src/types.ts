@@ -5,6 +5,7 @@ import type {
   EditorialDataObjectWithTypeSchema,
   EditorialDataSchema,
   EditorialDataTypeSchema,
+  EditorialLockSchema,
   EditorialSchemaBlockSchema,
   EditorialSchemaItemFieldSchema,
   EditorialSchemaItemSchema,
@@ -34,6 +35,7 @@ export type EditorialSchemaItemField = z.infer<
 export type EditorialSchemaBlock = z.infer<typeof EditorialSchemaBlockSchema>;
 export type EditorialSchemaItem = z.infer<typeof EditorialSchemaItemSchema>;
 export type EditorialSchema = z.infer<typeof EditorialSchemaSchema>;
+export type EditorialLock = z.infer<typeof EditorialLockSchema>;
 
 /**
  * Stored value of a single block in a "blocks" field. `_block` is the block
