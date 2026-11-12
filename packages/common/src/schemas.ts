@@ -224,6 +224,18 @@ export const EditorialDiffResponseSchema = z.object({
   ),
 });
 
+export const EditorialLockSchema = z.object({
+  type: z.string(),
+  id: z.string(),
+  user: z.object({
+    id: z.string(),
+    name: z.string().nullable(),
+  }),
+  lockedAt: z.iso.datetime(),
+  lastActiveAt: z.iso.datetime(),
+  expiresAt: z.iso.datetime(),
+});
+
 export type EditorialFile = z.infer<typeof EditorialFileSchema>;
 export type EditorialFiles = z.infer<typeof EditorialFilesSchema>;
 export type EditorialFilesResponse = z.infer<

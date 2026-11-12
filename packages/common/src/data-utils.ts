@@ -10,6 +10,12 @@ import type {
 export const LARGE_FILE_SIZE = 1e6;
 
 /**
+ * Header the admin sends with every write to identify its browser tab. Writes
+ * with it are rejected while another tab holds the item's lock.
+ */
+export const EDITORIAL_SESSION_HEADER = "Editorial-Session";
+
+/**
  * Parses an aspect ratio in the format "width:height" into its numeric value,
  * or null if it is missing or invalid.
  */
