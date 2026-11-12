@@ -22,9 +22,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import UnsavedChangesGuard from "@/components/unsavedChangesGuard";
+import { isLockedError, useItemLock } from "@/hooks/use-item-lock";
+import { useAppSelector } from "@/lib/store/hooks";
 import {
   useCreateObjectMutation,
   useGetDataQuery,
+  useUnlockItemMutation,
   useUpdateObjectMutation,
 } from "@/lib/store/slices/editorialApi";
 import { cn, statusColors } from "@/lib/utils";
@@ -48,6 +51,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
+import ItemLockBanner from "./itemLockBanner";
 import SchemaFormField from "./schemaFormField";
 
 export interface SinglesPageProps {
@@ -76,6 +80,8 @@ export default function ItemForm({
 
   const [createItem] = useCreateObjectMutation();
   const [updateItem] = useUpdateObjectMutation();
+  const [unlockItem] = useUnlockItemMutation();
+  const currentUserId = useAppSelector((state) => state.auth.user?.uid);
 
   const { data: allData } = useGetDataQuery();
 
@@ -137,6 +143,21 @@ export default function ItemForm({
   useEffect(() => {
     form.reset(defaultValues);
   }, [defaultValues, form]);
+
+  // New items aren't locked, as nobody else can open them yet
+  const isCreating = isNew || (isSingleton && !data);
+  const itemLock = useItemLock({
+    itemType,
+    id: isCreating ? undefined : data?.id,
+    updatedAt: data?.updatedAt,
+    isDirty: form.formState.isDirty,
+    onLockedOut: () => form.reset(defaultValues),
+    onReloaded: () =>
+      toast.info(
+        "Someone else saved this item since you opened it. It has been reloaded with their changes, so make your change again.",
+      ),
+  });
+  const canSave = !itemLock.isReadOnly && itemLock.state.status !== "outdated";
 
   useEffect(() => {
     if (!form) return;
@@ -235,6 +256,8 @@ export default function ItemForm({
     values: Record<string, string | string[]>,
     showNotification = true,
   ) {
+    if (!canSave) return;
+
     // Convert field values to their proper types
     const processedValues: Record<string, any> = {
       ...values,
@@ -274,12 +297,19 @@ export default function ItemForm({
         toast.success("Item updated successfully.");
       }
       if (idChanged) {
+        // The server moved the lock to the new id
+        unlockItem({ itemType, id: payload.id });
         navigate(`/admin/dashboard/${itemType}/${payload.id}`);
         return;
       }
 
       form.reset(values);
     } catch (err: any) {
+      if (isLockedError(err)) {
+        itemLock.markOutdated(err.data.lock);
+        toast.error("Someone else is editing this item now.");
+        return;
+      }
       if (err.status === 404 && !isNew) {
         toast.error(
           "This item no longer exists. Someone else renamed or deleted it.",
@@ -374,6 +404,7 @@ export default function ItemForm({
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
+                disabled={!canSave}
                 onClick={requestRestoreAll}
                 title="Restore all fields to published values"
               >
@@ -386,10 +417,21 @@ export default function ItemForm({
           </div>
         )}
       </div>
+      <ItemLockBanner
+        lockedBy={itemLock.lockedBy}
+        isOutdated={itemLock.state.status === "outdated"}
+        currentUserId={currentUserId}
+        onReload={itemLock.reload}
+      />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((values) => onSubmit(values))}
-          className="space-y-4 max-w-[800px] w-[800px]"
+          // Inert also stops the markdown editors, which aren't form inputs
+          inert={itemLock.isReadOnly}
+          className={cn(
+            "space-y-4 max-w-[800px] w-[800px]",
+            itemLock.isReadOnly && "opacity-60",
+          )}
         >
           <FormField
             name="id"
@@ -556,7 +598,9 @@ export default function ItemForm({
 
           <Button
             disabled={
-              (!form.formState.isDirty && !isNew) || form.formState.isSubmitting
+              (!form.formState.isDirty && !isNew) ||
+              form.formState.isSubmitting ||
+              !canSave
             }
             type="submit"
           >

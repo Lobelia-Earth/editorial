@@ -1,4 +1,6 @@
 import { getFirebaseInstance } from "@/lib/auth";
+import { getSessionId } from "@/lib/session";
+import { EDITORIAL_SESSION_HEADER } from "@isardsat/editorial-common";
 import type {
   EditorialConfig,
   EditorialData,
@@ -7,6 +9,7 @@ import type {
   EditorialFile,
   EditorialFiles,
   EditorialFilesResponse,
+  EditorialLock,
   EditorialSchema,
   EditorialSchemaItem,
   EditorialUpdateDataItem,
@@ -53,10 +56,29 @@ const rawBaseQuery = fetchBaseQuery({
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
+    // Lets the server reject writes while another tab is editing the item
+    headers.set(EDITORIAL_SESSION_HEADER, getSessionId());
 
     return headers;
   },
 });
+
+/**
+ * Releases a lock while the tab closes. RTK Query requests are cancelled with
+ * the page, keepalive ones are not. If it still fails, the lock expires.
+ */
+export async function releaseLockOnUnload(itemType: string, id: string) {
+  const token = await getAuthToken();
+
+  fetch(`${baseUrl}/locks/${itemType}/${id}`, {
+    method: "DELETE",
+    keepalive: true,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      [EDITORIAL_SESSION_HEADER]: getSessionId(),
+    },
+  });
+}
 
 const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
@@ -140,6 +162,34 @@ export const editorialApi = createApi({
       providesTags: (_result, _error, { itemType, id }) => [
         { type: "data", id: `${itemType}-${id}` },
       ],
+    }),
+    // Fetched apart from getDataObject, so the open form isn't reset
+    getCurrentDataObject: builder.query<
+      EditorialDataItem,
+      { itemType: string; id: string }
+    >({
+      query: ({ itemType, id }) => `/data/${itemType}/${id}?preview=true`,
+      keepUnusedDataFor: 0,
+    }),
+    getLock: builder.query<
+      EditorialLock | null,
+      { itemType: string; id: string }
+    >({
+      query: ({ itemType, id }) => `/locks/${itemType}/${id}`,
+    }),
+    lockItem: builder.mutation<EditorialLock, { itemType: string; id: string }>(
+      {
+        query: ({ itemType, id }) => ({
+          url: `/locks/${itemType}/${id}`,
+          method: "POST",
+        }),
+      },
+    ),
+    unlockItem: builder.mutation<boolean, { itemType: string; id: string }>({
+      query: ({ itemType, id }) => ({
+        url: `/locks/${itemType}/${id}`,
+        method: "DELETE",
+      }),
     }),
     getFiles: builder.query<EditorialFiles, void>({
       query: () => "/files",
@@ -261,11 +311,15 @@ export const {
   useGetFileCountQuery,
   useGetFilesQuery,
   useGetFilesTotalSizeQuery,
+  useGetLockQuery,
+  useLazyGetCurrentDataObjectQuery,
+  useLockItemMutation,
   useGetSchemaQuery,
   useGetSchemaTypeQuery,
   usePublishMutation,
   usePullMutation,
   usePushMutation,
+  useUnlockItemMutation,
   useUpdateObjectMutation,
   useUploadFilesMutation,
 } = editorialApi;
