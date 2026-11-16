@@ -6,7 +6,6 @@ import type {
   EditorialData,
   EditorialDataItem,
   EditorialDiffResponse,
-  EditorialFile,
   EditorialFiles,
   EditorialFilesResponse,
   EditorialLock,
@@ -141,16 +140,6 @@ export const editorialApi = createApi({
       query: () => "/environments/diff",
       providesTags: () => [{ type: "dataDiff" }],
     }),
-    getDataCount: builder.query<number, void>({
-      query: () => "/data?preview=true",
-      transformResponse(response: EditorialData) {
-        const items = Object.values(response).reduce((acc, item) => {
-          return acc + Object.keys(item).length;
-        }, 0);
-
-        return items;
-      },
-    }),
     getDataObject: builder.query<
       EditorialDataItem,
       { itemType: string; id: string }
@@ -194,30 +183,6 @@ export const editorialApi = createApi({
     getFiles: builder.query<EditorialFiles, void>({
       query: () => "/files",
       transformResponse: (response: EditorialFilesResponse) => response.files,
-      providesTags: () => [{ type: "files" }],
-    }),
-    getFileCount: builder.query<number, void>({
-      query: () => "/files",
-      transformResponse: (response: EditorialFilesResponse) => {
-        function countFiles(item: EditorialFile): number {
-          let count = item.type === "file" ? 1 : 0;
-
-          if (item.children && item.children.length > 0) {
-            count += item.children.reduce(
-              (acc, child) => acc + countFiles(child),
-              0,
-            );
-          }
-
-          return count;
-        }
-
-        function countFilesInArray(items: EditorialFiles): number {
-          return items.reduce((acc, item) => acc + countFiles(item), 0);
-        }
-
-        return countFilesInArray(response.files);
-      },
       providesTags: () => [{ type: "files" }],
     }),
     getFilesTotalSize: builder.query<number, void>({
@@ -304,11 +269,9 @@ export const {
   useDeleteFileMutation,
   useDeleteObjectMutation,
   useGetConfigQuery,
-  useGetDataCountQuery,
   useGetDataObjectQuery,
   useGetDataQuery,
   useGetDataDiffQuery,
-  useGetFileCountQuery,
   useGetFilesQuery,
   useGetFilesTotalSizeQuery,
   useGetLockQuery,
