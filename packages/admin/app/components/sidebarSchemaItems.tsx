@@ -4,7 +4,11 @@ import {
 } from "@/lib/store/slices/editorialApi";
 import { useMemo } from "react";
 import { NavLink } from "react-router";
-import { SidebarMenuSub, SidebarMenuSubButton } from "./ui/sidebar";
+import {
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "./ui/sidebar";
 
 export interface SidebarSchemaItemsProps {
   singleton?: boolean;
@@ -16,21 +20,21 @@ export default function SidebarSchemaItems({
   const { data: schema } = useGetSchemaQuery();
   const { data } = useGetDataQuery();
 
-  if (!schema) return null;
-
   const items = useMemo(
     () =>
-      Object.entries(schema)
+      Object.entries(schema ?? {})
         .filter(([, value]) => (singleton ? value.singleton : !value.singleton))
         .toSorted(([a], [b]) => a.localeCompare(b)),
     [schema, singleton],
   );
 
+  if (!schema) return null;
+
   return (
-    <>
+    <SidebarMenuSub>
       {items.map(([key, value]) => {
         return (
-          <SidebarMenuSub key={value.displayName}>
+          <SidebarMenuSubItem key={key}>
             <NavLink
               to={
                 singleton
@@ -57,9 +61,9 @@ export default function SidebarSchemaItems({
                 </SidebarMenuSubButton>
               )}
             </NavLink>
-          </SidebarMenuSub>
+          </SidebarMenuSubItem>
         );
       })}
-    </>
+    </SidebarMenuSub>
   );
 }

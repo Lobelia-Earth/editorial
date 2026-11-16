@@ -8,9 +8,12 @@ import {
   usePushMutation,
 } from "@/lib/store/slices/editorialApi";
 import {
+  setCollectionsOpen,
+  setSinglesOpen,
+} from "@/lib/store/slices/sidebarSlice";
+import {
   ArrowDown,
   ArrowUp,
-  Blocks,
   ChevronDown,
   ExternalLink,
   Files,
@@ -20,10 +23,21 @@ import {
   Square,
   Upload,
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router";
 import { toast } from "sonner";
 import { Modal } from "./modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { Button } from "./ui/button";
 import SidebarSchemaItems from "./sidebarSchemaItems";
 import {
   Collapsible,
@@ -47,6 +61,8 @@ import {
 export default function AppSidebar() {
   const dispatch = useAppDispatch();
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
+  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [publish, publishState] = usePublishMutation();
   const [pull, pullingState] = usePullMutation();
   const [push, pushingState] = usePushMutation();
@@ -65,6 +81,22 @@ export default function AppSidebar() {
   );
 
   const user = useAppSelector((state) => state.auth.user);
+
+  // Open the group that contains the current route, e.g. after a reload
+  const { pathname } = useLocation();
+  const activeEntry = useMemo(() => {
+    const key = pathname.match(/^\/admin\/dashboard\/([^/]+)/)?.[1];
+    return key ? schema?.[key] : undefined;
+  }, [pathname, schema]);
+  const { collectionsOpen, singlesOpen } = useAppSelector(
+    (state) => state.sidebar,
+  );
+
+  useEffect(() => {
+    if (!activeEntry) return;
+    if (activeEntry.singleton) dispatch(setSinglesOpen(true));
+    else dispatch(setCollectionsOpen(true));
+  }, [activeEntry, dispatch]);
 
   const handlePublish = async (author: string) => {
     try {
@@ -112,11 +144,50 @@ export default function AppSidebar() {
     <Sidebar className="z-50">
       <Modal isOpen={aboutModalOpen} setOpen={setAboutModalOpen} />
 
+      <AlertDialog
+        open={publishConfirmOpen}
+        onOpenChange={setPublishConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Publish content?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All unpublished changes will go live on the site.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => user && handlePublish(user.email)}
+            >
+              Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will need to sign in again to keep editing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => dispatch(signOut())}>
+              Log out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <SidebarHeader className="h-14 justify-center">
         <SidebarGroup>
           <Link
             to="/admin/dashboard"
-            className="text-3xl font-semibold tracking-tight transition-colors"
+            className="truncate text-lg font-semibold tracking-tight text-sidebar-foreground transition-colors hover:text-sidebar-foreground/70"
           >
             {config?.name}
           </Link>
@@ -131,6 +202,8 @@ export default function AppSidebar() {
               <Collapsible
                 className="group/collapsible"
                 disabled={!hasCollections}
+                open={collectionsOpen}
+                onOpenChange={(open) => dispatch(setCollectionsOpen(open))}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -147,7 +220,12 @@ export default function AppSidebar() {
                 </SidebarMenuItem>
               </Collapsible>
 
-              <Collapsible className="group/collapsible" disabled={!hasSingles}>
+              <Collapsible
+                className="group/collapsible"
+                disabled={!hasSingles}
+                open={singlesOpen}
+                onOpenChange={(open) => dispatch(setSinglesOpen(open))}
+              >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="group">
@@ -164,19 +242,16 @@ export default function AppSidebar() {
               </Collapsible>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/admin/dashboard/files">
-                    <Files />
-                    <span>Files</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton disabled>
-                  <Blocks />
-                  <span>Components</span>
-                </SidebarMenuButton>
+                <NavLink to="/admin/dashboard/files">
+                  {({ isActive }) => (
+                    <SidebarMenuButton isActive={isActive} asChild>
+                      <div>
+                        <Files />
+                        <span>Files</span>
+                      </div>
+                    </SidebarMenuButton>
+                  )}
+                </NavLink>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -184,86 +259,103 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarGroupLabel>Actions</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {user?.role === "developer" && (
-              <>
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel>Actions</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {user?.role === "developer" && (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="cursor-pointer"
+                      disabled={pullingState.isLoading}
+                      onClick={() => handlePull()}
+                    >
+                      {pullingState.isLoading ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <ArrowDown />
+                      )}
+                      <span>Pull from repo</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="cursor-pointer"
+                      disabled={pushingState.isLoading}
+                      onClick={() => handlePush({ author: user.email })}
+                    >
+                      {pushingState.isLoading ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <ArrowUp />
+                      )}
+                      <span>Push to repo</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
+              {user && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="cursor-pointer"
-                    onClick={() => handlePull()}
+                    disabled={publishState.isLoading}
+                    onClick={() => setPublishConfirmOpen(true)}
                   >
-                    {pullingState.isLoading ? (
+                    {publishState.isLoading ? (
                       <Loader2 className="animate-spin" />
                     ) : (
-                      <ArrowDown />
+                      <Upload />
                     )}
-                    <span>Pull from repo</span>
+                    <span>Publish</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => handlePush({ author: user.email })}
-                  >
-                    {pushingState.isLoading ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <ArrowUp />
-                    )}
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-                    <span>Push to repo</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </>
-            )}
-            {user && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="cursor-pointer"
-                  onClick={() => {
-                    handlePublish(user.email);
-                  }}
-                >
-                  {publishState.isLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <Upload />
-                  )}
-                  <span>Publish</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
+        <SidebarSeparator className="mx-0" />
+
+        {config?.previewUrl && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href={config.previewUrl} target="_blank" rel="noreferrer">
+                  <span>Preview</span>
+                  <ExternalLink className="ml-auto" />
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
-        </SidebarGroupContent>
-        <SidebarSeparator />
-        <SidebarMenuButton asChild>
-          <Link to={config?.previewUrl as string}>
-            Preview
-            <ExternalLink className="ml-auto" />
-          </Link>
-        </SidebarMenuButton>
-        <SidebarMenuButton
-          className="cursor-pointer"
+        )}
+
+        <div className="flex items-center gap-2 py-1 pl-2">
+          <div className="grid flex-1 text-sm leading-tight">
+            <span className="truncate font-medium">{user?.email}</span>
+            <span className="truncate text-xs capitalize text-sidebar-foreground/70">
+              {user?.role}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 cursor-pointer"
+            title="Log out"
+            aria-label="Log out"
+            onClick={() => setLogoutConfirmOpen(true)}
+          >
+            <LogOut />
+          </Button>
+        </div>
+
+        <button
+          type="button"
+          className="cursor-pointer self-start px-2 text-xs text-sidebar-foreground/50 transition-colors hover:text-sidebar-foreground"
           onClick={() => setAboutModalOpen(true)}
         >
-          About
-        </SidebarMenuButton>
-        <SidebarMenuButton
-          className="cursor-pointer"
-          onClick={() => dispatch(signOut())}
-        >
-          <LogOut />
-          Log out
-        </SidebarMenuButton>
-        <div
-          data-slot="sidebar-group-label"
-          data-sidebar="group-label"
-          className="text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0 group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0"
-        >
           Editorial v{__APP_VERSION__}
-        </div>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );
