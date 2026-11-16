@@ -8,6 +8,10 @@ import {
   usePushMutation,
 } from "@/lib/store/slices/editorialApi";
 import {
+  setCollectionsOpen,
+  setSinglesOpen,
+} from "@/lib/store/slices/sidebarSlice";
+import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
@@ -84,14 +88,15 @@ export default function AppSidebar() {
     const key = pathname.match(/^\/admin\/dashboard\/([^/]+)/)?.[1];
     return key ? schema?.[key] : undefined;
   }, [pathname, schema]);
-  const [collectionsOpen, setCollectionsOpen] = useState(false);
-  const [singlesOpen, setSinglesOpen] = useState(false);
+  const { collectionsOpen, singlesOpen } = useAppSelector(
+    (state) => state.sidebar,
+  );
 
   useEffect(() => {
     if (!activeEntry) return;
-    if (activeEntry.singleton) setSinglesOpen(true);
-    else setCollectionsOpen(true);
-  }, [activeEntry]);
+    if (activeEntry.singleton) dispatch(setSinglesOpen(true));
+    else dispatch(setCollectionsOpen(true));
+  }, [activeEntry, dispatch]);
 
   const handlePublish = async (author: string) => {
     try {
@@ -198,7 +203,7 @@ export default function AppSidebar() {
                 className="group/collapsible"
                 disabled={!hasCollections}
                 open={collectionsOpen}
-                onOpenChange={setCollectionsOpen}
+                onOpenChange={(open) => dispatch(setCollectionsOpen(open))}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -219,7 +224,7 @@ export default function AppSidebar() {
                 className="group/collapsible"
                 disabled={!hasSingles}
                 open={singlesOpen}
-                onOpenChange={setSinglesOpen}
+                onOpenChange={(open) => dispatch(setSinglesOpen(open))}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>

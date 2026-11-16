@@ -2,11 +2,13 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import authReducer from "./slices/authSlice";
 import { editorialApi } from "./slices/editorialApi";
+import sidebarReducer from "./slices/sidebarSlice";
 
 export function createStore() {
   const store = configureStore({
     reducer: {
       auth: authReducer,
+      sidebar: sidebarReducer,
       [editorialApi.reducerPath]: editorialApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
