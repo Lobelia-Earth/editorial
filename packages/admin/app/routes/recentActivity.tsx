@@ -45,10 +45,10 @@ export const columns = [
       );
     },
   }),
-  columnHelper.accessor("createdAt", {
-    header: "Created",
+  columnHelper.accessor("type", {
+    header: "Type",
     cell(props) {
-      return formatTime(new Date(props.getValue()));
+      return <span className="capitalize">{props.getValue()}</span>;
     },
   }),
   columnHelper.accessor("updatedAt", {
@@ -102,7 +102,7 @@ export default function RecentActivitySection() {
                 key={headerGroup.id}
                 className="grid"
                 style={{
-                  gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
+                  gridTemplateColumns: `repeat(${columns.length}, minmax(150px, 1fr))`,
                 }}
               >
                 {headerGroup.headers.map((header) => (
@@ -128,7 +128,7 @@ export default function RecentActivitySection() {
                   key={row.id}
                   className="grid"
                   style={{
-                    gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))`,
+                    gridTemplateColumns: `repeat(${columns.length}, minmax(150px, 1fr))`,
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
