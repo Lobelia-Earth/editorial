@@ -1,5 +1,11 @@
 # @isardsat/editorial-cli
 
+## 6.31.0
+
+### Patch Changes
+
+- @isardsat/editorial-server@6.31.0
+
 ## 6.30.0
 
 ### Patch Changes

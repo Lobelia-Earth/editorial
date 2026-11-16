@@ -1,5 +1,13 @@
 # @isardsat/editorial-server
 
+## 6.31.0
+
+### Patch Changes
+
+- Updated dependencies [f7d863a]
+  - @isardsat/editorial-admin@6.31.0
+  - @isardsat/editorial-common@6.31.0
+
 ## 6.30.0
 
 ### Minor Changes

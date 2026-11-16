@@ -1,5 +1,11 @@
 # @isardsat/editorial-client
 
+## 6.31.0
+
+### Patch Changes
+
+- @isardsat/editorial-common@6.31.0
+
 ## 6.30.0
 
 ### Patch Changes
